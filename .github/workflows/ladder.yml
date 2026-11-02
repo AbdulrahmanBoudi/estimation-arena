@@ -1,7 +1,7 @@
 name: ladder
 
 # The leaderboard run: every bot under bots/ plays the anchors in duplicate sets, the results
-# and the rebuilt site/ are committed, and the site is published to GitHub Pages.
+# and the rebuilt site/ are committed; pages.yml then publishes site/ to GitHub Pages.
 #
 # On a GitHub-hosted runner only the four CPU anchors are available (the trained nets live in
 # the engine's runs/ zip, outside git). Point the job at a self-hosted runner that has runs/
@@ -21,8 +21,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 concurrency:
   group: ladder
@@ -59,15 +57,3 @@ jobs:
           git add results site
           git diff --cached --quiet || git commit -m "ladder: $(date -u +%F) run"
           git push
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
-  publish:
-    needs: play
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
