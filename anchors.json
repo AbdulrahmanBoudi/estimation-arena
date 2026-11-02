@@ -1,0 +1,8 @@
+[
+ {"name": "Random", "spec": "random"},
+ {"name": "Heuristic", "spec": "heuristic"},
+ {"name": "PIMC", "spec": "pimc"},
+ {"name": "Search bot", "spec": "search"},
+ {"name": "RL v2", "spec": "rl:checkpoint=runs/m4-rules-v2/checkpoints/final.pt", "needs": "runs/m4-rules-v2/checkpoints/final.pt"},
+ {"name": "Hybrid (B-Tig)", "spec": "hybrid", "needs": "runs/m4-rules-v2/checkpoints/final.pt"}
+]

@@ -1,0 +1,73 @@
+name: ladder
+
+# The leaderboard run: every bot under bots/ plays the anchors in duplicate sets, the results
+# and the rebuilt site/ are committed, and the site is published to GitHub Pages.
+#
+# On a GitHub-hosted runner only the four CPU anchors are available (the trained nets live in
+# the engine's runs/ zip, outside git). Point the job at a self-hosted runner that has runs/
+# unzipped to rate against RL v2 and the Hybrid too, as the README explains.
+
+on:
+  schedule:
+    - cron: "0 3 * * *"   # nightly, 03:00 UTC
+  workflow_dispatch:
+    inputs:
+      sets:
+        description: duplicate sets per anchor
+        default: "20"
+      bots:
+        description: space-separated bot names (empty = all)
+        default: ""
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: ladder
+  cancel-in-progress: false
+
+jobs:
+  play:
+    runs-on: ubuntu-latest   # or: [self-hosted, estimation] for the home server with runs/
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - name: Allow uv to clone the private engine repo
+        run: git config --global url."https://x-access-token:${{ secrets.ENGINE_TOKEN }}@github.com/".insteadOf "https://github.com/"
+      - run: uv sync --frozen
+      - name: Play every bot against the anchors
+        env:
+          # The leaderboard seed is a secret so nobody can tune to the exact deals it uses.
+          LADDER_SEED: ${{ secrets.LADDER_SEED }}
+        run: |
+          sets="${{ github.event.inputs.sets || '20' }}"
+          bots="${{ github.event.inputs.bots }}"
+          [ -n "$bots" ] || bots=$(ls bots)
+          for bot in $bots; do
+            uv run python -m arena.run --bot "$bot" --sets "$sets" --seed "${LADDER_SEED:-0}" --workers 4 --progress
+          done
+      - run: uv run python -m arena.leaderboard
+      - name: Commit results and site
+        run: |
+          git config user.name "estimation-arena bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add results site
+          git diff --cached --quiet || git commit -m "ladder: $(date -u +%F) run"
+          git push
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+  publish:
+    needs: play
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

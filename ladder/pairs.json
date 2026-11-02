@@ -1,0 +1,340 @@
+{
+ "source": "ladder-v2",
+ "imported_at": "2026-11-02T19:24:43+00:00",
+ "pair_files": 43,
+ "sets": 200,
+ "seed": 0,
+ "ratings": {
+  "heuristic": 3596.2912938344184,
+  "heuristic:noise=0.01": 3307.1966033175013,
+  "heuristic:noise=0.02": 3156.7008136651693,
+  "heuristic:noise=0.05": 2864.3571541659353,
+  "heuristic:noise=0.1": 2521.3257040228764,
+  "heuristic:noise=0.2": 1820.7260817818499,
+  "heuristic:noise=0.27": 1559.1768666504192,
+  "heuristic:noise=0.35": 1314.5466942344303,
+  "heuristic:noise=0.5": 954.7644132999847,
+  "heuristic:noise=0.75": 655.7945957074172,
+  "hybrid": 5446.40573484544,
+  "pimc": 4908.879163650702,
+  "pimc:samples=1": 4261.643990366092,
+  "pimc:samples=16": 4827.249353939089,
+  "pimc:samples=1:play_noise=0.3": 3913.559100205517,
+  "pimc:samples=2": 4418.908412019468,
+  "pimc:samples=4": 4573.2896357456,
+  "pimc:samples=8": 4708.62948201862,
+  "random": 400.0,
+  "rl:checkpoint=runs/m4-rules-v2/checkpoints/final.pt": 5123.138772539822,
+  "rl:checkpoint=runs/m4-staged/checkpoints/staged-final.pt": 4780.788167873543,
+  "rl:checkpoint=runs/m4/checkpoints/final.pt": 4581.032993709885,
+  "rl:checkpoint=runs/m4/checkpoints/iter-0010.pt": 3652.0528023516617,
+  "rl:checkpoint=runs/m4/checkpoints/iter-0020.pt": 4329.9626919302755,
+  "rl:checkpoint=runs/m4/checkpoints/iter-0060.pt": 4505.418285235211,
+  "rl:checkpoint=runs/m4/checkpoints/iter-0100.pt": 4484.086254641961,
+  "rl:checkpoint=runs/m4/checkpoints/warm-start.pt:heuristic_bidding=true": 4651.143865817606,
+  "search": 4887.2776081707425
+ },
+ "pairs": [
+  {
+   "a": "heuristic",
+   "b": "pimc:samples=1:play_noise=0.3",
+   "a_wins": 56,
+   "draws": 0,
+   "b_wins": 144
+  },
+  {
+   "a": "heuristic",
+   "b": "rl:checkpoint=runs/m4/checkpoints/iter-0010.pt",
+   "a_wins": 55,
+   "draws": 0,
+   "b_wins": 145
+  },
+  {
+   "a": "heuristic",
+   "b": "search",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 200
+  },
+  {
+   "a": "heuristic",
+   "b": "yosif",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 200
+  },
+  {
+   "a": "heuristic:noise=0.01",
+   "b": "heuristic",
+   "a_wins": 31,
+   "draws": 1,
+   "b_wins": 168
+  },
+  {
+   "a": "heuristic:noise=0.02",
+   "b": "heuristic:noise=0.01",
+   "a_wins": 59,
+   "draws": 0,
+   "b_wins": 141
+  },
+  {
+   "a": "heuristic:noise=0.05",
+   "b": "heuristic:noise=0.02",
+   "a_wins": 31,
+   "draws": 0,
+   "b_wins": 169
+  },
+  {
+   "a": "heuristic:noise=0.1",
+   "b": "heuristic:noise=0.05",
+   "a_wins": 24,
+   "draws": 0,
+   "b_wins": 176
+  },
+  {
+   "a": "heuristic:noise=0.2",
+   "b": "heuristic:noise=0.1",
+   "a_wins": 3,
+   "draws": 0,
+   "b_wins": 197
+  },
+  {
+   "a": "heuristic:noise=0.27",
+   "b": "heuristic:noise=0.2",
+   "a_wins": 36,
+   "draws": 0,
+   "b_wins": 164
+  },
+  {
+   "a": "heuristic:noise=0.35",
+   "b": "heuristic:noise=0.27",
+   "a_wins": 39,
+   "draws": 0,
+   "b_wins": 161
+  },
+  {
+   "a": "heuristic:noise=0.5",
+   "b": "heuristic:noise=0.35",
+   "a_wins": 22,
+   "draws": 0,
+   "b_wins": 178
+  },
+  {
+   "a": "heuristic:noise=0.75",
+   "b": "heuristic:noise=0.5",
+   "a_wins": 30,
+   "draws": 0,
+   "b_wins": 170
+  },
+  {
+   "a": "pimc",
+   "b": "hybrid",
+   "a_wins": 6,
+   "draws": 0,
+   "b_wins": 194
+  },
+  {
+   "a": "pimc",
+   "b": "rl:checkpoint=runs/m4-rules-v2/checkpoints/final.pt",
+   "a_wins": 45,
+   "draws": 1,
+   "b_wins": 154
+  },
+  {
+   "a": "pimc",
+   "b": "search",
+   "a_wins": 100,
+   "draws": 0,
+   "b_wins": 100
+  },
+  {
+   "a": "pimc",
+   "b": "yosif",
+   "a_wins": 100,
+   "draws": 0,
+   "b_wins": 100
+  },
+  {
+   "a": "pimc:samples=1",
+   "b": "pimc:samples=2",
+   "a_wins": 57,
+   "draws": 0,
+   "b_wins": 143
+  },
+  {
+   "a": "pimc:samples=16",
+   "b": "pimc",
+   "a_wins": 73,
+   "draws": 0,
+   "b_wins": 127
+  },
+  {
+   "a": "pimc:samples=16",
+   "b": "rl:checkpoint=runs/m4-staged/checkpoints/staged-final.pt",
+   "a_wins": 115,
+   "draws": 0,
+   "b_wins": 85
+  },
+  {
+   "a": "pimc:samples=1:play_noise=0.3",
+   "b": "pimc:samples=1",
+   "a_wins": 23,
+   "draws": 0,
+   "b_wins": 177
+  },
+  {
+   "a": "pimc:samples=2",
+   "b": "pimc:samples=4",
+   "a_wins": 61,
+   "draws": 0,
+   "b_wins": 139
+  },
+  {
+   "a": "pimc:samples=2",
+   "b": "rl:checkpoint=runs/m4/checkpoints/warm-start.pt:heuristic_bidding=true",
+   "a_wins": 38,
+   "draws": 0,
+   "b_wins": 162
+  },
+  {
+   "a": "pimc:samples=4",
+   "b": "pimc:samples=8",
+   "a_wins": 75,
+   "draws": 1,
+   "b_wins": 124
+  },
+  {
+   "a": "pimc:samples=4",
+   "b": "rl:checkpoint=runs/m4/checkpoints/warm-start.pt:heuristic_bidding=true",
+   "a_wins": 68,
+   "draws": 0,
+   "b_wins": 132
+  },
+  {
+   "a": "pimc:samples=8",
+   "b": "pimc:samples=16",
+   "a_wins": 79,
+   "draws": 1,
+   "b_wins": 120
+  },
+  {
+   "a": "pimc:samples=8",
+   "b": "rl:checkpoint=runs/m4-staged/checkpoints/staged-final.pt",
+   "a_wins": 71,
+   "draws": 0,
+   "b_wins": 129
+  },
+  {
+   "a": "random",
+   "b": "heuristic:noise=0.75",
+   "a_wins": 37,
+   "draws": 0,
+   "b_wins": 163
+  },
+  {
+   "a": "rl:checkpoint=runs/m4-rules-v2/checkpoints/final.pt",
+   "b": "hybrid",
+   "a_wins": 32,
+   "draws": 0,
+   "b_wins": 168
+  },
+  {
+   "a": "rl:checkpoint=runs/m4-staged/checkpoints/staged-final.pt",
+   "b": "pimc",
+   "a_wins": 58,
+   "draws": 1,
+   "b_wins": 141
+  },
+  {
+   "a": "rl:checkpoint=runs/m4-staged/checkpoints/staged-final.pt",
+   "b": "rl:checkpoint=runs/m4-rules-v2/checkpoints/final.pt",
+   "a_wins": 31,
+   "draws": 1,
+   "b_wins": 168
+  },
+  {
+   "a": "rl:checkpoint=runs/m4/checkpoints/final.pt",
+   "b": "pimc",
+   "a_wins": 28,
+   "draws": 0,
+   "b_wins": 172
+  },
+  {
+   "a": "rl:checkpoint=runs/m4/checkpoints/final.pt",
+   "b": "pimc:samples=16",
+   "a_wins": 24,
+   "draws": 0,
+   "b_wins": 176
+  },
+  {
+   "a": "rl:checkpoint=runs/m4/checkpoints/final.pt",
+   "b": "pimc:samples=8",
+   "a_wins": 56,
+   "draws": 0,
+   "b_wins": 144
+  },
+  {
+   "a": "rl:checkpoint=runs/m4/checkpoints/final.pt",
+   "b": "rl:checkpoint=runs/m4-staged/checkpoints/staged-final.pt",
+   "a_wins": 56,
+   "draws": 0,
+   "b_wins": 144
+  },
+  {
+   "a": "rl:checkpoint=runs/m4/checkpoints/iter-0010.pt",
+   "b": "pimc:samples=1:play_noise=0.3",
+   "a_wins": 7,
+   "draws": 0,
+   "b_wins": 193
+  },
+  {
+   "a": "rl:checkpoint=runs/m4/checkpoints/iter-0020.pt",
+   "b": "rl:checkpoint=runs/m4/checkpoints/iter-0060.pt",
+   "a_wins": 40,
+   "draws": 0,
+   "b_wins": 160
+  },
+  {
+   "a": "rl:checkpoint=runs/m4/checkpoints/iter-0060.pt",
+   "b": "rl:checkpoint=runs/m4/checkpoints/iter-0100.pt",
+   "a_wins": 93,
+   "draws": 0,
+   "b_wins": 107
+  },
+  {
+   "a": "rl:checkpoint=runs/m4/checkpoints/iter-0100.pt",
+   "b": "rl:checkpoint=runs/m4/checkpoints/final.pt",
+   "a_wins": 59,
+   "draws": 1,
+   "b_wins": 140
+  },
+  {
+   "a": "rl:checkpoint=runs/m4/checkpoints/warm-start.pt:heuristic_bidding=true",
+   "b": "rl:checkpoint=runs/m4/checkpoints/iter-0020.pt",
+   "a_wins": 160,
+   "draws": 0,
+   "b_wins": 40
+  },
+  {
+   "a": "search",
+   "b": "hybrid",
+   "a_wins": 4,
+   "draws": 0,
+   "b_wins": 196
+  },
+  {
+   "a": "search",
+   "b": "rl:checkpoint=runs/m4-rules-v2/checkpoints/final.pt",
+   "a_wins": 38,
+   "draws": 0,
+   "b_wins": 162
+  },
+  {
+   "a": "yosif",
+   "b": "rl:checkpoint=runs/m4-rules-v2/checkpoints/final.pt",
+   "a_wins": 38,
+   "draws": 0,
+   "b_wins": 162
+  }
+ ]
+}

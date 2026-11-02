@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Estimation Arena</title><style>
+:root{--bg:#fff;--fg:#1b1b1f;--muted:#6b6f76;--line:#e3e5e8;--bar:#3b6ea5;--tint:#f4f6f8;--good:#2e7d32;--bad:#c62828}
+@media(prefers-color-scheme:dark){:root{--bg:#121316;--fg:#e8e9ec;--muted:#9aa0a6;--line:#2b2e33;--bar:#7aa7d9;--tint:#1b1d21;--good:#81c784;--bad:#ef9a9a}}
+*{box-sizing:border-box}body{margin:0;padding:24px 16px;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto}h1{font-size:24px;margin:0 0 4px}p.sub{color:var(--muted);margin:0 0 20px}
+table{width:100%;border-collapse:collapse}th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;white-space:nowrap}
+th{font-weight:600;color:var(--muted);font-size:13px}td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tr.anchor td{color:var(--muted);background:var(--tint)}.bar{display:inline-block;height:10px;background:var(--bar);border-radius:3px;vertical-align:middle;margin-right:8px}
+.tag{font-size:12px;padding:1px 6px;border:1px solid var(--line);border-radius:10px;color:var(--muted)}.desc{color:var(--muted);font-size:13px;white-space:normal}
+.pos{color:var(--good)}.neg{color:var(--bad)}details{margin-top:24px}summary{cursor:pointer;color:var(--muted)}
+@media(max-width:700px){th.opt,td.opt{display:none}}
+</style></head>
+<body><main>
+<h1>Estimation Arena</h1>
+<p class="sub">2 submissions and 6 anchors, one Elo scale (Random = 400). Built 2026-11-02 19:34 UTC.</p>
+<table>
+<thead><tr><th class="num">#</th><th>Bot</th><th class="opt">Author</th><th class="num">Elo</th><th class="opt">Score advantage vs anchors (RSA)</th></tr></thead>
+<tbody>
+<tr class="anchor"><td class="num"></td><td>Hybrid (B-Tig) <span class="tag">anchor</span></td><td class="opt"><span class="desc">hybrid</span></td><td class="num"><span class="bar" style="width:140px"></span>5,244</td><td class="opt"></td></tr>
+<tr class="anchor"><td class="num"></td><td>RL v2 <span class="tag">anchor</span></td><td class="opt"><span class="desc">rl:checkpoint=runs/m4-rules-v2/checkpoints/final.pt</span></td><td class="num"><span class="bar" style="width:131px"></span>4,927</td><td class="opt"></td></tr>
+<tr class="anchor"><td class="num"></td><td>PIMC <span class="tag">anchor</span></td><td class="opt"><span class="desc">pimc</span></td><td class="num"><span class="bar" style="width:125px"></span>4,708</td><td class="opt"></td></tr>
+<tr class="anchor"><td class="num"></td><td>Search bot <span class="tag">anchor</span></td><td class="opt"><span class="desc">search</span></td><td class="num"><span class="bar" style="width:125px"></span>4,686</td><td class="opt"></td></tr>
+<tr class="sub"><td class="num">1</td><td><strong>cautious-heuristic</strong> <span class="tag">python</span></td><td class="opt">Essam<br><span class="desc">Example Python-tier bot: the engine&#x27;s HeuristicBot with a higher risk aversion.</span></td><td class="num"><span class="bar" style="width:99px"></span>3,726</td><td class="opt"><span class="desc">Random <span class="pos">+1507</span> · Heuristic <span class="neg">-0</span> · PIMC <span class="neg">-121</span> · Search bot <span class="neg">-105</span> · RL v2 <span class="neg">-108</span> · Hybrid (B-Tig) <span class="neg">-134</span></span><br><span class="desc">192 games, seed 0, p95 0 ms, over budget 0.0%, 2026-11-02</span></td></tr>
+<tr class="anchor"><td class="num"></td><td>Heuristic <span class="tag">anchor</span></td><td class="opt"><span class="desc">heuristic</span></td><td class="num"><span class="bar" style="width:93px"></span>3,495</td><td class="opt"></td></tr>
+<tr class="sub"><td class="num">2</td><td><strong>lowcard-wire</strong> <span class="tag">wire</span></td><td class="opt">Essam<br><span class="desc">Example wire-protocol bot: never bids, estimates the minimum, plays the lowest legal card. Pure stdlib, no engine import.</span></td><td class="num"><span class="bar" style="width:91px"></span>3,423</td><td class="opt"><span class="desc">Random <span class="pos">+382612846</span> · Heuristic <span class="neg">-621</span> · PIMC <span class="neg">-745</span> · Search bot <span class="neg">-757</span> · RL v2 <span class="neg">-3390</span> · Hybrid (B-Tig) <span class="neg">-904</span></span><br><span class="desc">192 games, seed 0, p95 1 ms, over budget 0.0%, 2026-11-02</span></td></tr>
+<tr class="anchor"><td class="num"></td><td>Random <span class="tag">anchor</span></td><td class="opt"><span class="desc">random</span></td><td class="num"><span class="bar" style="width:10px"></span>400</td><td class="opt"></td></tr>
+</tbody></table>
+<details><summary>How the numbers are made</summary>
+<p class="desc">A submission plays each anchor in duplicate sets: every deal is played four times with the seats rotated, so luck cancels. RSA is the mean score advantage per game over the anchor. Elo is one Bradley-Terry fit over every pairwise set result, including the engine ladder <code>ladder-v2</code> (200 sets), which is what places the anchors. Over budget counts card decisions slower than 0.25 s.</p>
+</details>
+</main></body></html>

@@ -1,0 +1,50 @@
+name: smoke
+
+# A pull request that adds or changes a bot gets a short duplicate run against the two cheap
+# anchors. It proves the bot speaks the protocol, stays within budget and never plays an
+# illegal action. The full ladder runs separately (ladder.yml).
+
+on:
+  pull_request:
+    paths: ["bots/**", "arena/**", "anchors.json", "pyproject.toml", "uv.lock"]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - name: Allow uv to clone the private engine repo
+        run: git config --global url."https://x-access-token:${{ secrets.ENGINE_TOKEN }}@github.com/".insteadOf "https://github.com/"
+      - run: uv sync --frozen
+      - run: uv run pytest -q
+      - name: Find the bots this pull request touches
+        id: bots
+        run: |
+          changed=$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD -- bots | cut -d/ -f2 | sort -u | tr '\n' ' ')
+          if [ -z "$changed" ]; then changed=$(ls bots | tr '\n' ' '); fi
+          echo "names=$changed" >> "$GITHUB_OUTPUT"
+      - name: Smoke-run each bot (2 sets vs Random and Heuristic)
+        run: |
+          mkdir -p smoke
+          for bot in ${{ steps.bots.outputs.names }}; do
+            uv run python -m arena.run --bot "$bot" --sets 2 --seed 1 --workers 2 \
+              --anchors Random,Heuristic --out "smoke/$bot.json" | tee -a smoke/summary.txt
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: smoke-results
+          path: smoke/
+      - name: Post the summary on the pull request
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [ -f smoke/summary.txt ] || exit 0
+          { echo '```'; cat smoke/summary.txt; echo '```'; } > body.md
+          gh pr comment ${{ github.event.pull_request.number }} --body-file body.md

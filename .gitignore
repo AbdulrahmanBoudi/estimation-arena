@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+# The engine's run outputs (trained nets, ladder games): get the zip, unzip here, keep out of git.
+runs/
+# Smoke-test outputs
+smoke/

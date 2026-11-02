@@ -1,0 +1,238 @@
+{
+ "schema": 1,
+ "bot": "lowcard-wire",
+ "manifest": {
+  "name": "lowcard-wire",
+  "author": "Essam",
+  "kind": "wire",
+  "description": "Example wire-protocol bot: never bids, estimates the minimum, plays the lowest legal card. Pure stdlib, no engine import.",
+  "command": [
+   "python3",
+   "bot.py"
+  ],
+  "entry": "",
+  "timeout_s": 5.0
+ },
+ "engine": "0.1.0",
+ "rules": {
+  "with_any_call": true,
+  "with_choose": true
+ },
+ "seed": 0,
+ "sets": 4,
+ "played_at": "2026-11-02T19:30:33+00:00",
+ "versus": [
+  {
+   "anchor": "Random",
+   "spec": "random",
+   "sets": 4,
+   "games": 32,
+   "mean_score": -188276981.75,
+   "rsa": {
+    "mean": 382612845.6041666,
+    "low": -755577190.0635985,
+    "high": 1520802881.2719316,
+    "sets": 4
+   },
+   "first_place": {
+    "mean": 0.5,
+    "low": 0.5,
+    "high": 0.5,
+    "sets": 4
+   },
+   "timing": {
+    "count": 13962,
+    "mean_s": 0.00024108824638303968,
+    "p95_s": 0.0003181632268869897,
+    "max_s": 0.08143083390314132,
+    "budget_s": 0.25,
+    "over_budget": 0
+   },
+   "wall_s": 7.206343000056222
+  },
+  {
+   "anchor": "Heuristic",
+   "spec": "heuristic",
+   "sets": 4,
+   "games": 32,
+   "mean_score": -517.5,
+   "rsa": {
+    "mean": -621.0416666666666,
+    "low": -690.4711977854173,
+    "high": -551.612135547916,
+    "sets": 4
+   },
+   "first_place": {
+    "mean": 0.0,
+    "low": 0.0,
+    "high": 0.0,
+    "sets": 4
+   },
+   "timing": {
+    "count": 15548,
+    "mean_s": 0.00021203203260869566,
+    "p95_s": 0.00033101702125322413,
+    "max_s": 0.0023440419463440776,
+    "budget_s": 0.25,
+    "over_budget": 0
+   },
+   "wall_s": 6.985512000042945
+  },
+  {
+   "anchor": "PIMC",
+   "spec": "pimc",
+   "sets": 4,
+   "games": 32,
+   "mean_score": -620.03125,
+   "rsa": {
+    "mean": -745.2708333333334,
+    "low": -799.0705562968284,
+    "high": -691.4711103698384,
+    "sets": 4
+   },
+   "first_place": {
+    "mean": 0.0,
+    "low": 0.0,
+    "high": 0.0,
+    "sets": 4
+   },
+   "timing": {
+    "count": 15548,
+    "mean_s": 0.00029856855409055824,
+    "p95_s": 0.0004367699297559607,
+    "max_s": 0.07983483397401869,
+    "budget_s": 0.25,
+    "over_budget": 0
+   },
+   "wall_s": 58.52267199999187
+  },
+  {
+   "anchor": "Search bot",
+   "spec": "search",
+   "sets": 4,
+   "games": 32,
+   "mean_score": -630.59375,
+   "rsa": {
+    "mean": -756.5208333333334,
+    "low": -827.8692459993689,
+    "high": -685.1724206672978,
+    "sets": 4
+   },
+   "first_place": {
+    "mean": 0.0,
+    "low": 0.0,
+    "high": 0.0,
+    "sets": 4
+   },
+   "timing": {
+    "count": 15392,
+    "mean_s": 0.0002651456981548857,
+    "p95_s": 0.0004035079018309662,
+    "max_s": 0.002724749967455864,
+    "budget_s": 0.25,
+    "over_budget": 0
+   },
+   "wall_s": 62.791188832954504
+  },
+  {
+   "anchor": "RL v2",
+   "spec": "rl:checkpoint=runs/m4-rules-v2/checkpoints/final.pt",
+   "sets": 4,
+   "games": 32,
+   "mean_score": -2093.8125,
+   "rsa": {
+    "mean": -3390.291666666667,
+    "low": -11949.355697095758,
+    "high": 5168.772363762425,
+    "sets": 4
+   },
+   "first_place": {
+    "mean": 0.0,
+    "low": 0.0,
+    "high": 0.0,
+    "sets": 4
+   },
+   "timing": {
+    "count": 13884,
+    "mean_s": 0.00025363584305675596,
+    "p95_s": 0.00039559598218722174,
+    "max_s": 0.00297595898155123,
+    "budget_s": 0.25,
+    "over_budget": 0
+   },
+   "wall_s": 9.066107916994952
+  },
+  {
+   "anchor": "Hybrid (B-Tig)",
+   "spec": "hybrid",
+   "sets": 4,
+   "games": 32,
+   "mean_score": -648.1875,
+   "rsa": {
+    "mean": -904.2083333333334,
+    "low": -1206.1369476569735,
+    "high": -602.2797190096933,
+    "sets": 4
+   },
+   "first_place": {
+    "mean": 0.0,
+    "low": 0.0,
+    "high": 0.0,
+    "sets": 4
+   },
+   "timing": {
+    "count": 13910,
+    "mean_s": 0.0004788625733285406,
+    "p95_s": 0.0007604270202340137,
+    "max_s": 0.11454720899928361,
+    "budget_s": 0.25,
+    "over_budget": 0
+   },
+   "wall_s": 177.25405487499665
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:lowcard-wire",
+   "b": "random",
+   "a_wins": 4,
+   "draws": 0,
+   "b_wins": 0
+  },
+  {
+   "a": "sub:lowcard-wire",
+   "b": "heuristic",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 4
+  },
+  {
+   "a": "sub:lowcard-wire",
+   "b": "pimc",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 4
+  },
+  {
+   "a": "sub:lowcard-wire",
+   "b": "search",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 4
+  },
+  {
+   "a": "sub:lowcard-wire",
+   "b": "rl:checkpoint=runs/m4-rules-v2/checkpoints/final.pt",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 4
+  },
+  {
+   "a": "sub:lowcard-wire",
+   "b": "hybrid",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 4
+  }
+ ]
+}

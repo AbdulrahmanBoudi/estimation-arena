@@ -1,0 +1,27 @@
+[project]
+name = "estimation-arena"
+version = "0.1.0"
+description = "A competition harness and leaderboard for Estimation bots, built on estimation-engine."
+requires-python = ">=3.12"
+dependencies = [
+    "estimation-engine",
+]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+estimation-engine = { git = "https://github.com/YosifElessawi/estimation-engine" }
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
