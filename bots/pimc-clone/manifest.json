@@ -1,0 +1,26 @@
+{
+  "name": "pimc-clone",
+  "author": "Essam",
+  "kind": "python",
+  "entry": "bot.py:make",
+  "description": "Rung 2 baseline: net-pimc's card net playing alone, no search. Shows what imitation gives without search.",
+  "timeout_s": 5,
+  "method": [
+    [
+      "PIMC-100 plays 800 games",
+      "search"
+    ],
+    [
+      "602k decisions + card values",
+      "data"
+    ],
+    [
+      "net 512x3 learns them",
+      "net"
+    ],
+    [
+      "net picks the card",
+      "out"
+    ]
+  ]
+}

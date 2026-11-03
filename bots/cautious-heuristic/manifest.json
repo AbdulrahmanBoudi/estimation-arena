@@ -3,5 +3,19 @@
   "author": "Essam",
   "kind": "python",
   "entry": "bot.py:make",
-  "description": "Example Python-tier bot: the engine's HeuristicBot with a higher risk aversion."
+  "description": "Example Python-tier bot: the engine's HeuristicBot with a higher risk aversion.",
+  "method": [
+    [
+      "Heuristic bidding",
+      "rule"
+    ],
+    [
+      "last estimate avoids risk",
+      "rule"
+    ],
+    [
+      "Heuristic card play",
+      "out"
+    ]
+  ]
 }

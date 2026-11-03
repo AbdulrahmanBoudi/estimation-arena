@@ -7,3 +7,5 @@ __pycache__/
 runs/
 # Smoke-test outputs
 smoke/
+data/
+.venv-gpu/

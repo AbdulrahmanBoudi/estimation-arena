@@ -185,10 +185,14 @@ def play_submission(
 
 
 def bot_hash(manifest: Manifest) -> str:
-    """A fingerprint of every file in the bot's folder: same hash, same bot."""
+    """A fingerprint of what decides the bot's play: every file in its folder except
+    manifest.json, plus the manifest fields that change play. Editing a description or the
+    method diagram keeps the hash, so earlier results against RL v2 and Hybrid survive."""
     digest = hashlib.sha256()
+    play = {k: v for k, v in manifest.to_dict().items() if k in ("kind", "command", "entry", "timeout_s")}
+    digest.update(json.dumps(play, sort_keys=True).encode())
     for path in sorted(manifest.folder.rglob("*")):
-        if path.is_file() and "__pycache__" not in path.parts:
+        if path.is_file() and "__pycache__" not in path.parts and path.name != "manifest.json":
             digest.update(path.relative_to(manifest.folder).as_posix().encode())
             digest.update(path.read_bytes())
     return digest.hexdigest()[:16]
