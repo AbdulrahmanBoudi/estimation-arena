@@ -177,18 +177,17 @@ def move_svg(frame: dict[str, Any]) -> str:
     and per-card scores when the bot reports them (net odds, search values)."""
     hand, legal, chosen = frame["hand"], set(frame["legal"]), frame["chosen"]
     scores = frame.get("scores", {})
-    width, top = 13 * 28 + 8, 58
-    rows = 1 + len(scores)
-    height = top + 44 + rows * 14 + 6
+    width, top = 13 * 28 + 8, 84
+    height = top + 40 + len(scores) * 14 + 6
     trump = "NT" if frame["trump"] == 4 else SUITS[frame["trump"]]
     est = "-" if frame["estimate"] is None else frame["estimate"]
     out = [f'<svg class="move" viewBox="0 0 {width} {height}" width="{width}" role="img">',
            f'<text class="meta" x="4" y="14">trump {trump} · won {frame["won"]}/{est}</text>']
     for k, (seat, c) in enumerate(frame["trick"]):
-        out.append(f'<text class="meta" x="{4 + k * 34 + 13}" y="{top - 40}" text-anchor="middle">{seat}</text>')
-        out.append(_card(4 + k * 34, top - 34, c, "played"))
+        out.append(f'<text class="meta" x="{4 + k * 34 + 13}" y="{top - 48}" text-anchor="middle">{seat}</text>')
+        out.append(_card(4 + k * 34, top - 44, c, "played"))
     if not frame["trick"]:
-        out.append(f'<text class="meta" x="4" y="{top - 14}">leads</text>')
+        out.append(f'<text class="meta" x="4" y="{top - 22}">leads</text>')
     pos = {}
     for k, c in enumerate(sorted(hand, key=lambda c: (c // 13, c % 13))):
         x = 4 + k * 28
@@ -196,7 +195,7 @@ def move_svg(frame: dict[str, Any]) -> str:
         cls = "chosen" if c == chosen else ("legal" if c in legal else "dim")
         out.append(_card(x, top, c, cls))
     for r, (name, vals) in enumerate(sorted(scores.items())):
-        y = top + 44 + r * 14
+        y = top + 42 + r * 14
         vmax = max((abs(v) for v in vals.values()), default=1) or 1
         for c_str, v in vals.items():
             c = int(c_str)
