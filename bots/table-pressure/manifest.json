@@ -4,5 +4,23 @@
   "kind": "python",
   "entry": "bot.py:make",
   "description": "Rung 1: HeuristicBot that stops chasing tricks once its unbeatable trumps cover what it still needs. Also sweeps table-pressure estimates, which did not help.",
-  "timeout_s": 5
+  "timeout_s": 5,
+  "method": [
+    [
+      "Heuristic bidding",
+      "rule"
+    ],
+    [
+      "count trumps nobody can beat",
+      "rule"
+    ],
+    [
+      "they cover what I need?",
+      "rule"
+    ],
+    [
+      "yes: duck now",
+      "out"
+    ]
+  ]
 }

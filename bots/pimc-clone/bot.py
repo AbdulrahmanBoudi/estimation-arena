@@ -57,5 +57,13 @@ class CloneBot(HeuristicBot):
         return play_action(max(cards, key=lambda c: scores[c]))
 
 
+    def explain(self, obs: Observation, cards: list[int]) -> tuple[int, dict[str, dict[int, float]]]:
+        z = card_scores(self.layers, encode(obs, self.rules).astype(np.float32))
+        zl = np.array([z[c] for c in cards])
+        prob = np.exp(zl - zl.max())
+        prob /= prob.sum()
+        return cards[int(np.argmax(zl))], {"net": dict(zip(cards, prob.tolist()))}
+
+
 def make(seed: int, rules: RulesConfig, net: str = "../net-pimc/net.npz") -> CloneBot:
     return CloneBot(HeuristicConfig(super_call_min=rules.super_call_min), rules, net)

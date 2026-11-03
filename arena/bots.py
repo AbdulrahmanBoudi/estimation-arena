@@ -46,6 +46,7 @@ class Manifest:
     entry: str
     timeout_s: float
     folder: Path
+    method: tuple[tuple[str, str], ...] = ()  # diagram steps for the leaderboard: (label, kind)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -56,6 +57,7 @@ class Manifest:
             "command": list(self.command),
             "entry": self.entry,
             "timeout_s": self.timeout_s,
+            "method": [list(m) for m in self.method],
         }
 
 
@@ -91,6 +93,7 @@ def load_manifest(name: str) -> Manifest:
         entry=entry,
         timeout_s=float(data.get("timeout_s", DEFAULT_TIMEOUT_S)),
         folder=folder,
+        method=tuple((str(label), str(kind)) for label, kind in data.get("method", ())),
     )
 
 

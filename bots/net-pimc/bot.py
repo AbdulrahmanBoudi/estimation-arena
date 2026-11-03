@@ -50,6 +50,20 @@ class NetPIMCBot(PIMCBot):
         self.layers = load_net(net)
         self.top = top
 
+    def explain(self, obs: Observation, cards: list[int]) -> tuple[int, dict[str, dict[int, float]]]:
+        """The card it plays and why: the net's probability per legal card, and the search's
+        mean score for the 3 cards it kept (for the leaderboard's sample moves)."""
+        z = card_scores(self.layers, encode(obs, self.config.rules).astype(np.float32))
+        zl = np.array([z[c] for c in cards])
+        prob = np.exp(zl - zl.max())
+        prob /= prob.sum()
+        candidates = sorted(cards, key=lambda c: -z[c])[: self.top]
+        if len(candidates) == 1:
+            return candidates[0], {"net": dict(zip(cards, prob.tolist()))}
+        totals = self.evaluate(obs, candidates, self.sample_deals(obs))
+        search = {c: t / self.config.samples for c, t in zip(candidates, totals)}
+        return candidates[best_index(totals)], {"net": dict(zip(cards, prob.tolist())), "search": search}
+
     def choose(self, obs: Observation, cards: list[int]) -> int:
         scores = card_scores(self.layers, encode(obs, self.config.rules).astype(np.float32))
         candidates = sorted(cards, key=lambda c: -scores[c])[: self.top]

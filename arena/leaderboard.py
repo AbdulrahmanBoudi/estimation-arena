@@ -18,7 +18,7 @@ from typing import Any
 
 from estimation.arena.ratings import ANCHOR, ANCHOR_RATING, DEFAULT_PRIOR, PairRecord, bradley_terry
 
-from .bots import ROOT, SUB_PREFIX
+from .bots import ROOT, SUB_PREFIX, load_manifest
 from .import_ladder import LADDER_FILE
 from .run import ANCHORS_FILE, RESULTS_DIR
 
@@ -44,6 +44,10 @@ def build() -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
     for r in results:
         key = SUB_PREFIX + r["bot"]
+        try:
+            current = load_manifest(r["bot"]).to_dict()
+        except ValueError:
+            current = r["manifest"]
         timings = [v["timing"] for v in r["versus"]]
         decisions = sum(t["count"] for t in timings)
         rows.append(
@@ -51,7 +55,9 @@ def build() -> dict[str, Any]:
                 "name": r["bot"],
                 "author": r["manifest"].get("author", ""),
                 "kind": r["manifest"].get("kind", ""),
-                "description": r["manifest"].get("description", ""),
+                "description": current.get("description", r["manifest"].get("description", "")),
+                "key": key,
+                "method": current.get("method", []),
                 "elo": ratings.get(key),
                 "games": sum(v["games"] for v in r["versus"]),
                 "sets": r["sets"],
@@ -80,6 +86,8 @@ def build() -> dict[str, Any]:
                 "author": a.get("author", "Yosif Elessawi"),
                 "kind": "anchor",
                 "description": a["spec"],
+                "key": a["spec"],
+                "method": a.get("method", []),
                 "elo": ratings.get(a["spec"]),
                 "games": None,
                 "versus": [],
@@ -104,11 +112,109 @@ STYLE = """
 main{max-width:1040px;margin:0 auto}h1{font-size:24px;margin:0 0 4px}p.sub{color:var(--muted);margin:0 0 20px}
 table{width:100%;border-collapse:collapse}th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;white-space:nowrap}
 th{font-weight:600;color:var(--muted);font-size:13px}td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
-tr.anchor td{color:var(--muted);background:var(--tint)}.bar{display:inline-block;height:10px;background:var(--bar);border-radius:3px;vertical-align:middle;margin-right:8px}
+tr.anchor td{color:var(--muted);background:var(--tint)}tr:has(+ tr.howrow) td{border-bottom:none}tr.howrow td{white-space:normal;padding-top:0}.bar{display:inline-block;height:10px;background:var(--bar);border-radius:3px;vertical-align:middle;margin-right:8px}
 .tag{font-size:12px;padding:1px 6px;border:1px solid var(--line);border-radius:10px;color:var(--muted)}.desc{color:var(--muted);font-size:13px;white-space:normal}
 .pos{color:var(--good)}.neg{color:var(--bad)}details{margin-top:24px}summary{cursor:pointer;color:var(--muted)}
 @media(max-width:700px){th.opt,td.opt{display:none}}
+details.how{margin:6px 0 2px}details.how summary{font-size:13px}.scroll{overflow-x:auto;margin:10px 0}
+.moves{display:flex;flex-wrap:wrap;gap:14px}.frame{border:1px solid var(--line);border-radius:10px;padding:8px;overflow-x:auto;max-width:100%}
+svg text{fill:var(--fg);font:12.5px system-ui,sans-serif}svg .meta{fill:var(--muted);font-size:12px}
+.flow rect{stroke-width:1.5}.k-rule{fill:var(--tint);stroke:var(--muted)}.k-net{fill:#3987e522;stroke:#3987e5}
+.k-search{fill:#eb683422;stroke:#eb6834}.k-data{fill:#8e7cf022;stroke:#8e7cf0}.k-out{fill:#1baf7a22;stroke:#1baf7a}
+.arrow{fill:none;stroke:var(--muted);stroke-width:1.5}
+.card{fill:var(--bg);stroke:var(--line);stroke-width:1}.card.legal{stroke:#3987e5;stroke-width:1.6}.card.chosen{stroke:#eda100;stroke-width:3}
+.card.dim{opacity:.45}.card.played{stroke:var(--muted)}.cardt{font-size:12px!important}.cardt.red{fill:#e05252}
+.bar-net{fill:#3987e5}.bar-search{fill:#eb6834}.neg{opacity:.4}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:4px 0 14px}.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
 """
+
+
+SUITS, RANKS = "♣♦♥♠", "23456789TJQKA"
+KINDS = {"rule": "k-rule", "net": "k-net", "search": "k-search", "data": "k-data", "out": "k-out"}
+
+
+def _lines(label: str, width: int = 17) -> list[str]:
+    words, lines, cur = label.split(), [], ""
+    for w in words:
+        if cur and len(cur) + 1 + len(w) > width:
+            lines.append(cur)
+            cur = w
+        else:
+            cur = f"{cur} {w}".strip()
+    return [*lines, cur][:3]
+
+
+def method_svg(steps: list[list[str]]) -> str:
+    """A left-to-right flow of rounded boxes, coloured by kind."""
+    if not steps:
+        return ""
+    bw, gap, h = 150, 28, 64
+    width = len(steps) * bw + (len(steps) - 1) * gap
+    parts = [f'<svg class="flow" viewBox="0 0 {width} {h + 4}" width="{width}" role="img">']
+    for i, (label, kind) in enumerate(steps):
+        x = i * (bw + gap)
+        parts.append(f'<rect class="{KINDS.get(kind, "k-rule")}" x="{x + 1}" y="2" width="{bw - 2}" height="{h}" rx="10"/>')
+        lines = _lines(label)
+        y0 = 2 + h / 2 - (len(lines) - 1) * 8
+        for j, line in enumerate(lines):
+            parts.append(f'<text x="{x + bw / 2}" y="{y0 + j * 16}" text-anchor="middle" dominant-baseline="central">{html.escape(line)}</text>')
+        if i < len(steps) - 1:
+            ax = x + bw + 3
+            parts.append(f'<path class="arrow" d="M{ax} {2 + h / 2}h{gap - 10}m-6 -5l6 5l-6 5"/>')
+    parts.append("</svg>")
+    return "".join(parts)
+
+
+def _card(x: float, y: float, c: int, cls: str) -> str:
+    red = " red" if c // 13 in (1, 2) else ""
+    return (f'<rect class="card {cls}" x="{x}" y="{y}" width="26" height="36" rx="4"/>'
+            f'<text class="cardt{red}" x="{x + 13}" y="{y + 12}" text-anchor="middle">{RANKS[c % 13]}</text>'
+            f'<text class="cardt{red}" x="{x + 13}" y="{y + 27}" text-anchor="middle">{SUITS[c // 13]}</text>')
+
+
+def move_svg(frame: dict[str, Any]) -> str:
+    """One card decision: the trick so far, the hand (legal cards lit, the played card gold),
+    and per-card scores when the bot reports them (net odds, search values)."""
+    hand, legal, chosen = frame["hand"], set(frame["legal"]), frame["chosen"]
+    scores = frame.get("scores", {})
+    width, top = 13 * 28 + 8, 58
+    rows = 1 + len(scores)
+    height = top + 44 + rows * 14 + 6
+    trump = "NT" if frame["trump"] == 4 else SUITS[frame["trump"]]
+    est = "-" if frame["estimate"] is None else frame["estimate"]
+    out = [f'<svg class="move" viewBox="0 0 {width} {height}" width="{width}" role="img">',
+           f'<text class="meta" x="4" y="14">trump {trump} · won {frame["won"]}/{est}</text>']
+    for k, (seat, c) in enumerate(frame["trick"]):
+        out.append(f'<text class="meta" x="{4 + k * 34 + 13}" y="{top - 40}" text-anchor="middle">{seat}</text>')
+        out.append(_card(4 + k * 34, top - 34, c, "played"))
+    if not frame["trick"]:
+        out.append(f'<text class="meta" x="4" y="{top - 14}">leads</text>')
+    pos = {}
+    for k, c in enumerate(sorted(hand, key=lambda c: (c // 13, c % 13))):
+        x = 4 + k * 28
+        pos[c] = x
+        cls = "chosen" if c == chosen else ("legal" if c in legal else "dim")
+        out.append(_card(x, top, c, cls))
+    for r, (name, vals) in enumerate(sorted(scores.items())):
+        y = top + 44 + r * 14
+        vmax = max((abs(v) for v in vals.values()), default=1) or 1
+        for c_str, v in vals.items():
+            c = int(c_str)
+            if c in pos:
+                w = max(2.0, 24 * abs(v) / vmax)
+                out.append(f'<rect class="bar-{name}{" neg" if v < 0 else ""}" x="{pos[c] + 1}" y="{y}" width="{w:.1f}" height="9" rx="2"/>')
+    out.append("</svg>")
+    return "".join(out)
+
+
+def how_it_plays(row: dict[str, Any], samples: dict[str, Any]) -> str:
+    frames = samples.get(row["key"], {}).get("frames", [])
+    moves = "".join(f'<div class="frame">{move_svg(f)}</div>' for f in frames)
+    if not row.get("method") and not moves:
+        return ""
+    return (f'<details class="how"><summary>how it plays</summary>'
+            f'<div class="scroll">{method_svg(row.get("method", []))}</div>'
+            f'<div class="moves">{moves}</div></details>')
 
 
 def render(board: dict[str, Any]) -> str:
@@ -116,6 +222,8 @@ def render(board: dict[str, Any]) -> str:
     rated = [r["elo"] for r in rows if r["elo"] is not None]
     top = max(rated) if rated else 1.0
     anchors = [r["name"] for r in rows if r["anchor"]]
+    samples_file = SITE_DIR / "samples.json"
+    samples = json.loads(samples_file.read_text()) if samples_file.is_file() else {}
     lines = []
     rank = 0
     for r in rows:
@@ -146,6 +254,10 @@ def render(board: dict[str, Any]) -> str:
             f"<td>{name}</td><td class=\"opt\">{meta}</td>"
             f'<td class="num">{bar}{elo_text}</td><td class="opt">{detail}</td></tr>'
         )
+        how = how_it_plays(r, samples)
+        if how:
+            cls = "anchor" if r["anchor"] else "sub"
+            lines.append(f'<tr class="{cls} howrow"><td></td><td colspan="4">{how}</td></tr>')
     ladder = board["ladder"]
     built = board["built_at"].replace("T", " ")[:16] + " UTC"
     return f"""<!doctype html>
@@ -154,6 +266,7 @@ def render(board: dict[str, Any]) -> str:
 <body><main>
 <h1>Estimation Arena</h1>
 <p class="sub">{board["submissions"]} submissions and {len(anchors)} anchors, one Elo scale (Random = {board["anchor_rating"]:.0f}). Built {built}.</p>
+<div class="legend"><span><span class="sw" style="background:var(--tint);border:1px solid var(--muted)"></span>rule</span><span><span class="sw" style="background:#3987e5"></span>net</span><span><span class="sw" style="background:#eb6834"></span>search</span><span><span class="sw" style="background:#8e7cf0"></span>data</span><span><span class="sw" style="background:#1baf7a"></span>decision</span><span><span class="sw" style="border:2px solid #3987e5"></span>legal card</span><span><span class="sw" style="border:2px solid #eda100"></span>played</span><span>every bot: same deal, seat 0, vs 3 Heuristic</span></div>
 <table>
 <thead><tr><th class="num">#</th><th>Bot</th><th class="opt">Author</th><th class="num">Elo</th><th class="opt">Score advantage vs anchors (RSA)</th></tr></thead>
 <tbody>

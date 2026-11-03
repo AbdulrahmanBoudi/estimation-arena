@@ -2,7 +2,24 @@
   "name": "lowcard-wire",
   "author": "Essam",
   "kind": "wire",
-  "command": ["python3", "bot.py"],
+  "command": [
+    "python3",
+    "bot.py"
+  ],
   "description": "Example wire-protocol bot: never bids, estimates the minimum, plays the lowest legal card. Pure stdlib, no engine import.",
-  "timeout_s": 5
+  "timeout_s": 5,
+  "method": [
+    [
+      "never bid",
+      "rule"
+    ],
+    [
+      "estimate the minimum",
+      "rule"
+    ],
+    [
+      "lowest legal card",
+      "out"
+    ]
+  ]
 }

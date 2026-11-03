@@ -1,8 +1,8 @@
 [
- {"name": "Random", "author": "Yosif Elessawi", "spec": "random"},
- {"name": "Heuristic", "author": "Yosif Elessawi", "spec": "heuristic"},
- {"name": "PIMC", "author": "Yosif Elessawi", "spec": "pimc"},
- {"name": "Search bot", "author": "Yosif Elessawi", "spec": "search"},
- {"name": "RL v2", "author": "Yosif Elessawi", "spec": "rl:checkpoint=runs/m4-rules-v2/checkpoints/final.pt", "needs": "runs/m4-rules-v2/checkpoints/final.pt"},
- {"name": "Hybrid (B-Tig)", "author": "Yosif Elessawi", "spec": "hybrid", "needs": "runs/m4-rules-v2/checkpoints/final.pt"}
+ {"name": "Random", "author": "Yosif Elessawi", "spec": "random", "method": [["legal moves", "rule"], ["pick one at random", "out"]]},
+ {"name": "Heuristic", "author": "Yosif Elessawi", "spec": "heuristic", "method": [["hand strength per trump", "rule"], ["bid and estimate near it", "rule"], ["win until the estimate, then duck", "out"]]},
+ {"name": "PIMC", "author": "Yosif Elessawi", "spec": "pimc", "method": [["deal hidden cards x30", "search"], ["play each legal card out", "search"], ["best average score", "out"]]},
+ {"name": "Search bot", "author": "Yosif Elessawi", "spec": "search", "method": [["deal hidden cards", "search"], ["play out with a tuned rule", "search"], ["best average score", "out"]]},
+ {"name": "RL v2", "author": "Yosif Elessawi", "spec": "rl:checkpoint=runs/m4-rules-v2/checkpoints/final.pt", "needs": "runs/m4-rules-v2/checkpoints/final.pt", "method": [["self-play training", "data"], ["net bids", "net"], ["net plays cards", "out"]]},
+ {"name": "Hybrid (B-Tig)", "author": "Yosif Elessawi", "spec": "hybrid", "needs": "runs/m4-rules-v2/checkpoints/final.pt", "method": [["learned nets", "net"], ["search over dealt hands", "search"], ["best card", "out"]]}
 ]
