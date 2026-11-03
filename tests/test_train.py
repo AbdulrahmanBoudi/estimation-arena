@@ -23,3 +23,32 @@ def test_record_train_play(tmp_path):
     while not bola.is_over:
         seat = bola.current_player
         bola.step(bot.act(bola.observation(seat), bola.legal_actions()))  # raises if illegal
+
+
+def test_suit_tables_relabel_a_decision_consistently(tmp_path):
+    import torch
+
+    from estimation.engine import Bola, Phase
+    from estimation.engine.actions import PLAY_BASE
+    from estimation.rl.encoder import encode
+    from estimation.rl.symmetry import SUIT_PERMUTATIONS
+
+    t = np.load("train/suit_tables.npz")
+    bola = Bola(5)
+    from estimation.bots import HeuristicBot
+
+    h = HeuristicBot()
+    while bola.phase is not Phase.PLAY or len(bola.legal_actions()) < 2:
+        seat = bola.current_player
+        bola.step(h.act(bola.observation(seat), bola.legal_actions()))
+    obs = bola.observation(bola.current_player)
+    legal = np.zeros(52, bool)
+    legal[[a - PLAY_BASE for a in bola.legal_actions()]] = True
+    x = encode(obs)
+    for p in range(24):
+        relabelled_legal = legal[t["card_source"][p]]
+        assert relabelled_legal.sum() == legal.sum()
+        for c in np.flatnonzero(legal):  # a legal card maps to a legal card
+            assert relabelled_legal[t["card_destination"][p][c]]
+        assert np.allclose(np.sort(x[t["feature_source"][p]]), np.sort(x))  # same values, moved
+    assert len(SUIT_PERMUTATIONS) == 24

@@ -88,6 +88,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--temperature", type=float, default=2.0, help="points per e-fold in the value softmax")
     parser.add_argument("--val", type=float, default=0.05, help="share of games held out")
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument(
+        "--augment", type=Path, help="suit tables from train.suit_tables: relabel suits at random per row"
+    )
     args = parser.parse_args(argv)
     torch.manual_seed(args.seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -111,6 +114,13 @@ def main(argv: list[str] | None = None) -> int:
     n = len(tr["choice"])
     print(f"{n} train rows, {len(va['choice'])} val rows from {len(games)} games, device {device}", flush=True)
 
+    tables = None
+    if args.augment:
+        t = np.load(args.augment)
+        tables = {k: torch.as_tensor(t[k], device=device) for k in ("feature_source", "card_source", "card_destination")}
+        if tables["feature_source"].shape[1] != tr["features"].shape[1]:
+            raise SystemExit("suit tables do not match the recorded feature count")
+
     net = CardNet(tr["features"].shape[1], args.hidden, args.layers).to(device)
     opt = torch.optim.AdamW(net.parameters(), lr=args.lr, weight_decay=1e-4)
     steps = args.epochs * ((n + args.batch - 1) // args.batch)
@@ -122,9 +132,15 @@ def main(argv: list[str] | None = None) -> int:
         total = 0.0
         for i in range(0, n, args.batch):
             idx = order[i : i + args.batch]
-            legal = tr["legal"][idx]
-            logits = net(tr["features"][idx]).masked_fill(~legal, -1e9)
-            target = targets(tr["values"][idx], legal, tr["choice"][idx], args.soft, args.temperature)
+            x, legal, values, choice = tr["features"][idx], tr["legal"][idx], tr["values"][idx], tr["choice"][idx]
+            if tables is not None:
+                p = torch.randint(0, 24, (len(idx),), device=device)
+                x = x.gather(1, tables["feature_source"][p])
+                legal = legal.gather(1, tables["card_source"][p])
+                values = values.gather(1, tables["card_source"][p])
+                choice = tables["card_destination"][p].gather(1, choice[:, None])[:, 0]
+            logits = net(x).masked_fill(~legal, -1e9)
+            target = targets(values, legal, choice, args.soft, args.temperature)
             loss = -(target * F.log_softmax(logits, dim=1)).sum(1).mean()
             opt.zero_grad(set_to_none=True)
             loss.backward()
