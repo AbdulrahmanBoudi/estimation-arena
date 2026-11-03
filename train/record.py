@@ -11,6 +11,7 @@ the mean of the other three. One row per decision:
     legal     (52,)  bool     legal cards
     values    (52,)  float32  teacher's value per legal card, 0 elsewhere
     choice    ()     int16    teacher's card
+    hint      ()     int16    HeuristicBot's card, the teacher's rollout rule (a baseline)
 
 Who plays the card is a separate choice (``--student``, ``--beta``): by default the teacher plays
 (behaviour cloning). With a student, each decision the teacher's card is played with probability
@@ -55,7 +56,7 @@ def record_chunk(
     games: range, teacher_spec: str, student_spec: str | None, beta: float, out: Path
 ) -> tuple[int, int]:
     """Play ``games`` (game indices), write one shard, return (games, rows)."""
-    rows: dict[str, list] = {"features": [], "legal": [], "values": [], "choice": [], "game": []}
+    rows: dict[str, list] = {"features": [], "legal": [], "values": [], "choice": [], "hint": [], "game": []}
     for g in games:
         seed = SEED_BASE + g
         bola = Bola(seed)
@@ -83,6 +84,7 @@ def record_chunk(
                 rows["legal"].append(mask)
                 rows["values"].append(values)
                 rows["choice"].append(choice)
+                rows["hint"].append(candidates[0])  # search lists its card rule's own card first
                 rows["game"].append(g)
                 if students is None or coin.random() < beta:
                     action = play_action(choice)
@@ -100,6 +102,7 @@ def record_chunk(
         legal=np.stack(rows["legal"]),
         values=np.stack(rows["values"]),
         choice=np.array(rows["choice"], np.int16),
+        hint=np.array(rows["hint"], np.int16),
         game=np.array(rows["game"], np.int32),
         teacher=teacher_spec,
         student=student_spec or "",
