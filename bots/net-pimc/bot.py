@@ -3,14 +3,13 @@
 PIMC rolls every legal card out on the same N sampled deals: about 5 cards x 30 deals = 150
 rollouts per decision for the PIMC anchor. Most of that is spent on cards that are clearly bad.
 This bot asks a small net (trained by train/imitate.py on PIMC-100's decisions) which ``top``
-cards look best, and rolls out only those, on ``samples`` deals. With top=2 and samples=75 it
-does the anchor's 150 rollouts, but on the cards that matter, so its search is as deep as a
-PIMC-75 on them.
+cards look best, and rolls out only those, on ``samples`` deals. The default, top=3 and
+samples=50, does the anchor's ~150 rollouts, but on the cards that matter.
 
-On held-out data, the best card among the net's top 2 loses 0.35 points per decision against
+On held-out data, the best card among the net's top 3 loses 0.16 points per decision against
 PIMC-100's judgement; PIMC-30 loses 0.54 (experiments/rung2.md).
 
-Options: ``sub:net-pimc:top=3:samples=50``. Bidding and estimates are HeuristicBot's, as PIMC's.
+Options: ``sub:net-pimc:top=2:samples=75``. Bidding and estimates are HeuristicBot's, as PIMC's.
 """
 
 from functools import cache
@@ -60,7 +59,7 @@ class NetPIMCBot(PIMCBot):
         return candidates[best_index(totals)]
 
 
-def make(seed: int, rules: RulesConfig, net: str = "net.npz", top: str = "2", samples: str = "75") -> NetPIMCBot:
+def make(seed: int, rules: RulesConfig, net: str = "net.npz", top: str = "3", samples: str = "50") -> NetPIMCBot:
     heuristic = HeuristicConfig(super_call_min=rules.super_call_min)
     config = PIMCConfig(samples=int(samples), heuristic=heuristic, rules=rules)
     return NetPIMCBot(seed, config, net, int(top))

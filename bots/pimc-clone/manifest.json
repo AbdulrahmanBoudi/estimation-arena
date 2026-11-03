@@ -3,6 +3,6 @@
   "author": "Essam",
   "kind": "python",
   "entry": "bot.py:make",
-  "description": "Rung 2: a card-play net trained to imitate a deeper PIMC search; HeuristicBot bidding, like PIMC.",
+  "description": "Rung 2 baseline: net-pimc's card net playing alone, no search. Shows what imitation gives without search.",
   "timeout_s": 5
 }

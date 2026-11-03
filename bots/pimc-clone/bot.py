@@ -4,7 +4,7 @@ Bidding, Dash Calls and estimates are HeuristicBot's, the same as PIMC's, so aga
 difference comes from card play. A card decision is one forward pass of a small MLP in NumPy
 (no PyTorch needed): encode the Observation, score the 52 cards, play the best legal one.
 
-Options from a lineup: ``sub:pimc-clone:net=nets/other.npz`` (a path relative to this folder).
+Uses net-pimc's net by default. Options: ``sub:pimc-clone:net=other.npz`` (relative to this folder).
 """
 
 from functools import cache
@@ -27,7 +27,7 @@ def load_net(path: str) -> tuple[list[tuple[np.ndarray, np.ndarray]], str]:
     layers = []
     k = 0
     while f"w{k}" in data:
-        layers.append((data[f"w{k}"], data[f"b{k}"]))
+        layers.append((data[f"w{k}"].astype(np.float32), data[f"b{k}"].astype(np.float32)))
         k += 1
     return layers, str(data["meta"])
 
@@ -57,5 +57,5 @@ class CloneBot(HeuristicBot):
         return play_action(max(cards, key=lambda c: scores[c]))
 
 
-def make(seed: int, rules: RulesConfig, net: str = "net.npz") -> CloneBot:
+def make(seed: int, rules: RulesConfig, net: str = "../net-pimc/net.npz") -> CloneBot:
     return CloneBot(HeuristicConfig(super_call_min=rules.super_call_min), rules, net)
