@@ -19,127 +19,127 @@
   "with_choose": true
  },
  "seed": 1157764928,
- "sets": 3,
- "played_at": "2026-11-03T00:22:14+00:00",
+ "sets": 1,
+ "played_at": "2026-11-03T00:27:50+00:00",
  "versus": [
   {
    "anchor": "Random",
    "spec": "random",
-   "sets": 3,
-   "games": 24,
-   "mean_score": 1701668.3333333333,
+   "sets": 1,
+   "games": 8,
+   "mean_score": -227778.75,
    "rsa": {
-    "mean": 4236846.888888889,
-    "low": -10533337.195291124,
-    "high": 19007030.973068904,
-    "sets": 3
+    "mean": 386798.9166666666,
+    "low": null,
+    "high": null,
+    "sets": 1
    },
    "first_place": {
-    "mean": 0.4583333333333333,
-    "low": 0.2790561362604393,
-    "high": 0.6376105304062274,
-    "sets": 3
+    "mean": 0.375,
+    "low": null,
+    "high": null,
+    "sets": 1
    },
    "timing": {
-    "count": 10764,
-    "mean_s": 0.00021248312978446672,
-    "p95_s": 0.00033101702125322413,
-    "max_s": 0.003926676999995493,
+    "count": 3588,
+    "mean_s": 0.00018687486677814938,
+    "p95_s": 0.00021839702556298077,
+    "max_s": 0.09603115000000173,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 1.304026915999998
+   "wall_s": 1.091972179999999
   },
   {
    "anchor": "Heuristic",
    "spec": "heuristic",
-   "sets": 3,
-   "games": 24,
-   "mean_score": -540.0,
+   "sets": 1,
+   "games": 8,
+   "mean_score": -476.5,
    "rsa": {
-    "mean": -561.1111111111111,
-    "low": -758.4703993832863,
-    "high": -363.75182283893577,
-    "sets": 3
+    "mean": -494.0,
+    "low": null,
+    "high": null,
+    "sets": 1
    },
    "first_place": {
     "mean": 0.0,
-    "low": 0.0,
-    "high": 0.0,
-    "sets": 3
+    "low": null,
+    "high": null,
+    "sets": 1
    },
    "timing": {
-    "count": 11596,
-    "mean_s": 0.00021147480346671264,
-    "p95_s": 0.00033101702125322413,
-    "max_s": 0.003566098999996825,
+    "count": 3848,
+    "mean_s": 0.0001841217047817048,
+    "p95_s": 0.00021839702556298077,
+    "max_s": 0.09938559600000474,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 1.4213370500000053
+   "wall_s": 1.1654132210000014
   },
   {
    "anchor": "PIMC",
    "spec": "pimc",
-   "sets": 3,
-   "games": 24,
-   "mean_score": -611.4583333333334,
+   "sets": 1,
+   "games": 8,
+   "mean_score": -606.625,
    "rsa": {
-    "mean": -737.8888888888888,
-    "low": -747.0754726212182,
-    "high": -728.7023051565594,
-    "sets": 3
+    "mean": -742.0,
+    "low": null,
+    "high": null,
+    "sets": 1
    },
    "first_place": {
     "mean": 0.0,
-    "low": 0.0,
-    "high": 0.0,
-    "sets": 3
+    "low": null,
+    "high": null,
+    "sets": 1
    },
    "timing": {
-    "count": 11596,
-    "mean_s": 0.0002752520175922732,
-    "p95_s": 0.0004115780598675855,
-    "max_s": 0.0035007500000006075,
+    "count": 3848,
+    "mean_s": 0.0002750984620582121,
+    "p95_s": 0.00033101702125322413,
+    "max_s": 0.09932520199999573,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 58.58755234599998
+   "wall_s": 44.91299999499999
   },
   {
    "anchor": "Search bot",
    "spec": "search",
-   "sets": 3,
-   "games": 24,
-   "mean_score": -650.3333333333334,
+   "sets": 1,
+   "games": 8,
+   "mean_score": -653.75,
    "rsa": {
-    "mean": -758.861111111111,
-    "low": -814.5688698552826,
-    "high": -703.1533523669393,
-    "sets": 3
+    "mean": -748.5833333333333,
+    "low": null,
+    "high": null,
+    "sets": 1
    },
    "first_place": {
     "mean": 0.0,
-    "low": 0.0,
-    "high": 0.0,
-    "sets": 3
+    "low": null,
+    "high": null,
+    "sets": 1
    },
    "timing": {
-    "count": 11388,
-    "mean_s": 0.00027221188663505445,
-    "p95_s": 0.0004115780598675855,
-    "max_s": 0.00314378400000237,
+    "count": 3900,
+    "mean_s": 0.0002753452115384616,
+    "p95_s": 0.0003181632268869897,
+    "max_s": 0.11357591499999842,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 62.21235614899999
+   "wall_s": 49.27638042799998
   }
  ],
  "pairs": [
   {
    "a": "sub:highcard-wire",
    "b": "random",
-   "a_wins": 3,
+   "a_wins": 1,
    "draws": 0,
    "b_wins": 0
   },
@@ -148,21 +148,21 @@
    "b": "heuristic",
    "a_wins": 0,
    "draws": 0,
-   "b_wins": 3
+   "b_wins": 1
   },
   {
    "a": "sub:highcard-wire",
    "b": "pimc",
    "a_wins": 0,
    "draws": 0,
-   "b_wins": 3
+   "b_wins": 1
   },
   {
    "a": "sub:highcard-wire",
    "b": "search",
    "a_wins": 0,
    "draws": 0,
-   "b_wins": 3
+   "b_wins": 1
   }
  ]
 }

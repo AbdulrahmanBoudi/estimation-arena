@@ -1,5 +1,5 @@
 {
- "built_at": "2026-11-03T00:24:20+00:00",
+ "built_at": "2026-11-03T00:27:53+00:00",
  "anchor": "random",
  "anchor_rating": 400.0,
  "ladder": {
@@ -15,7 +15,7 @@
    "author": "estimation-engine",
    "kind": "anchor",
    "description": "hybrid",
-   "elo": 5223.985218186346,
+   "elo": 5224.010917875513,
    "games": null,
    "versus": [],
    "anchor": true
@@ -25,7 +25,7 @@
    "author": "estimation-engine",
    "kind": "anchor",
    "description": "rl:checkpoint=runs/m4-rules-v2/checkpoints/final.pt",
-   "elo": 4903.398243991189,
+   "elo": 4903.423771955367,
    "games": null,
    "versus": [],
    "anchor": true
@@ -35,7 +35,7 @@
    "author": "estimation-engine",
    "kind": "anchor",
    "description": "pimc",
-   "elo": 4682.415047150147,
+   "elo": 4682.440444979447,
    "games": null,
    "versus": [],
    "anchor": true
@@ -45,7 +45,7 @@
    "author": "estimation-engine",
    "kind": "anchor",
    "description": "search",
-   "elo": 4660.812010553574,
+   "elo": 4660.838607448087,
    "games": null,
    "versus": [],
    "anchor": true
@@ -55,7 +55,7 @@
    "author": "Essam",
    "kind": "python",
    "description": "Example Python-tier bot: the engine's HeuristicBot with a higher risk aversion.",
-   "elo": 3534.8499113967923,
+   "elo": 3534.8502043597077,
    "games": 96,
    "sets": 3,
    "seed": 1157764928,
@@ -100,7 +100,7 @@
    "author": "estimation-engine",
    "kind": "anchor",
    "description": "heuristic",
-   "elo": 3448.2415005278144,
+   "elo": 3448.2414786594013,
    "games": null,
    "versus": [],
    "anchor": true
@@ -110,41 +110,41 @@
    "author": "Essam",
    "kind": "wire",
    "description": "Mirror of lowcard-wire: never bids, estimates the minimum, plays the highest legal card. Submitted through a pull request to prove the smoke flow.",
-   "elo": 3256.8535268636083,
-   "games": 96,
-   "sets": 3,
+   "elo": 3447.0340092005003,
+   "games": 32,
+   "sets": 1,
    "seed": 1157764928,
-   "played_at": "2026-11-03T00:22:14+00:00",
+   "played_at": "2026-11-03T00:27:50+00:00",
    "engine": "0.1.0",
-   "p95_ms": 0.4115780598675855,
+   "p95_ms": 0.33101702125322413,
    "over_budget": 0.0,
    "versus": [
     {
      "anchor": "Random",
-     "rsa": 4236846.888888889,
-     "rsa_low": -10533337.195291124,
-     "rsa_high": 19007030.973068904,
-     "first_place": 0.4583333333333333
+     "rsa": 386798.9166666666,
+     "rsa_low": null,
+     "rsa_high": null,
+     "first_place": 0.375
     },
     {
      "anchor": "Heuristic",
-     "rsa": -561.1111111111111,
-     "rsa_low": -758.4703993832863,
-     "rsa_high": -363.75182283893577,
+     "rsa": -494.0,
+     "rsa_low": null,
+     "rsa_high": null,
      "first_place": 0.0
     },
     {
      "anchor": "PIMC",
-     "rsa": -737.8888888888888,
-     "rsa_low": -747.0754726212182,
-     "rsa_high": -728.7023051565594,
+     "rsa": -742.0,
+     "rsa_low": null,
+     "rsa_high": null,
      "first_place": 0.0
     },
     {
      "anchor": "Search bot",
-     "rsa": -758.861111111111,
-     "rsa_low": -814.5688698552826,
-     "rsa_high": -703.1533523669393,
+     "rsa": -748.5833333333333,
+     "rsa_low": null,
+     "rsa_high": null,
      "first_place": 0.0
     }
    ],
@@ -155,7 +155,7 @@
    "author": "Essam",
    "kind": "wire",
    "description": "Example wire-protocol bot: never bids, estimates the minimum, plays the lowest legal card. Pure stdlib, no engine import.",
-   "elo": 3256.8535268636083,
+   "elo": 3256.853585704614,
    "games": 96,
    "sets": 3,
    "seed": 1157764928,
