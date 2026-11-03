@@ -8,128 +8,146 @@
   "description": "Rung 1: HeuristicBot that stops chasing tricks once its unbeatable trumps cover what it still needs. Also sweeps table-pressure estimates, which did not help.",
   "command": [],
   "entry": "bot.py:make",
-  "timeout_s": 5.0
+  "timeout_s": 5.0,
+  "method": [
+   [
+    "Heuristic bidding",
+    "rule"
+   ],
+   [
+    "count trumps nobody can beat",
+    "rule"
+   ],
+   [
+    "they cover what I need?",
+    "rule"
+   ],
+   [
+    "yes: duck now",
+    "out"
+   ]
+  ]
  },
  "engine": "0.1.0",
  "rules": {
   "with_any_call": true,
   "with_choose": true
  },
- "seed": 0,
+ "seed": 1157764928,
  "sets": 20,
- "played_at": "2026-11-03T01:34:41+00:00",
+ "played_at": "2026-11-03T12:03:54+00:00",
  "versus": [
   {
    "anchor": "Random",
    "spec": "random",
    "sets": 20,
    "games": 160,
-   "mean_score": 586.61875,
+   "mean_score": 551.53125,
    "rsa": {
-    "mean": 1651.3916666666669,
-    "low": 1537.289477812499,
-    "high": 1765.4938555208348,
+    "mean": 1579.7958333333333,
+    "low": 1416.7284489184258,
+    "high": 1742.863217748241,
     "sets": 20
    },
    "first_place": {
-    "mean": 0.49375,
-    "low": 0.4806685996599481,
-    "high": 0.5068314003400519,
+    "mean": 0.5,
+    "low": 0.5,
+    "high": 0.5,
     "sets": 20
    },
    "timing": {
-    "count": 66482,
-    "mean_s": 6.9026388044884334e-06,
-    "p95_s": 9.187962993982937e-06,
-    "max_s": 0.0003525590291246772,
+    "count": 65130,
+    "mean_s": 8.911515768463074e-06,
+    "p95_s": 1.2613104257041323e-05,
+    "max_s": 0.0002544330000091577,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 0.7838224510196596
+   "wall_s": 1.3609499409994896
   },
   {
    "anchor": "Heuristic",
    "spec": "heuristic",
    "sets": 20,
    "games": 160,
-   "mean_score": 128.65,
+   "mean_score": 134.125,
    "rsa": {
-    "mean": 15.258333333333335,
-    "low": 3.084184300856551,
-    "high": 27.432482365810117,
+    "mean": 15.533333333333335,
+    "low": 5.4108605928080316,
+    "high": 25.65580607385864,
     "sets": 20
    },
    "first_place": {
-    "mean": 0.25,
-    "low": 0.1842496520996913,
-    "high": 0.3157503479003087,
+    "mean": 0.2875,
+    "low": 0.21880216035538164,
+    "high": 0.3561978396446183,
     "sets": 20
    },
    "timing": {
-    "count": 38168,
-    "mean_s": 6.41481455669671e-06,
-    "p95_s": 8.658022738221854e-06,
-    "max_s": 0.0001868860563263297,
+    "count": 38272,
+    "mean_s": 8.548285247700669e-06,
+    "p95_s": 1.2123322046368054e-05,
+    "max_s": 7.531000028393464e-05,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 0.5104450189974159
+   "wall_s": 0.9234390920000806
   },
   {
    "anchor": "PIMC",
    "spec": "pimc",
    "sets": 20,
    "games": 160,
-   "mean_score": 46.10625,
+   "mean_score": 65.7375,
    "rsa": {
-    "mean": -100.0375,
-    "low": -112.72890985991866,
-    "high": -87.34609014008133,
+    "mean": -84.03333333333333,
+    "low": -95.60082351370053,
+    "high": -72.46584315296613,
     "sets": 20
    },
    "first_place": {
-    "mean": 0.03125,
-    "low": -0.0009329875036336033,
-    "high": 0.0634329875036336,
+    "mean": 0.06875,
+    "low": 0.02859829869282514,
+    "high": 0.10890170130717487,
     "sets": 20
    },
    "timing": {
-    "count": 38168,
-    "mean_s": 9.520756052190316e-06,
-    "p95_s": 1.1424077133199195e-05,
-    "max_s": 0.0074153420282527804,
+    "count": 38272,
+    "mean_s": 1.0764558241011706e-05,
+    "p95_s": 1.4204404004538714e-05,
+    "max_s": 8.968699967226712e-05,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 84.21297479397617
+   "wall_s": 154.98758734000057
   },
   {
    "anchor": "Search bot",
    "spec": "search",
    "sets": 20,
    "games": 160,
-   "mean_score": 55.525,
+   "mean_score": 61.90625,
    "rsa": {
-    "mean": -89.99583333333334,
-    "low": -102.90511272643919,
-    "high": -77.08655394022749,
+    "mean": -84.90833333333333,
+    "low": -100.67306203041367,
+    "high": -69.14360463625299,
     "sets": 20
    },
    "first_place": {
-    "mean": 0.025,
-    "low": -0.005605121368041005,
-    "high": 0.05560512136804101,
+    "mean": 0.04375,
+    "low": 0.00940108017769082,
+    "high": 0.07809891982230918,
     "sets": 20
    },
    "timing": {
-    "count": 38142,
-    "mean_s": 9.681000498138536e-06,
-    "p95_s": 1.2123322046368054e-05,
-    "max_s": 0.002104793908074498,
+    "count": 38636,
+    "mean_s": 1.2171185422921628e-05,
+    "p95_s": 1.599646597795457e-05,
+    "max_s": 0.0010502130007807864,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 88.22872341400944
+   "wall_s": 166.70211552399996
   },
   {
    "anchor": "RL v2",
@@ -157,7 +175,8 @@
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 6.899446129100397
+   "wall_s": 6.899446129100397,
+   "carried_from": "2026-11-03T01:34:41+00:00"
   },
   {
    "anchor": "Hybrid (B-Tig)",
@@ -185,7 +204,8 @@
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 575.0598031390691
+   "wall_s": 575.0598031390691,
+   "carried_from": "2026-11-03T01:34:41+00:00"
   }
  ],
  "pairs": [
@@ -199,9 +219,9 @@
   {
    "a": "sub:table-pressure",
    "b": "heuristic",
-   "a_wins": 18,
+   "a_wins": 15,
    "draws": 0,
-   "b_wins": 2
+   "b_wins": 5
   },
   {
    "a": "sub:table-pressure",

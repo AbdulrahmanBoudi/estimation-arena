@@ -11,7 +11,21 @@
    "bot.py"
   ],
   "entry": "",
-  "timeout_s": 5.0
+  "timeout_s": 5.0,
+  "method": [
+   [
+    "never bid",
+    "rule"
+   ],
+   [
+    "estimate the minimum",
+    "rule"
+   ],
+   [
+    "highest legal card",
+    "out"
+   ]
+  ]
  },
  "engine": "0.1.0",
  "rules": {
@@ -19,127 +33,127 @@
   "with_choose": true
  },
  "seed": 1157764928,
- "sets": 1,
- "played_at": "2026-11-03T00:27:50+00:00",
+ "sets": 20,
+ "played_at": "2026-11-03T10:46:35+00:00",
  "versus": [
   {
    "anchor": "Random",
    "spec": "random",
-   "sets": 1,
-   "games": 8,
-   "mean_score": -227778.75,
+   "sets": 20,
+   "games": 160,
+   "mean_score": 913542.9125,
    "rsa": {
-    "mean": 386798.9166666666,
-    "low": null,
-    "high": null,
-    "sets": 1
+    "mean": 2215970.9875,
+    "low": -196992.86845181137,
+    "high": 4628934.843451811,
+    "sets": 20
    },
    "first_place": {
-    "mean": 0.375,
-    "low": null,
-    "high": null,
-    "sets": 1
+    "mean": 0.44375,
+    "low": 0.4083677997135619,
+    "high": 0.47913220028643805,
+    "sets": 20
    },
    "timing": {
-    "count": 3588,
-    "mean_s": 0.00018687486677814938,
-    "p95_s": 0.00021839702556298077,
-    "max_s": 0.09603115000000173,
+    "count": 71500,
+    "mean_s": 0.00026316257503496506,
+    "p95_s": 0.00035127791109009144,
+    "max_s": 0.006308733999958349,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 1.091972179999999
+   "wall_s": 7.834729466999988
   },
   {
    "anchor": "Heuristic",
    "spec": "heuristic",
-   "sets": 1,
-   "games": 8,
-   "mean_score": -476.5,
+   "sets": 20,
+   "games": 160,
+   "mean_score": -500.2875,
    "rsa": {
-    "mean": -494.0,
-    "low": null,
-    "high": null,
-    "sets": 1
+    "mean": -540.0833333333333,
+    "low": -606.5725018854258,
+    "high": -473.5941647812407,
+    "sets": 20
    },
    "first_place": {
     "mean": 0.0,
-    "low": null,
-    "high": null,
-    "sets": 1
+    "low": 0.0,
+    "high": 0.0,
+    "sets": 20
    },
    "timing": {
-    "count": 3848,
-    "mean_s": 0.0001841217047817048,
-    "p95_s": 0.00021839702556298077,
-    "max_s": 0.09938559600000474,
+    "count": 77740,
+    "mean_s": 0.0002561557571520453,
+    "p95_s": 0.00033763736167828856,
+    "max_s": 0.004355481000004602,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 1.1654132210000014
+   "wall_s": 8.416119118999973
   },
   {
    "anchor": "PIMC",
    "spec": "pimc",
-   "sets": 1,
-   "games": 8,
-   "mean_score": -606.625,
+   "sets": 20,
+   "games": 160,
+   "mean_score": -604.3125,
    "rsa": {
-    "mean": -742.0,
-    "low": null,
-    "high": null,
-    "sets": 1
+    "mean": -736.175,
+    "low": -749.6956886253163,
+    "high": -722.6543113746836,
+    "sets": 20
    },
    "first_place": {
     "mean": 0.0,
-    "low": null,
-    "high": null,
-    "sets": 1
+    "low": 0.0,
+    "high": 0.0,
+    "sets": 20
    },
    "timing": {
-    "count": 3848,
-    "mean_s": 0.0002750984620582121,
-    "p95_s": 0.00033101702125322413,
-    "max_s": 0.09932520199999573,
+    "count": 77740,
+    "mean_s": 0.0003391521576537175,
+    "p95_s": 0.00042820581348623597,
+    "max_s": 0.06547371399994972,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 44.91299999499999
+   "wall_s": 374.81121012
   },
   {
    "anchor": "Search bot",
    "spec": "search",
-   "sets": 1,
-   "games": 8,
-   "mean_score": -653.75,
+   "sets": 20,
+   "games": 160,
+   "mean_score": -599.59375,
    "rsa": {
-    "mean": -748.5833333333333,
-    "low": null,
-    "high": null,
-    "sets": 1
+    "mean": -741.1416666666667,
+    "low": -759.6855879979453,
+    "high": -722.597745335388,
+    "sets": 20
    },
    "first_place": {
     "mean": 0.0,
-    "low": null,
-    "high": null,
-    "sets": 1
+    "low": 0.0,
+    "high": 0.0,
+    "sets": 20
    },
    "timing": {
-    "count": 3900,
-    "mean_s": 0.0002753452115384616,
-    "p95_s": 0.0003181632268869897,
-    "max_s": 0.11357591499999842,
+    "count": 77272,
+    "mean_s": 0.0003339473579692515,
+    "p95_s": 0.0004198096210649372,
+    "max_s": 0.006696164000004501,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 49.27638042799998
+   "wall_s": 387.4738306579999
   }
  ],
  "pairs": [
   {
    "a": "sub:highcard-wire",
    "b": "random",
-   "a_wins": 1,
+   "a_wins": 20,
    "draws": 0,
    "b_wins": 0
   },
@@ -148,21 +162,22 @@
    "b": "heuristic",
    "a_wins": 0,
    "draws": 0,
-   "b_wins": 1
+   "b_wins": 20
   },
   {
    "a": "sub:highcard-wire",
    "b": "pimc",
    "a_wins": 0,
    "draws": 0,
-   "b_wins": 1
+   "b_wins": 20
   },
   {
    "a": "sub:highcard-wire",
    "b": "search",
    "a_wins": 0,
    "draws": 0,
-   "b_wins": 1
+   "b_wins": 20
   }
- ]
+ ],
+ "bot_hash": "ac81254bcf20c320"
 }

@@ -1,5 +1,5 @@
 {
- "built_at": "2026-11-03T09:55:08+00:00",
+ "built_at": "2026-11-03T12:03:56+00:00",
  "anchor": "random",
  "anchor_rating": 400.0,
  "ladder": {
@@ -10,6 +10,31 @@
  },
  "submissions": 8,
  "rows": [
+  {
+   "name": "Hybrid (B-Tig)",
+   "author": "Yosif Elessawi",
+   "kind": "anchor",
+   "description": "hybrid",
+   "key": "hybrid",
+   "method": [
+    [
+     "learned nets",
+     "net"
+    ],
+    [
+     "search over dealt hands",
+     "search"
+    ],
+    [
+     "best card",
+     "out"
+    ]
+   ],
+   "elo": 4878.843046170618,
+   "games": null,
+   "versus": [],
+   "anchor": true
+  },
   {
    "name": "rl-pimc",
    "author": "Essam",
@@ -34,42 +59,42 @@
      "out"
     ]
    ],
-   "elo": 4898.319369073667,
+   "elo": 4869.988645605294,
    "games": 960,
    "sets": 20,
-   "seed": 0,
-   "played_at": "2026-11-03T09:40:48+00:00",
+   "seed": 1157764928,
+   "played_at": "2026-11-03T11:58:28+00:00",
    "engine": "0.1.0",
    "p95_ms": 25.815950154732278,
-   "over_budget": 0.005345528141270258,
+   "over_budget": 0.009501677890826257,
    "versus": [
     {
      "anchor": "Random",
-     "rsa": 1571.2666666666669,
-     "rsa_low": 1455.7819704031172,
-     "rsa_high": 1686.7513629302166,
+     "rsa": 1658.2791666666667,
+     "rsa_low": 1509.6551136430646,
+     "rsa_high": 1806.9032196902688,
      "first_place": 0.5
     },
     {
      "anchor": "Heuristic",
-     "rsa": 144.4,
-     "rsa_low": 127.56182119021402,
-     "rsa_high": 161.23817880978598,
+     "rsa": 127.65,
+     "rsa_low": 115.5010191157701,
+     "rsa_high": 139.7989808842299,
      "first_place": 0.49375
     },
     {
      "anchor": "PIMC",
-     "rsa": 51.416666666666664,
-     "rsa_low": 41.63834236341954,
-     "rsa_high": 61.19499096991379,
-     "first_place": 0.3875
+     "rsa": 55.791666666666664,
+     "rsa_low": 41.999603513998004,
+     "rsa_high": 69.58372981933533,
+     "first_place": 0.4125
     },
     {
      "anchor": "Search bot",
-     "rsa": 54.55,
-     "rsa_low": 43.159088081230664,
-     "rsa_high": 65.94091191876933,
-     "first_place": 0.4
+     "rsa": 63.775,
+     "rsa_low": 50.47974722156586,
+     "rsa_high": 77.07025277843414,
+     "first_place": 0.41875
     },
     {
      "anchor": "RL v2",
@@ -87,31 +112,6 @@
     }
    ],
    "anchor": false
-  },
-  {
-   "name": "Hybrid (B-Tig)",
-   "author": "Yosif Elessawi",
-   "kind": "anchor",
-   "description": "hybrid",
-   "key": "hybrid",
-   "method": [
-    [
-     "learned nets",
-     "net"
-    ],
-    [
-     "search over dealt hands",
-     "search"
-    ],
-    [
-     "best card",
-     "out"
-    ]
-   ],
-   "elo": 4887.499936454989,
-   "games": null,
-   "versus": [],
-   "anchor": true
   },
   {
    "name": "rl-cards",
@@ -133,56 +133,42 @@
      "out"
     ]
    ],
-   "elo": 4613.276632520879,
-   "games": 960,
+   "elo": 4864.884965600286,
+   "games": 640,
    "sets": 20,
-   "seed": 0,
-   "played_at": "2026-11-03T09:54:35+00:00",
+   "seed": 1157764928,
+   "played_at": "2026-11-03T11:36:16+00:00",
    "engine": "0.1.0",
-   "p95_ms": 0.9087806808612776,
+   "p95_ms": 0.45441543491810155,
    "over_budget": 0.0,
    "versus": [
     {
      "anchor": "Random",
-     "rsa": 1945.8125,
-     "rsa_low": 1530.7849388179077,
-     "rsa_high": 2360.8400611820925,
+     "rsa": 1784.7625,
+     "rsa_low": 1539.4806210343472,
+     "rsa_high": 2030.0443789656529,
      "first_place": 0.5
     },
     {
      "anchor": "Heuristic",
-     "rsa": 112.6,
-     "rsa_low": 94.99820991972616,
-     "rsa_high": 130.2017900802738,
-     "first_place": 0.4625
+     "rsa": 105.84166666666667,
+     "rsa_low": 91.23547301966053,
+     "rsa_high": 120.4478603136728,
+     "first_place": 0.4875
     },
     {
      "anchor": "PIMC",
-     "rsa": 27.183333333333337,
-     "rsa_low": 11.26098256713981,
-     "rsa_high": 43.10568409952687,
-     "first_place": 0.334375
+     "rsa": 39.7,
+     "rsa_low": 28.98417692358204,
+     "rsa_high": 50.415823076417965,
+     "first_place": 0.36875
     },
     {
      "anchor": "Search bot",
-     "rsa": 44.79166666666667,
-     "rsa_low": 33.63965975467425,
-     "rsa_high": 55.943673578659094,
-     "first_place": 0.35
-    },
-    {
-     "anchor": "RL v2",
-     "rsa": -0.91666666666667,
-     "rsa_low": -23.988818126288372,
-     "rsa_high": 22.15548479295503,
-     "first_place": 0.23125
-    },
-    {
-     "anchor": "Hybrid (B-Tig)",
-     "rsa": -17.891666666666666,
-     "rsa_low": -30.303779427392588,
-     "rsa_high": -5.479553905940744,
-     "first_place": 0.1375
+     "rsa": 59.2875,
+     "rsa_low": 44.61555776672055,
+     "rsa_high": 73.95944223327946,
+     "first_place": 0.40625
     }
    ],
    "anchor": false
@@ -207,7 +193,32 @@
      "out"
     ]
    ],
-   "elo": 4590.882125467205,
+   "elo": 4577.433440584927,
+   "games": null,
+   "versus": [],
+   "anchor": true
+  },
+  {
+   "name": "PIMC",
+   "author": "Yosif Elessawi",
+   "kind": "anchor",
+   "description": "pimc",
+   "key": "pimc",
+   "method": [
+    [
+     "deal hidden cards x30",
+     "search"
+    ],
+    [
+     "play each legal card out",
+     "search"
+    ],
+    [
+     "best average score",
+     "out"
+    ]
+   ],
+   "elo": 4361.461441475804,
    "games": null,
    "versus": [],
    "anchor": true
@@ -236,41 +247,41 @@
      "out"
     ]
    ],
-   "elo": 4409.944808679494,
+   "elo": 4340.900754830255,
    "games": 960,
    "sets": 20,
-   "seed": 0,
-   "played_at": "2026-11-03T06:54:02+00:00",
+   "seed": 1157764928,
+   "played_at": "2026-11-03T11:23:17+00:00",
    "engine": "0.1.0",
    "p95_ms": 27.944014688439193,
-   "over_budget": 0.0051018449561218305,
+   "over_budget": 0.008984695010374317,
    "versus": [
     {
      "anchor": "Random",
-     "rsa": 1702.2541666666668,
-     "rsa_low": 1617.890751229185,
-     "rsa_high": 1786.6175821041486,
+     "rsa": 1708.1875,
+     "rsa_low": 1617.4071123043113,
+     "rsa_high": 1798.9678876956887,
      "first_place": 0.5
     },
     {
      "anchor": "Heuristic",
-     "rsa": 144.57916666666668,
-     "rsa_low": 129.41820963979072,
-     "rsa_high": 159.74012369354264,
-     "first_place": 0.5
+     "rsa": 116.46666666666667,
+     "rsa_low": 103.72251833490425,
+     "rsa_high": 129.21081499842907,
+     "first_place": 0.48125
     },
     {
      "anchor": "PIMC",
-     "rsa": 10.395833333333334,
-     "rsa_low": -3.0669826474065403,
-     "rsa_high": 23.858649314073208,
-     "first_place": 0.303125
+     "rsa": -7.8,
+     "rsa_low": -20.57373945285627,
+     "rsa_high": 4.973739452856271,
+     "first_place": 0.2125
     },
     {
      "anchor": "Search bot",
-     "rsa": 14.4125,
-     "rsa_low": 2.1702848587319075,
-     "rsa_high": 26.654715141268092,
+     "rsa": 18.1125,
+     "rsa_low": 5.506073603566513,
+     "rsa_high": 30.71892639643349,
      "first_place": 0.275
     },
     {
@@ -289,31 +300,6 @@
     }
    ],
    "anchor": false
-  },
-  {
-   "name": "PIMC",
-   "author": "Yosif Elessawi",
-   "kind": "anchor",
-   "description": "pimc",
-   "key": "pimc",
-   "method": [
-    [
-     "deal hidden cards x30",
-     "search"
-    ],
-    [
-     "play each legal card out",
-     "search"
-    ],
-    [
-     "best average score",
-     "out"
-    ]
-   ],
-   "elo": 4367.897601507075,
-   "games": null,
-   "versus": [],
-   "anchor": true
   },
   {
    "name": "Search bot",
@@ -335,7 +321,7 @@
      "out"
     ]
    ],
-   "elo": 4342.271238408473,
+   "elo": 4325.465458091188,
    "games": null,
    "versus": [],
    "anchor": true
@@ -364,56 +350,42 @@
      "out"
     ]
    ],
-   "elo": 4237.38021255487,
-   "games": 960,
+   "elo": 4185.729748326338,
+   "games": 640,
    "sets": 20,
-   "seed": 0,
-   "played_at": "2026-11-03T07:07:25+00:00",
+   "seed": 1157764928,
+   "played_at": "2026-11-03T11:29:46+00:00",
    "engine": "0.1.0",
-   "p95_ms": 0.9269562944785031,
+   "p95_ms": 0.4635037436164635,
    "over_budget": 0.0,
    "versus": [
     {
      "anchor": "Random",
-     "rsa": 2108.4083333333333,
-     "rsa_low": 1855.2346948301904,
-     "rsa_high": 2361.581971836476,
+     "rsa": 1943.0833333333333,
+     "rsa_low": 1512.4307398578048,
+     "rsa_high": 2373.7359268088617,
      "first_place": 0.5
     },
     {
      "anchor": "Heuristic",
-     "rsa": 99.825,
-     "rsa_low": 81.73832911202965,
-     "rsa_high": 117.91167088797036,
-     "first_place": 0.475
+     "rsa": 94.375,
+     "rsa_low": 79.343966714141,
+     "rsa_high": 109.406033285859,
+     "first_place": 0.4875
     },
     {
      "anchor": "PIMC",
-     "rsa": -11.141666666666667,
-     "rsa_low": -23.537644053873407,
-     "rsa_high": 1.2543107205400723,
-     "first_place": 0.2375
+     "rsa": -19.033333333333335,
+     "rsa_low": -31.907842950475438,
+     "rsa_high": -6.1588237161912325,
+     "first_place": 0.19375
     },
     {
      "anchor": "Search bot",
-     "rsa": -12.98333333333333,
-     "rsa_low": -25.783707599517143,
-     "rsa_high": -0.18295906714952004,
-     "first_place": 0.23125
-    },
-    {
-     "anchor": "RL v2",
-     "rsa": -43.43333333333333,
-     "rsa_low": -61.73035818786015,
-     "rsa_high": -25.136308478806516,
-     "first_place": 0.10625
-    },
-    {
-     "anchor": "Hybrid (B-Tig)",
-     "rsa": -76.75416666666666,
-     "rsa_low": -90.96381300734583,
-     "rsa_high": -62.544520325987484,
-     "first_place": 0.05625
+     "rsa": -5.3708333333333345,
+     "rsa_low": -19.59481105085056,
+     "rsa_high": 8.853144384183889,
+     "first_place": 0.19375
     }
    ],
    "anchor": false
@@ -442,42 +414,42 @@
      "out"
     ]
    ],
-   "elo": 3649.749011601566,
+   "elo": 3475.3561558622023,
    "games": 960,
    "sets": 20,
-   "seed": 0,
-   "played_at": "2026-11-03T01:34:41+00:00",
+   "seed": 1157764928,
+   "played_at": "2026-11-03T12:03:54+00:00",
    "engine": "0.1.0",
    "p95_ms": 0.020693134452910603,
    "over_budget": 0.0,
    "versus": [
     {
      "anchor": "Random",
-     "rsa": 1651.3916666666669,
-     "rsa_low": 1537.289477812499,
-     "rsa_high": 1765.4938555208348,
-     "first_place": 0.49375
+     "rsa": 1579.7958333333333,
+     "rsa_low": 1416.7284489184258,
+     "rsa_high": 1742.863217748241,
+     "first_place": 0.5
     },
     {
      "anchor": "Heuristic",
-     "rsa": 15.258333333333335,
-     "rsa_low": 3.084184300856551,
-     "rsa_high": 27.432482365810117,
-     "first_place": 0.25
+     "rsa": 15.533333333333335,
+     "rsa_low": 5.4108605928080316,
+     "rsa_high": 25.65580607385864,
+     "first_place": 0.2875
     },
     {
      "anchor": "PIMC",
-     "rsa": -100.0375,
-     "rsa_low": -112.72890985991866,
-     "rsa_high": -87.34609014008133,
-     "first_place": 0.03125
+     "rsa": -84.03333333333333,
+     "rsa_low": -95.60082351370053,
+     "rsa_high": -72.46584315296613,
+     "first_place": 0.06875
     },
     {
      "anchor": "Search bot",
-     "rsa": -89.99583333333334,
-     "rsa_low": -102.90511272643919,
-     "rsa_high": -77.08655394022749,
-     "first_place": 0.025
+     "rsa": -84.90833333333333,
+     "rsa_low": -100.67306203041367,
+     "rsa_high": -69.14360463625299,
+     "first_place": 0.04375
     },
     {
      "anchor": "RL v2",
@@ -516,42 +488,42 @@
      "out"
     ]
    ],
-   "elo": 3325.7952572869604,
-   "games": 96,
-   "sets": 3,
+   "elo": 3287.725259533057,
+   "games": 640,
+   "sets": 20,
    "seed": 1157764928,
-   "played_at": "2026-11-03T00:20:08+00:00",
+   "played_at": "2026-11-03T10:33:35+00:00",
    "engine": "0.1.0",
-   "p95_ms": 0.014778261926322079,
+   "p95_ms": 0.01507382716484852,
    "over_budget": 0.0,
    "versus": [
     {
      "anchor": "Random",
-     "rsa": 1427.8333333333333,
-     "rsa_low": 975.6749172200118,
-     "rsa_high": 1879.9917494466547,
+     "rsa": 1498.4,
+     "rsa_low": 1397.7650879067912,
+     "rsa_high": 1599.034912093209,
      "first_place": 0.5
     },
     {
      "anchor": "Heuristic",
-     "rsa": 0.4999999999999994,
-     "rsa_low": -15.063078156630855,
-     "rsa_high": 16.063078156630855,
-     "first_place": 0.3333333333333333
+     "rsa": -0.39166666666666744,
+     "rsa_low": -2.5925707415798387,
+     "rsa_high": 1.8092374082465037,
+     "first_place": 0.25625
     },
     {
      "anchor": "PIMC",
-     "rsa": -102.22222222222223,
-     "rsa_low": -171.51522318616816,
-     "rsa_high": -32.929221258276314,
-     "first_place": 0.0
+     "rsa": -112.51666666666668,
+     "rsa_low": -125.5955367732915,
+     "rsa_high": -99.43779656004186,
+     "first_place": 0.0125
     },
     {
      "anchor": "Search bot",
-     "rsa": -104.8888888888889,
-     "rsa_low": -140.02620318983728,
-     "rsa_high": -69.75157458794052,
-     "first_place": 0.041666666666666664
+     "rsa": -108.725,
+     "rsa_low": -118.68145366874737,
+     "rsa_high": -98.76854633125262,
+     "first_place": 0.0125
     }
    ],
    "anchor": false
@@ -576,7 +548,7 @@
      "out"
     ]
    ],
-   "elo": 3241.0051573592978,
+   "elo": 3241.010260029305,
    "games": null,
    "versus": [],
    "anchor": true
@@ -601,41 +573,41 @@
      "out"
     ]
    ],
-   "elo": 3238.7531305361094,
-   "games": 32,
-   "sets": 1,
+   "elo": 2719.930603216263,
+   "games": 640,
+   "sets": 20,
    "seed": 1157764928,
-   "played_at": "2026-11-03T00:27:50+00:00",
+   "played_at": "2026-11-03T10:46:35+00:00",
    "engine": "0.1.0",
-   "p95_ms": 0.33101702125322413,
+   "p95_ms": 0.428205813486236,
    "over_budget": 0.0,
    "versus": [
     {
      "anchor": "Random",
-     "rsa": 386798.9166666666,
-     "rsa_low": null,
-     "rsa_high": null,
-     "first_place": 0.375
+     "rsa": 2215970.9875,
+     "rsa_low": -196992.86845181137,
+     "rsa_high": 4628934.843451811,
+     "first_place": 0.44375
     },
     {
      "anchor": "Heuristic",
-     "rsa": -494.0,
-     "rsa_low": null,
-     "rsa_high": null,
+     "rsa": -540.0833333333333,
+     "rsa_low": -606.5725018854258,
+     "rsa_high": -473.5941647812407,
      "first_place": 0.0
     },
     {
      "anchor": "PIMC",
-     "rsa": -742.0,
-     "rsa_low": null,
-     "rsa_high": null,
+     "rsa": -736.175,
+     "rsa_low": -749.6956886253163,
+     "rsa_high": -722.6543113746836,
      "first_place": 0.0
     },
     {
      "anchor": "Search bot",
-     "rsa": -748.5833333333333,
-     "rsa_low": null,
-     "rsa_high": null,
+     "rsa": -741.1416666666667,
+     "rsa_low": -759.6855879979453,
+     "rsa_high": -722.597745335388,
      "first_place": 0.0
     }
    ],
@@ -661,41 +633,41 @@
      "out"
     ]
    ],
-   "elo": 3049.1462232133294,
-   "games": 96,
-   "sets": 3,
+   "elo": 2719.930603216263,
+   "games": 640,
+   "sets": 20,
    "seed": 1157764928,
-   "played_at": "2026-11-03T00:24:18+00:00",
+   "played_at": "2026-11-03T11:00:01+00:00",
    "engine": "0.1.0",
-   "p95_ms": 0.4198096210649372,
+   "p95_ms": 0.428205813486236,
    "over_budget": 0.0,
    "versus": [
     {
      "anchor": "Random",
-     "rsa": 1949899.9722222222,
-     "rsa_low": -5693322.267900225,
-     "rsa_high": 9593122.212344669,
-     "first_place": 0.375
+     "rsa": 1152840.35,
+     "rsa_low": 408743.816028027,
+     "rsa_high": 1896936.8839719733,
+     "first_place": 0.43125
     },
     {
      "anchor": "Heuristic",
-     "rsa": -618.1666666666666,
-     "rsa_low": -771.9576642581084,
-     "rsa_high": -464.3756690752249,
+     "rsa": -623.0,
+     "rsa_low": -663.5759858065352,
+     "rsa_high": -582.4240141934648,
      "first_place": 0.0
     },
     {
      "anchor": "PIMC",
-     "rsa": -701.138888888889,
-     "rsa_low": -766.9416255970071,
-     "rsa_high": -635.3361521807709,
+     "rsa": -724.9833333333333,
+     "rsa_low": -754.8859450566491,
+     "rsa_high": -695.0807216100176,
      "first_place": 0.0
     },
     {
      "anchor": "Search bot",
-     "rsa": -664.3888888888889,
-     "rsa_low": -725.2038905499415,
-     "rsa_high": -603.5738872278363,
+     "rsa": -700.7833333333333,
+     "rsa_low": -721.2919010543362,
+     "rsa_high": -680.2747656123304,
      "first_place": 0.0
     }
    ],

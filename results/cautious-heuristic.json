@@ -8,7 +8,21 @@
   "description": "Example Python-tier bot: the engine's HeuristicBot with a higher risk aversion.",
   "command": [],
   "entry": "bot.py:make",
-  "timeout_s": 5.0
+  "timeout_s": 5.0,
+  "method": [
+   [
+    "Heuristic bidding",
+    "rule"
+   ],
+   [
+    "last estimate avoids risk",
+    "rule"
+   ],
+   [
+    "Heuristic card play",
+    "out"
+   ]
+  ]
  },
  "engine": "0.1.0",
  "rules": {
@@ -16,150 +30,151 @@
   "with_choose": true
  },
  "seed": 1157764928,
- "sets": 3,
- "played_at": "2026-11-03T00:20:08+00:00",
+ "sets": 20,
+ "played_at": "2026-11-03T10:33:35+00:00",
  "versus": [
   {
    "anchor": "Random",
    "spec": "random",
-   "sets": 3,
-   "games": 24,
-   "mean_score": 454.6666666666667,
+   "sets": 20,
+   "games": 160,
+   "mean_score": 477.9875,
    "rsa": {
-    "mean": 1427.8333333333333,
-    "low": 975.6749172200118,
-    "high": 1879.9917494466547,
-    "sets": 3
+    "mean": 1498.4,
+    "low": 1397.7650879067912,
+    "high": 1599.034912093209,
+    "sets": 20
    },
    "first_place": {
     "mean": 0.5,
     "low": 0.5,
     "high": 0.5,
-    "sets": 3
+    "sets": 20
    },
    "timing": {
-    "count": 9464,
-    "mean_s": 6.515041103127642e-06,
+    "count": 65572,
+    "mean_s": 8.326284374428109e-06,
     "p95_s": 1.2365788487295415e-05,
-    "max_s": 5.718699999590626e-05,
+    "max_s": 0.0011746760000050926,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 0.41800649099999987
+   "wall_s": 1.4824024520000023
   },
   {
    "anchor": "Heuristic",
    "spec": "heuristic",
-   "sets": 3,
-   "games": 24,
-   "mean_score": 116.91666666666667,
+   "sets": 20,
+   "games": 160,
+   "mean_score": 116.1625,
    "rsa": {
-    "mean": 0.4999999999999994,
-    "low": -15.063078156630855,
-    "high": 16.063078156630855,
-    "sets": 3
+    "mean": -0.39166666666666744,
+    "low": -2.5925707415798387,
+    "high": 1.8092374082465037,
+    "sets": 20
    },
    "first_place": {
-    "mean": 0.3333333333333333,
-    "low": -0.025221060812454676,
-    "high": 0.6918877274791213,
-    "sets": 3
+    "mean": 0.25625,
+    "low": 0.2160982986928251,
+    "high": 0.29640170130717486,
+    "sets": 20
    },
    "timing": {
-    "count": 5720,
-    "mean_s": 6.1072513986013985e-06,
-    "p95_s": 1.2865366342182148e-05,
-    "max_s": 5.190899999973908e-05,
+    "count": 38272,
+    "mean_s": 7.966430732650502e-06,
+    "p95_s": 1.1885609849380443e-05,
+    "max_s": 0.00467049999998892,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 0.34856039400000327
+   "wall_s": 1.0808084989999998
   },
   {
    "anchor": "PIMC",
    "spec": "pimc",
-   "sets": 3,
-   "games": 24,
-   "mean_score": 33.291666666666664,
+   "sets": 20,
+   "games": 160,
+   "mean_score": 32.2,
    "rsa": {
-    "mean": -102.22222222222223,
-    "low": -171.51522318616816,
-    "high": -32.929221258276314,
-    "sets": 3
+    "mean": -112.51666666666668,
+    "low": -125.5955367732915,
+    "high": -99.43779656004186,
+    "sets": 20
    },
    "first_place": {
-    "mean": 0.0,
-    "low": 0.0,
-    "high": 0.0,
-    "sets": 3
+    "mean": 0.0125,
+    "low": -0.0055064743544057625,
+    "high": 0.030506474354405764,
+    "sets": 20
    },
    "timing": {
-    "count": 5720,
-    "mean_s": 8.117601398601399e-06,
-    "p95_s": 1.3652829685254435e-05,
-    "max_s": 6.592500000124346e-05,
+    "count": 38272,
+    "mean_s": 9.462743049749165e-06,
+    "p95_s": 1.3122673669025794e-05,
+    "max_s": 0.0030352349999986927,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 23.585023199999995
+   "wall_s": 157.525890828
   },
   {
    "anchor": "Search bot",
    "spec": "search",
-   "sets": 3,
-   "games": 24,
-   "mean_score": 38.833333333333336,
+   "sets": 20,
+   "games": 160,
+   "mean_score": 36.1,
    "rsa": {
-    "mean": -104.8888888888889,
-    "low": -140.02620318983728,
-    "high": -69.75157458794052,
-    "sets": 3
+    "mean": -108.725,
+    "low": -118.68145366874737,
+    "high": -98.76854633125262,
+    "sets": 20
    },
    "first_place": {
-    "mean": 0.041666666666666664,
-    "low": -0.13761053040622737,
-    "high": 0.22094386373956068,
-    "sets": 3
+    "mean": 0.0125,
+    "low": -0.0055064743544057625,
+    "high": 0.030506474354405764,
+    "sets": 20
    },
    "timing": {
-    "count": 5720,
-    "mean_s": 9.07823986013986e-06,
-    "p95_s": 1.4778261926322079e-05,
-    "max_s": 5.428300000431818e-05,
+    "count": 38558,
+    "mean_s": 1.12967554333731e-05,
+    "p95_s": 1.507382716484852e-05,
+    "max_s": 0.005041718000029505,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 26.019040323
+   "wall_s": 170.428324035
   }
  ],
  "pairs": [
   {
    "a": "sub:cautious-heuristic",
    "b": "random",
-   "a_wins": 3,
+   "a_wins": 20,
    "draws": 0,
    "b_wins": 0
   },
   {
    "a": "sub:cautious-heuristic",
    "b": "heuristic",
-   "a_wins": 1,
-   "draws": 1,
-   "b_wins": 1
+   "a_wins": 5,
+   "draws": 12,
+   "b_wins": 3
   },
   {
    "a": "sub:cautious-heuristic",
    "b": "pimc",
    "a_wins": 0,
    "draws": 0,
-   "b_wins": 3
+   "b_wins": 20
   },
   {
    "a": "sub:cautious-heuristic",
    "b": "search",
    "a_wins": 0,
    "draws": 0,
-   "b_wins": 3
+   "b_wins": 20
   }
- ]
+ ],
+ "bot_hash": "126e32edb235a338"
 }
