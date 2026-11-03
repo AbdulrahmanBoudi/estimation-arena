@@ -196,12 +196,13 @@ def move_svg(frame: dict[str, Any]) -> str:
         out.append(_card(x, top, c, cls))
     for r, (name, vals) in enumerate(sorted(scores.items())):
         y = top + 42 + r * 14
-        vmax = max((abs(v) for v in vals.values()), default=1) or 1
+        lo, hi = min(vals.values(), default=0), max(vals.values(), default=1)
+        span = (hi - lo) or 1
         for c_str, v in vals.items():
             c = int(c_str)
-            if c in pos:
-                w = max(2.0, 24 * abs(v) / vmax)
-                out.append(f'<rect class="bar-{name}{" neg" if v < 0 else ""}" x="{pos[c] + 1}" y="{y}" width="{w:.1f}" height="9" rx="2"/>')
+            if c in pos:  # each row runs from its worst card (short) to its best (full width)
+                w = 3 + 21 * (v - lo) / span
+                out.append(f'<rect class="bar-{name}" x="{pos[c] + 1}" y="{y}" width="{w:.1f}" height="9" rx="2"/>')
     out.append("</svg>")
     return "".join(out)
 
