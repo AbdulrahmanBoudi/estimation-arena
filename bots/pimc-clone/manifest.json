@@ -1,0 +1,8 @@
+{
+  "name": "pimc-clone",
+  "author": "Essam",
+  "kind": "python",
+  "entry": "bot.py:make",
+  "description": "Rung 2: a card-play net trained to imitate a deeper PIMC search; HeuristicBot bidding, like PIMC.",
+  "timeout_s": 5
+}

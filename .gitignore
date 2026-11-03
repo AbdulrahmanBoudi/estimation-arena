@@ -8,3 +8,4 @@ runs/
 # Smoke-test outputs
 smoke/
 data/
+.venv-gpu/
