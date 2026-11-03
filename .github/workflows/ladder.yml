@@ -1,7 +1,8 @@
 name: ladder
 
 # The leaderboard run: every bot under bots/ plays the anchors in duplicate sets, the results
-# and the rebuilt site/ are committed; pages.yml then publishes site/ to GitHub Pages.
+# and the rebuilt site/ are committed; pages.yml runs when this workflow completes and
+# publishes site/ to GitHub Pages.
 #
 # On a GitHub-hosted runner only the four CPU anchors are available (the trained nets live in
 # the engine's runs/ zip, outside git). Point the job at a self-hosted runner that has runs/

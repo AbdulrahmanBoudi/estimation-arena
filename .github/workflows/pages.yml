@@ -1,13 +1,17 @@
 name: pages
 
-# Publish the committed site/ folder whenever it changes on main. The ladder workflow
-# commits site/ after each run, so this keeps the public page current without needing the
-# engine or any secret.
+# Publish the committed site/ folder: on a human push that changes it, and after every
+# ladder run (the ladder commits site/ with the Actions token, and GitHub does not start
+# push-triggered workflows for such commits, so the ladder's completion is the trigger).
+# Needs neither the engine nor any secret.
 
 on:
   push:
     branches: [main]
     paths: ["site/**"]
+  workflow_run:
+    workflows: [ladder]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -20,6 +24,7 @@ concurrency:
 
 jobs:
   publish:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
