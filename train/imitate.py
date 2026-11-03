@@ -77,15 +77,24 @@ def targets(values: torch.Tensor, legal: torch.Tensor, choice: torch.Tensor, sof
 def evaluate(net: CardNet, d: dict[str, torch.Tensor], batch: int) -> dict[str, float]:
     net.eval()
     agree = regret = 0.0
+    top = {2: 0.0, 3: 0.0}
     n = len(d["choice"])
     for i in range(0, n, batch):
         x, legal = d["features"][i : i + batch], d["legal"][i : i + batch]
         values, choice = d["values"][i : i + batch], d["choice"][i : i + batch].long()
-        pick = net(x).masked_fill(~legal, float("-inf")).argmax(1)
+        logits = net(x).masked_fill(~legal, float("-inf"))
+        pick = logits.argmax(1)
+        best = values.gather(1, choice[:, None])[:, 0]
         agree += (pick == choice).sum().item()
-        regret += (values.gather(1, choice[:, None]) - values.gather(1, pick[:, None])).sum().item()
+        regret += (best - values.gather(1, pick[:, None])[:, 0]).sum().item()
+        order = logits.argsort(1, descending=True)
+        for k in top:  # regret if a search then picked perfectly among the net's top k legal cards
+            ks = order[:, :k]
+            ok = legal.gather(1, ks)
+            kv = values.gather(1, ks).masked_fill(~ok, float("-inf")).max(1).values
+            top[k] += (best - kv).sum().item()
     net.train()
-    return {"agree": agree / n, "regret": regret / n}
+    return {"agree": agree / n, "regret": regret / n, **{f"top{k}_regret": v / n for k, v in top.items()}}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -182,11 +191,16 @@ def main(argv: list[str] | None = None) -> int:
             writer.add_scalar("train/loss", total / n, epoch + 1)
             writer.add_scalar("train/lr", sched.get_last_lr()[0], epoch + 1)
             writer.add_scalar("val/agree", m["agree"], epoch + 1)
-            writer.add_scalars("val/regret", {"student": m["regret"], **base}, epoch + 1)
+            writer.add_scalars(
+                "val/regret",
+                {"student": m["regret"], "top2": m["top2_regret"], "top3": m["top3_regret"], **base},
+                epoch + 1,
+            )
             writer.flush()
         print(
             f"epoch {epoch + 1:>2}  loss {total / n:.4f}  val agree {m['agree']:.1%}  "
-            f"regret {m['regret']:.3f} pts/decision  {time.perf_counter() - start:.0f} s",
+            f"regret {m['regret']:.3f}  top2 {m['top2_regret']:.3f}  top3 {m['top3_regret']:.3f} pts/decision  "
+            f"{time.perf_counter() - start:.0f} s",
             flush=True,
         )
 
