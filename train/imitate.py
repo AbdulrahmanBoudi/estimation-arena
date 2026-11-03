@@ -102,6 +102,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--val", type=float, default=0.05, help="share of games held out")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument(
+        "--logdir", type=Path, help="write TensorBoard curves here (live view: tensorboard --logdir ...)"
+    )
+    parser.add_argument(
         "--augment", type=Path, help="suit tables from train.suit_tables: relabel suits at random per row"
     )
     args = parser.parse_args(argv)
@@ -140,6 +143,13 @@ def main(argv: list[str] | None = None) -> int:
         if tables["feature_source"].shape[1] != tr["features"].shape[1]:
             raise SystemExit("suit tables do not match the recorded feature count")
 
+    writer = None
+    if args.logdir:
+        from torch.utils.tensorboard import SummaryWriter
+
+        writer = SummaryWriter(str(args.logdir.expanduser() / args.out.stem))
+        writer.add_text("config", json.dumps({k: str(v) for k, v in vars(args).items()}))
+
     net = CardNet(tr["features"].shape[1], args.hidden, args.layers).to(device)
     opt = torch.optim.AdamW(net.parameters(), lr=args.lr, weight_decay=1e-4)
     steps = args.epochs * ((n + args.batch - 1) // args.batch)
@@ -168,6 +178,12 @@ def main(argv: list[str] | None = None) -> int:
             total += loss.item() * len(idx)
         m = evaluate(net, va, args.batch)
         history.append({"epoch": epoch + 1, "loss": total / n, **m})
+        if writer is not None:
+            writer.add_scalar("train/loss", total / n, epoch + 1)
+            writer.add_scalar("train/lr", sched.get_last_lr()[0], epoch + 1)
+            writer.add_scalar("val/agree", m["agree"], epoch + 1)
+            writer.add_scalars("val/regret", {"student": m["regret"], **base}, epoch + 1)
+            writer.flush()
         print(
             f"epoch {epoch + 1:>2}  loss {total / n:.4f}  val agree {m['agree']:.1%}  "
             f"regret {m['regret']:.3f} pts/decision  {time.perf_counter() - start:.0f} s",
@@ -185,6 +201,8 @@ def main(argv: list[str] | None = None) -> int:
     meta["history"] = history
     meta["baselines"] = base
     np.savez(args.out, **arrays, meta=json.dumps(meta))
+    if writer is not None:
+        writer.close()
     print(f"wrote {args.out}", flush=True)
     return 0
 
