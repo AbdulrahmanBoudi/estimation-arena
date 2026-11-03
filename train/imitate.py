@@ -36,7 +36,20 @@ def load(data: Path) -> dict[str, np.ndarray]:
     if not shards:
         raise SystemExit(f"no .npz shards in {data}")
     parts = [np.load(s) for s in shards]
-    return {k: np.concatenate([p[k] for p in parts]) for k in ("features", "legal", "values", "choice", "game")}
+    keys = ["features", "legal", "values", "choice", "game"]
+    if all("hint" in p for p in parts):
+        keys.append("hint")
+    return {k: np.concatenate([p[k] for p in parts]) for k in keys}
+
+
+def baselines(values: np.ndarray, legal: np.ndarray, choice: np.ndarray, hint: np.ndarray | None) -> dict[str, float]:
+    """Regret of simple policies under the teacher's values, in points per decision."""
+    rows = np.arange(len(choice))
+    best = values[rows, choice]
+    out = {"random": float((((best[:, None] - values) * legal).sum(1) / legal.sum(1)).mean())}
+    if hint is not None:
+        out["heuristic"] = float((best - values[rows, hint]).mean())
+    return out
 
 
 class CardNet(nn.Module):
@@ -96,7 +109,8 @@ def main(argv: list[str] | None = None) -> int:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     parts = [load(p) for p in args.data]
-    raw = {k: np.concatenate([p[k] for p in parts]) for k in parts[0]}
+    common = set.intersection(*(set(p) for p in parts))
+    raw = {k: np.concatenate([p[k] for p in parts]) for k in common}
     games = np.unique(raw["game"])
     rng = np.random.default_rng(args.seed)
     val_games = set(rng.choice(games, max(1, int(len(games) * args.val)), replace=False).tolist())
@@ -113,6 +127,11 @@ def main(argv: list[str] | None = None) -> int:
     tr, va = tensors(~is_val), tensors(is_val)
     n = len(tr["choice"])
     print(f"{n} train rows, {len(va['choice'])} val rows from {len(games)} games, device {device}", flush=True)
+    base = baselines(
+        raw["values"][is_val], raw["legal"][is_val], raw["choice"][is_val].astype(np.int64),
+        raw["hint"][is_val].astype(np.int64) if "hint" in raw else None,
+    )
+    print("val regret baselines: " + ", ".join(f"{k} {v:.3f}" for k, v in base.items()) + " pts/decision", flush=True)
 
     tables = None
     if args.augment:
@@ -164,6 +183,7 @@ def main(argv: list[str] | None = None) -> int:
     meta["data"] = [str(p) for p in args.data]
     meta["rows"] = {"train": n, "val": int(len(va["choice"]))}
     meta["history"] = history
+    meta["baselines"] = base
     np.savez(args.out, **arrays, meta=json.dumps(meta))
     print(f"wrote {args.out}", flush=True)
     return 0
