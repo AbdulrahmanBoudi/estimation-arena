@@ -32,3 +32,13 @@ ssh -N -L 6006:127.0.0.1:6006 home-server
 ```
 
 `val/regret` plots the student against the random and Heuristic baselines on the same games.
+
+## Pictures board
+
+```bash
+PYTHONPATH=. uv run python experiments/trace_game.py --rounds 3 --out ~/workspace/estimation-data/rung2/trace.json
+.venv-gpu/bin/python experiments/board.py --data ~/workspace/estimation-data/rung2 \
+  --trace ~/workspace/estimation-data/rung2/trace.json --tb ~/workspace/estimation-data/tb
+```
+
+TensorBoard, Images tab, run `board`: methods, data, results, and a game replay on the step slider.
