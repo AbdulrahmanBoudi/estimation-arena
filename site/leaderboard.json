@@ -1,5 +1,5 @@
 {
- "built_at": "2026-11-02T19:34:02+00:00",
+ "built_at": "2026-11-03T00:24:20+00:00",
  "anchor": "random",
  "anchor_rating": 400.0,
  "ladder": {
@@ -8,14 +8,14 @@
   "seed": 0,
   "imported_at": "2026-11-02T19:24:43+00:00"
  },
- "submissions": 2,
+ "submissions": 3,
  "rows": [
   {
    "name": "Hybrid (B-Tig)",
    "author": "estimation-engine",
    "kind": "anchor",
    "description": "hybrid",
-   "elo": 5243.874395085582,
+   "elo": 5223.985218186346,
    "games": null,
    "versus": [],
    "anchor": true
@@ -25,7 +25,7 @@
    "author": "estimation-engine",
    "kind": "anchor",
    "description": "rl:checkpoint=runs/m4-rules-v2/checkpoints/final.pt",
-   "elo": 4926.809341561768,
+   "elo": 4903.398243991189,
    "games": null,
    "versus": [],
    "anchor": true
@@ -35,7 +35,7 @@
    "author": "estimation-engine",
    "kind": "anchor",
    "description": "pimc",
-   "elo": 4708.143497575581,
+   "elo": 4682.415047150147,
    "games": null,
    "versus": [],
    "anchor": true
@@ -45,7 +45,7 @@
    "author": "estimation-engine",
    "kind": "anchor",
    "description": "search",
-   "elo": 4686.274116529328,
+   "elo": 4660.812010553574,
    "games": null,
    "versus": [],
    "anchor": true
@@ -55,56 +55,42 @@
    "author": "Essam",
    "kind": "python",
    "description": "Example Python-tier bot: the engine's HeuristicBot with a higher risk aversion.",
-   "elo": 3726.484411974121,
-   "games": 192,
-   "sets": 4,
-   "seed": 0,
-   "played_at": "2026-11-02T19:33:34+00:00",
+   "elo": 3534.8499113967923,
+   "games": 96,
+   "sets": 3,
+   "seed": 1157764928,
+   "played_at": "2026-11-03T00:20:08+00:00",
    "engine": "0.1.0",
-   "p95_ms": 0.030145989465620093,
+   "p95_ms": 0.014778261926322079,
    "over_budget": 0.0,
    "versus": [
     {
      "anchor": "Random",
-     "rsa": 1506.8125,
-     "rsa_low": 1298.8357861564282,
-     "rsa_high": 1714.7892138435718,
+     "rsa": 1427.8333333333333,
+     "rsa_low": 975.6749172200118,
+     "rsa_high": 1879.9917494466547,
      "first_place": 0.5
     },
     {
      "anchor": "Heuristic",
-     "rsa": -2.6645352591003757e-15,
-     "rsa_low": -1.1144275649722525e-14,
-     "rsa_high": 5.8152051315217736e-15,
-     "first_place": 0.25
+     "rsa": 0.4999999999999994,
+     "rsa_low": -15.063078156630855,
+     "rsa_high": 16.063078156630855,
+     "first_place": 0.3333333333333333
     },
     {
      "anchor": "PIMC",
-     "rsa": -120.79166666666669,
-     "rsa_low": -151.24770598208735,
-     "rsa_high": -90.33562735124602,
+     "rsa": -102.22222222222223,
+     "rsa_low": -171.51522318616816,
+     "rsa_high": -32.929221258276314,
      "first_place": 0.0
     },
     {
      "anchor": "Search bot",
-     "rsa": -104.97916666666667,
-     "rsa_low": -130.08132831937584,
-     "rsa_high": -79.8770050139575,
-     "first_place": 0.0
-    },
-    {
-     "anchor": "RL v2",
-     "rsa": -107.91666666666666,
-     "rsa_low": -177.7972544092794,
-     "rsa_high": -38.036078924053925,
-     "first_place": 0.0
-    },
-    {
-     "anchor": "Hybrid (B-Tig)",
-     "rsa": -133.85416666666666,
-     "rsa_low": -191.9253721322587,
-     "rsa_high": -75.78296120107461,
-     "first_place": 0.0
+     "rsa": -104.8888888888889,
+     "rsa_low": -140.02620318983728,
+     "rsa_high": -69.75157458794052,
+     "first_place": 0.041666666666666664
     }
    ],
    "anchor": false
@@ -114,65 +100,96 @@
    "author": "estimation-engine",
    "kind": "anchor",
    "description": "heuristic",
-   "elo": 3494.8834552966823,
+   "elo": 3448.2415005278144,
    "games": null,
    "versus": [],
    "anchor": true
+  },
+  {
+   "name": "highcard-wire",
+   "author": "Essam",
+   "kind": "wire",
+   "description": "Mirror of lowcard-wire: never bids, estimates the minimum, plays the highest legal card. Submitted through a pull request to prove the smoke flow.",
+   "elo": 3256.8535268636083,
+   "games": 96,
+   "sets": 3,
+   "seed": 1157764928,
+   "played_at": "2026-11-03T00:22:14+00:00",
+   "engine": "0.1.0",
+   "p95_ms": 0.4115780598675855,
+   "over_budget": 0.0,
+   "versus": [
+    {
+     "anchor": "Random",
+     "rsa": 4236846.888888889,
+     "rsa_low": -10533337.195291124,
+     "rsa_high": 19007030.973068904,
+     "first_place": 0.4583333333333333
+    },
+    {
+     "anchor": "Heuristic",
+     "rsa": -561.1111111111111,
+     "rsa_low": -758.4703993832863,
+     "rsa_high": -363.75182283893577,
+     "first_place": 0.0
+    },
+    {
+     "anchor": "PIMC",
+     "rsa": -737.8888888888888,
+     "rsa_low": -747.0754726212182,
+     "rsa_high": -728.7023051565594,
+     "first_place": 0.0
+    },
+    {
+     "anchor": "Search bot",
+     "rsa": -758.861111111111,
+     "rsa_low": -814.5688698552826,
+     "rsa_high": -703.1533523669393,
+     "first_place": 0.0
+    }
+   ],
+   "anchor": false
   },
   {
    "name": "lowcard-wire",
    "author": "Essam",
    "kind": "wire",
    "description": "Example wire-protocol bot: never bids, estimates the minimum, plays the lowest legal card. Pure stdlib, no engine import.",
-   "elo": 3423.352245831656,
-   "games": 192,
-   "sets": 4,
-   "seed": 0,
-   "played_at": "2026-11-02T19:30:33+00:00",
+   "elo": 3256.8535268636083,
+   "games": 96,
+   "sets": 3,
+   "seed": 1157764928,
+   "played_at": "2026-11-03T00:24:18+00:00",
    "engine": "0.1.0",
-   "p95_ms": 0.7604270202340138,
+   "p95_ms": 0.4198096210649372,
    "over_budget": 0.0,
    "versus": [
     {
      "anchor": "Random",
-     "rsa": 382612845.6041666,
-     "rsa_low": -755577190.0635985,
-     "rsa_high": 1520802881.2719316,
-     "first_place": 0.5
+     "rsa": 1949899.9722222222,
+     "rsa_low": -5693322.267900225,
+     "rsa_high": 9593122.212344669,
+     "first_place": 0.375
     },
     {
      "anchor": "Heuristic",
-     "rsa": -621.0416666666666,
-     "rsa_low": -690.4711977854173,
-     "rsa_high": -551.612135547916,
+     "rsa": -618.1666666666666,
+     "rsa_low": -771.9576642581084,
+     "rsa_high": -464.3756690752249,
      "first_place": 0.0
     },
     {
      "anchor": "PIMC",
-     "rsa": -745.2708333333334,
-     "rsa_low": -799.0705562968284,
-     "rsa_high": -691.4711103698384,
+     "rsa": -701.138888888889,
+     "rsa_low": -766.9416255970071,
+     "rsa_high": -635.3361521807709,
      "first_place": 0.0
     },
     {
      "anchor": "Search bot",
-     "rsa": -756.5208333333334,
-     "rsa_low": -827.8692459993689,
-     "rsa_high": -685.1724206672978,
-     "first_place": 0.0
-    },
-    {
-     "anchor": "RL v2",
-     "rsa": -3390.291666666667,
-     "rsa_low": -11949.355697095758,
-     "rsa_high": 5168.772363762425,
-     "first_place": 0.0
-    },
-    {
-     "anchor": "Hybrid (B-Tig)",
-     "rsa": -904.2083333333334,
-     "rsa_low": -1206.1369476569735,
-     "rsa_high": -602.2797190096933,
+     "rsa": -664.3888888888889,
+     "rsa_low": -725.2038905499415,
+     "rsa_high": -603.5738872278363,
      "first_place": 0.0
     }
    ],

@@ -15,221 +15,151 @@
   "with_any_call": true,
   "with_choose": true
  },
- "seed": 0,
- "sets": 4,
- "played_at": "2026-11-02T19:33:34+00:00",
+ "seed": 1157764928,
+ "sets": 3,
+ "played_at": "2026-11-03T00:20:08+00:00",
  "versus": [
   {
    "anchor": "Random",
    "spec": "random",
-   "sets": 4,
-   "games": 32,
-   "mean_score": 572.9375,
+   "sets": 3,
+   "games": 24,
+   "mean_score": 454.6666666666667,
    "rsa": {
-    "mean": 1506.8125,
-    "low": 1298.8357861564282,
-    "high": 1714.7892138435718,
-    "sets": 4
+    "mean": 1427.8333333333333,
+    "low": 975.6749172200118,
+    "high": 1879.9917494466547,
+    "sets": 3
    },
    "first_place": {
     "mean": 0.5,
     "low": 0.5,
     "high": 0.5,
-    "sets": 4
+    "sets": 3
    },
    "timing": {
-    "count": 12766,
-    "mean_s": 7.170736722544258e-06,
-    "p95_s": 1.1652558675863178e-05,
-    "max_s": 0.00026112503837794065,
+    "count": 9464,
+    "mean_s": 6.515041103127642e-06,
+    "p95_s": 1.2365788487295415e-05,
+    "max_s": 5.718699999590626e-05,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 5.36768387502525
+   "wall_s": 0.41800649099999987
   },
   {
    "anchor": "Heuristic",
    "spec": "heuristic",
-   "sets": 4,
-   "games": 32,
-   "mean_score": 102.8125,
+   "sets": 3,
+   "games": 24,
+   "mean_score": 116.91666666666667,
    "rsa": {
-    "mean": -2.6645352591003757e-15,
-    "low": -1.1144275649722525e-14,
-    "high": 5.8152051315217736e-15,
-    "sets": 4
+    "mean": 0.4999999999999994,
+    "low": -15.063078156630855,
+    "high": 16.063078156630855,
+    "sets": 3
    },
    "first_place": {
-    "mean": 0.25,
-    "low": 0.25,
-    "high": 0.25,
-    "sets": 4
+    "mean": 0.3333333333333333,
+    "low": -0.025221060812454676,
+    "high": 0.6918877274791213,
+    "sets": 3
    },
    "timing": {
-    "count": 7592,
-    "mean_s": 6.042407270811381e-06,
-    "p95_s": 9.371722253862597e-06,
-    "max_s": 9.524996858090162e-05,
+    "count": 5720,
+    "mean_s": 6.1072513986013985e-06,
+    "p95_s": 1.2865366342182148e-05,
+    "max_s": 5.190899999973908e-05,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 5.22614458296448
+   "wall_s": 0.34856039400000327
   },
   {
    "anchor": "PIMC",
    "spec": "pimc",
-   "sets": 4,
-   "games": 32,
-   "mean_score": 20.0,
+   "sets": 3,
+   "games": 24,
+   "mean_score": 33.291666666666664,
    "rsa": {
-    "mean": -120.79166666666669,
-    "low": -151.24770598208735,
-    "high": -90.33562735124602,
-    "sets": 4
+    "mean": -102.22222222222223,
+    "low": -171.51522318616816,
+    "high": -32.929221258276314,
+    "sets": 3
    },
    "first_place": {
     "mean": 0.0,
     "low": 0.0,
     "high": 0.0,
-    "sets": 4
+    "sets": 3
    },
    "timing": {
-    "count": 7592,
-    "mean_s": 1.04776822971549e-05,
-    "p95_s": 1.56828097823084e-05,
-    "max_s": 0.000237041967920959,
+    "count": 5720,
+    "mean_s": 8.117601398601399e-06,
+    "p95_s": 1.3652829685254435e-05,
+    "max_s": 6.592500000124346e-05,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 27.664047416998073
+   "wall_s": 23.585023199999995
   },
   {
    "anchor": "Search bot",
    "spec": "search",
-   "sets": 4,
-   "games": 32,
-   "mean_score": 26.8125,
+   "sets": 3,
+   "games": 24,
+   "mean_score": 38.833333333333336,
    "rsa": {
-    "mean": -104.97916666666667,
-    "low": -130.08132831937584,
-    "high": -79.8770050139575,
-    "sets": 4
+    "mean": -104.8888888888889,
+    "low": -140.02620318983728,
+    "high": -69.75157458794052,
+    "sets": 3
    },
    "first_place": {
-    "mean": 0.0,
-    "low": 0.0,
-    "high": 0.0,
-    "sets": 4
+    "mean": 0.041666666666666664,
+    "low": -0.13761053040622737,
+    "high": 0.22094386373956068,
+    "sets": 3
    },
    "timing": {
-    "count": 7540,
-    "mean_s": 1.080428700265252e-05,
-    "p95_s": 1.631639529751366e-05,
-    "max_s": 0.00010112498421221972,
+    "count": 5720,
+    "mean_s": 9.07823986013986e-06,
+    "p95_s": 1.4778261926322079e-05,
+    "max_s": 5.428300000431818e-05,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 31.063667458016425
-  },
-  {
-   "anchor": "RL v2",
-   "spec": "rl:checkpoint=runs/m4-rules-v2/checkpoints/final.pt",
-   "sets": 4,
-   "games": 32,
-   "mean_score": 58.25,
-   "rsa": {
-    "mean": -107.91666666666666,
-    "low": -177.7972544092794,
-    "high": -38.036078924053925,
-    "sets": 4
-   },
-   "first_place": {
-    "mean": 0.0,
-    "low": 0.0,
-    "high": 0.0,
-    "sets": 4
-   },
-   "timing": {
-    "count": 7644,
-    "mean_s": 1.1572248691784406e-05,
-    "p95_s": 1.8742409425954058e-05,
-    "max_s": 0.00020745897199958563,
-    "budget_s": 0.25,
-    "over_budget": 0
-   },
-   "wall_s": 6.742087500053458
-  },
-  {
-   "anchor": "Hybrid (B-Tig)",
-   "spec": "hybrid",
-   "sets": 4,
-   "games": 32,
-   "mean_score": 29.53125,
-   "rsa": {
-    "mean": -133.85416666666666,
-    "low": -191.9253721322587,
-    "high": -75.78296120107461,
-    "sets": 4
-   },
-   "first_place": {
-    "mean": 0.0,
-    "low": 0.0,
-    "high": 0.0,
-    "sets": 4
-   },
-   "timing": {
-    "count": 7722,
-    "mean_s": 1.834467612017612e-05,
-    "p95_s": 3.0145989465620092e-05,
-    "max_s": 0.0005966250319033861,
-    "budget_s": 0.25,
-    "over_budget": 0
-   },
-   "wall_s": 101.29916583409067
+   "wall_s": 26.019040323
   }
  ],
  "pairs": [
   {
    "a": "sub:cautious-heuristic",
    "b": "random",
-   "a_wins": 4,
+   "a_wins": 3,
    "draws": 0,
    "b_wins": 0
   },
   {
    "a": "sub:cautious-heuristic",
    "b": "heuristic",
-   "a_wins": 0,
-   "draws": 4,
-   "b_wins": 0
+   "a_wins": 1,
+   "draws": 1,
+   "b_wins": 1
   },
   {
    "a": "sub:cautious-heuristic",
    "b": "pimc",
    "a_wins": 0,
    "draws": 0,
-   "b_wins": 4
+   "b_wins": 3
   },
   {
    "a": "sub:cautious-heuristic",
    "b": "search",
    "a_wins": 0,
    "draws": 0,
-   "b_wins": 4
-  },
-  {
-   "a": "sub:cautious-heuristic",
-   "b": "rl:checkpoint=runs/m4-rules-v2/checkpoints/final.pt",
-   "a_wins": 0,
-   "draws": 0,
-   "b_wins": 4
-  },
-  {
-   "a": "sub:cautious-heuristic",
-   "b": "hybrid",
-   "a_wins": 0,
-   "draws": 0,
-   "b_wins": 4
+   "b_wins": 3
   }
  ]
 }
