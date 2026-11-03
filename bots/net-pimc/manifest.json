@@ -1,0 +1,8 @@
+{
+  "name": "net-pimc",
+  "author": "Essam",
+  "kind": "python",
+  "entry": "bot.py:make",
+  "description": "Rung 2: PIMC search that only considers the cards a net trained on PIMC-100 rates highest, with the saved effort spent on deeper search. HeuristicBot bidding, like PIMC.",
+  "timeout_s": 5
+}
