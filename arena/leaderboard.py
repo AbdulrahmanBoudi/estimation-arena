@@ -11,6 +11,7 @@ Writes ``site/leaderboard.json`` and ``site/index.html``, a single self-containe
 from __future__ import annotations
 
 import argparse
+import base64
 import html
 import json
 from datetime import UTC, datetime
@@ -202,14 +203,13 @@ def build(root: Path = ROOT, live: list[dict[str, Any]] | None = None) -> dict[s
 
 
 STYLE = """
-:root{--bg:#fff;--fg:#1b1b1f;--muted:#6b6f76;--line:#e3e5e8;--bar:#3b6ea5;--tint:#f4f6f8;--good:#2e7d32;--bad:#c62828}
-@media(prefers-color-scheme:dark){:root{--bg:#121316;--fg:#e8e9ec;--muted:#9aa0a6;--line:#2b2e33;--bar:#7aa7d9;--tint:#1b1d21;--good:#81c784;--bad:#ef9a9a}}
-*{box-sizing:border-box}body{margin:0;padding:24px 16px;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+:root{color-scheme:dark;--bg:#17235e;--fg:#eef0ff;--muted:#aab4e6;--line:#3a4a9a;--bar:#f2c14e;--tint:#1d2a6b;--good:#8fe0a8;--bad:#f3a6a8}
+*{box-sizing:border-box}body{margin:0;padding:24px 16px;background:var(--bg);color:var(--fg);font:15px/1.45 "Instrument Sans",system-ui,sans-serif}a{color:var(--fg)}h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif}
 main{max-width:1180px;margin:0 auto}h1{font-size:24px;margin:0 0 4px}p.sub{color:var(--muted);margin:0 0 20px}
 table{width:100%;border-collapse:collapse}th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;white-space:nowrap}
 th{font-weight:600;color:var(--muted);font-size:13px}td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
-tr.anchor td{color:var(--muted);background:var(--tint)}tr:has(+ tr.howrow) td{border-bottom:none}tr.howrow td{white-space:normal;padding-top:0}.places{display:flex;gap:2px;width:210px;height:12px;vertical-align:middle}.places span{display:block;height:100%}.places span:first-child{border-radius:3px 0 0 3px}.places span:last-child{border-radius:0 3px 3px 0}.p0{background:#2a78d6}.p1{background:#8fbbef}.p2{background:#f0a8a0}.p3{background:#d03b3b}.key{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 4px 0 12px;vertical-align:-1px}.king{font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted)}.metrics{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}.metrics button{font:inherit;font-size:14px;padding:6px 12px;border:1px solid var(--muted);border-radius:6px;background:transparent;color:inherit;cursor:pointer}.metrics button[aria-pressed=true]{background:#2a78d6;border-color:#2a78d6;color:#fff}.unrated{color:var(--muted);font-size:13px}td.m-weighted,td.m-king,td.m-delta{color:var(--muted)}body[data-metric=weighted] td.m-weighted,body[data-metric=king] td.m-king,body[data-metric=delta] td.m-delta{color:inherit;font-weight:700}span.m-king,span.m-delta{display:none}body[data-metric=king] span.m-weighted,body[data-metric=delta] span.m-weighted{display:none}body[data-metric=king] span.m-king,body[data-metric=delta] span.m-delta{display:inline}
-.tag{font-size:12px;padding:1px 6px;border:1px solid var(--line);border-radius:10px;color:var(--muted)}.desc{color:var(--muted);font-size:13px;white-space:normal}
+tr.anchor td{color:var(--muted);background:var(--tint)}tr:has(+ tr.howrow) td{border-bottom:none}tr.howrow td{white-space:normal;padding-top:0}.places{display:flex;gap:2px;width:210px;height:12px;vertical-align:middle}.places span{display:block;height:100%}.places span:first-child{border-radius:3px 0 0 3px}.places span:last-child{border-radius:0 3px 3px 0}.p0{background:#f2c14e}.p1{background:#f8e3a8}.p2{background:#f3a6a8}.p3{background:#e5484d}.key{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 4px 0 12px;vertical-align:-1px}.king{font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted)}.metrics{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}.metrics button{font:inherit;font-size:14px;padding:6px 12px;border:1px solid var(--muted);border-radius:6px;background:transparent;color:inherit;cursor:pointer}.metrics button[aria-pressed=true]{background:#f2c14e;border-color:#f2c14e;color:#1c2147;font-weight:600}.banner{display:block;width:100%;height:auto;margin:0 0 16px}.unrated{color:var(--muted);font-size:13px}td.m-weighted,td.m-king,td.m-delta{color:var(--muted)}body[data-metric=weighted] td.m-weighted,body[data-metric=king] td.m-king,body[data-metric=delta] td.m-delta{color:inherit;font-weight:700}span.m-king,span.m-delta{display:none}body[data-metric=king] span.m-weighted,body[data-metric=delta] span.m-weighted{display:none}body[data-metric=king] span.m-king,body[data-metric=delta] span.m-delta{display:inline}
+.brand-title{margin:0}.tag{font-size:12px;padding:1px 6px;border:1px solid var(--line);border-radius:10px;color:var(--muted)}.desc{color:var(--muted);font-size:13px;white-space:normal}
 .pos{color:var(--good)}.neg{color:var(--bad)}details{margin-top:24px}summary{cursor:pointer;color:var(--muted)}
 .who-cell{white-space:normal;min-width:230px}td.opt{white-space:normal}.places{flex-shrink:0}
 @media(max-width:700px){th.opt,td.opt,.who{display:none}.who-cell{min-width:0}body:not([data-metric=weighted]) .num.m-weighted,body:not([data-metric=king]) .num.m-king,body:not([data-metric=delta]) .num.m-delta{display:none}}
@@ -217,20 +217,20 @@ details.how{margin:6px 0 2px}details.how summary{font-size:13px}.scroll{overflow
 svg text{fill:var(--fg);font:12px system-ui,sans-serif}
 .flow .step{fill:var(--tint);stroke:var(--line)}.i-n{fill:var(--muted)!important;font-size:11px!important}
 .i-line{fill:none;stroke:var(--muted);stroke-width:1.4}.i-t{font-weight:600;font-size:13px!important}.i-s{fill:var(--muted)!important;font-size:10px!important}
-.i-bid{fill:#8e7cf022;stroke:#8e7cf0}.i-wire{stroke:#3987e555;stroke-width:.8}.i-net{fill:#3987e5}
+.i-bid{fill:#8e7cf022;stroke:#8e7cf0}.i-wire{stroke:#f2c14e55;stroke-width:.8}.i-net{fill:#f2c14e}
 .i-back{fill:#eb683433;stroke:#eb6834}.i-card{fill:var(--bg);stroke:var(--muted)}.i-win{fill:#1baf7a}.i-loss{fill:#e0525299}
-.i-mean{fill:var(--muted)}.i-best{fill:#eda100!important}.i-tick{fill:none;stroke:#1baf7a;stroke-width:2.5}.i-data{fill:var(--bg);stroke:#8e7cf0}
+.i-mean{fill:var(--muted)}.i-best{fill:#f2c14e!important}.i-tick{fill:none;stroke:#1baf7a;stroke-width:2.5}.i-data{fill:var(--bg);stroke:#8e7cf0}
 .arrow{fill:none;stroke:var(--muted);stroke-width:1.5}
 .lbl2{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:12px 0 4px}
 .move{border:1px solid var(--line);border-radius:10px;padding:10px 12px;max-width:520px}
 .sit{margin:2px 0 6px;font-size:13px}.lbl{color:var(--muted);font-size:12px;margin-right:6px}.seat{color:var(--muted);font-size:11px;margin:0 3px 0 8px}
 .pc{display:inline-block;min-width:34px;padding:1px 5px;border:1px solid var(--line);border-radius:5px;background:var(--bg);font-weight:600;text-align:center;font-variant-numeric:tabular-nums}
-.pc.red{color:#e05252}.pc.on{border:2px solid #eda100}.pc.dim{opacity:.5;font-weight:400}
+.pc.red{color:#c4243a}.pc.on{border:2px solid #eda100}.pc.dim{opacity:.5;font-weight:400}
 table.opts{width:auto;margin:4px 0 8px}table.opts td,table.opts th{border:none;padding:3px 10px 3px 0;font-size:13px;color:var(--fg)!important;background:none!important}
 .track{display:inline-block;width:90px;height:9px;border-radius:3px;background:var(--line);margin-right:6px;vertical-align:middle;overflow:hidden}
 .scroll{max-width:calc(100vw - 72px)}.move{max-width:min(520px,calc(100vw - 72px))}
 @media(max-width:700px){.bar{max-width:48px}th,td{padding:8px 6px}.track{width:54px}.sit{line-height:1.9}}
-.fill{display:block;height:100%}.f-net{background:#3987e5}.f-search{background:#eb6834}.tick{color:#1baf7a;font-weight:600}
+.fill{display:block;height:100%}.f-net{background:#f2c14e}.f-search{background:#f3a6a8}.tick{color:#1baf7a;font-weight:600}
 """
 
 
@@ -427,6 +427,14 @@ def how_it_plays(row: dict[str, Any], samples: dict[str, Any]) -> str:
             f"{move}</details>")
 
 
+def _banner() -> str:
+    return (ROOT / "brand" / "banner.svg").read_text().replace("<svg ", '<svg class="banner" ', 1)
+
+
+def _favicon() -> str:
+    return base64.b64encode((ROOT / "brand" / "favicon.svg").read_bytes()).decode()
+
+
 def render(board: dict[str, Any]) -> str:
     rows = board["rows"]
     anchors = [r["name"] for r in rows if r["anchor"]]
@@ -480,13 +488,13 @@ def render(board: dict[str, Any]) -> str:
     built = board["built_at"].replace("T", " ")[:16] + " UTC"
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Estimation Arena</title><style>{STYLE}{GUIDE_STYLE}:root{{--guide-line:var(--line)}}</style></head>
+<title>Estimation Arena</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,{_favicon()}"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet"><style>{STYLE}{GUIDE_STYLE}:root{{--guide-line:var(--line)}}</style></head>
 <body data-metric="weighted"><main>
-<h1>Estimation Arena</h1>
+<h1 class="brand-title">{_banner()}</h1>
 <p class="sub">{len(rows)} bots ranked three ways from the same games, including {len(anchors)} fixed benchmarks. Updated {built}.</p>
 <div class="metrics" role="group" aria-label="Rank by">{"".join(f'<button type="button" data-rank="{m}"{" aria-pressed=true" if m == "weighted" else " aria-pressed=false"}>{label}</button>' for m, _, label in METRICS)}</div>
 <p class="desc"><span class="key p0"></span>King +1<span class="key p1"></span>Sub-King +0.2<span class="key p2"></span>Sub-Kooz −0.2<span class="key p3"></span>Kooz −1</p>
-<p class="desc"><a href="#guide">What the numbers mean</a></p>
+<p class="desc"><a href="#guide">What the numbers mean</a> · <a href="diagrams/how-it-works.html">How it works</a> · <a href="https://github.com/essamgouda97/estimation-arena">Code on GitHub</a></p>
 <p class="desc">Open “how it plays” under any bot to see how it decides, then one real decision from the same deal against three Basic rules bots.</p>
 <table>
 <thead><tr><th class="num">#</th><th>Bot</th>{"".join(f'<th class="num m-{m}">{label}</th>' for m, _, label in METRICS)}<th class="opt">Finishing places</th><th class="opt">Against each benchmark</th></tr></thead>

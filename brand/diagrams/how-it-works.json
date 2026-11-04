@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "How Estimation Arena rates a bot",
+    "output": "site/diagrams/how-it-works.html",
+    "quality_profile": "showcase",
+    "repository": { "url": "https://github.com/essamgouda97/estimation-arena", "provider": "github", "revision": "a85627e5d3e4e27b9cd4f99656499fa163ee51f6" }
+  },
+  "components": [
+    { "id": "bot", "type": "external", "label": "Your bot", "sublabel": "bots/NAME/", "pos": [40, 190], "size": [150, 70], "sources": [{ "path": "arena/bots.py", "line": 41, "label": "Manifest" }] },
+    { "id": "harness", "type": "backend", "label": "Harness", "sublabel": "plays duplicate sets", "pos": [340, 190], "size": [170, 70], "sources": [{ "path": "arena/run.py", "line": 138, "label": "play_submission" }, { "path": "arena/protocol.py", "line": 70, "label": "WireBot" }] },
+    { "id": "engine", "type": "cloud", "label": "Rules engine", "sublabel": "estimation-engine", "pos": [640, 190], "size": [160, 70], "sources": [{ "path": "pyproject.toml", "label": "engine dependency" }] },
+    { "id": "anchors", "type": "external", "label": "Anchors", "sublabel": "Random to Hybrid", "pos": [340, 40], "size": [170, 70], "sources": [{ "path": "anchors.json", "label": "anchor list" }] },
+    { "id": "results", "type": "database", "label": "Results", "sublabel": "results/*.json", "pos": [340, 340], "size": [170, 70], "sources": [{ "path": "arena/run.py", "line": 274, "label": "writes results" }] },
+    { "id": "elo", "type": "backend", "label": "Elo fit", "sublabel": "three scores", "pos": [640, 340], "size": [160, 70], "sources": [{ "path": "arena/leaderboard.py", "line": 90, "label": "build" }] },
+    { "id": "page", "type": "frontend", "label": "Leaderboard", "sublabel": "GitHub Pages", "pos": [920, 340], "size": [160, 70], "sources": [{ "path": ".github/workflows/pages.yml", "label": "publish" }] }
+  ],
+  "connections": [
+    { "id": "act", "from": "harness", "to": "bot", "label": "state, legal moves" },
+    { "id": "answer", "from": "bot", "to": "harness", "label": "one action id", "variant": "emphasis" },
+    { "id": "rules", "from": "harness", "to": "engine", "label": "apply rules" },
+    { "id": "seats", "from": "anchors", "to": "harness", "label": "fixed opponents" },
+    { "id": "save", "from": "harness", "to": "results", "label": "game results", "variant": "emphasis" },
+    { "id": "fit", "from": "results", "to": "elo", "label": "set wins" },
+    { "id": "publish", "from": "elo", "to": "page", "label": "ratings" }
+  ],
+  "cards": [
+    { "dot": "amber", "title": "Fair by construction", "items": ["Each deal is played four times with the seats rotated", "A fresh process for each game stops bots peeking across rotations"] },
+    { "dot": "cyan", "title": "Three scores", "items": ["Weighted rank, King only and score delta come from the same games"] }
+  ]
+}

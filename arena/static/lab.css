@@ -139,3 +139,4 @@ button:hover,select:hover{border-color:var(--muted)}button:disabled{opacity:.4;c
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 .check-head{color:var(--muted);font-size:13px;line-height:1.25;align-items:end;border-top:0}.check>span:nth-child(n+3){text-align:right}
 .cell i{z-index:3}.cell span{z-index:4}.c-left .grid .hd.corner{font-size:0}
+.brand-mark{display:block;width:60px;height:80px;margin:0 0 10px;image-rendering:pixelated}
