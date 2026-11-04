@@ -70,7 +70,7 @@ def main(argv: list[str] | None = None) -> int:
             f"  {label:<34} sets {won:>3}-{pair.draws}-{lost:<3} first {me.first.mean:5.1%}"
             f"  RSA {me.rsa.mean:+7.1f} [{me.rsa.low:+.1f}, {me.rsa.high:+.1f}]"
             f"  position {pr['mean']:+.2f} [{pr['low']:+.2f}, {pr['high']:+.2f}]"
-            f"  K/SK/Ko/SKo " + "/".join(f"{x:.0%}" for x in places[spec]["shares"]),
+            f"  K/SK/SKo/Ko " + "/".join(f"{x:.0%}" for x in places[spec]["shares"]),
             flush=True,
         )
     rows.sort(key=lambda r: r["rsa"], reverse=True)

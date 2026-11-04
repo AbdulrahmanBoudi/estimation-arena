@@ -1,4 +1,4 @@
-"""Positions: King to Sub-Kooz, ties shared, and the set records built from them."""
+"""Positions: King to Kooz, ties shared, and the set records built from them."""
 
 import pytest
 from estimation.arena.duplicate import SetResult

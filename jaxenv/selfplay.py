@@ -6,7 +6,7 @@
 - Policy: one MLP over jaxenv.encode (one seat's raw view) for Dash Calls, bids, With, estimates
   and cards. No hand evaluation, imitation or search; it starts from nothing.
 - Reward: only at the end of the Bola, by final position, zero-sum: King +1, Sub-King +1/3,
-  Kooz -1/3, Sub-Kooz -1, tied seats sharing their positions (``position_rewards``). A game past
+  Sub-Kooz -1/3, Kooz -1, tied seats sharing their positions (``position_rewards``). A game past
   int32's range is dropped, not scored.
 - Credit: TD(lambda) along each seat's own decisions (``td_lambda``), so a move is judged by how
   it changed the seat's expected final position, without waiting for the end of the game.
@@ -85,7 +85,7 @@ def apply_critic(net, x, hidden_hands):
 
 
 def positions(scores):
-    """[..., 4]: each seat's final position, 0 (King) to 3 (Sub-Kooz); tied seats get the mean of
+    """[..., 4]: each seat's final position, 0 (King) to 3 (Kooz); tied seats get the mean of
     the positions they share."""
     above = (scores[..., None, :] > scores[..., :, None]).sum(-1)
     tied = (scores[..., None, :] == scores[..., :, None]).sum(-1)
@@ -93,7 +93,7 @@ def positions(scores):
 
 
 def position_rewards(scores):
-    """[..., 4]: King +1, Sub-King +1/3, Kooz -1/3, Sub-Kooz -1; the four always sum to 0."""
+    """[..., 4]: King +1, Sub-King +1/3, Sub-Kooz -1/3, Kooz -1; the four always sum to 0."""
     return 1.0 - 2.0 * positions(scores) / 3.0
 
 

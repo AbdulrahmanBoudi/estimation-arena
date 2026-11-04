@@ -114,7 +114,7 @@ arena bot plays through, at every step, so the policy sees only what a seat may 
 | Piece | Choice |
 |---|---|
 | Algorithm | PPO, clipped at 0.2 |
-| Reward | At the Bola's end by position: King +1, Sub-King +1/3, Kooz -1/3, Sub-Kooz -1, ties shared |
+| Reward | At the Bola's end by position: King +1, Sub-King +1/3, Sub-Kooz -1/3, Kooz -1, ties shared |
 | Credit | TD(lambda = 0.95) along each seat's own decisions |
 | Critic | Training only: the same view plus the three hidden hands, so deal luck stays out of the advantage |
 | Extra head | Predicts the round's relative score, to teach the policy's shared layers |
