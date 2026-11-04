@@ -112,7 +112,7 @@ button:hover,select:hover{border-color:var(--muted)}button:disabled{opacity:.4;c
 .c-places{flex:1 1 220px;max-width:460px}
 .c-bar{display:flex;gap:2px;height:16px}.c-bar i{display:block;height:100%;transition:width .6s cubic-bezier(.3,1.2,.5,1);border-radius:2px;min-width:0}
 .c-names{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:3px;gap:8px}
-.c-buttons{display:flex;gap:8px}
+.c-buttons{display:flex;gap:8px;flex-wrap:wrap}.c-speed{display:flex}.c-speed button{border-radius:0;margin-left:-1px;padding:7px 10px;min-width:44px}.c-speed button:first-child{border-radius:6px 0 0 6px;margin-left:0}.c-speed button:last-child{border-radius:0 6px 6px 0}.c-speed button[aria-pressed=true]{background:var(--king);border-color:var(--king);color:var(--ink);font-weight:600;position:relative}
 .c-stage{display:grid;grid-template-columns:minmax(240px,1fr) minmax(0,2.1fr);gap:clamp(14px,2.4vw,32px);min-height:0}
 .c-left{min-height:0;display:flex;flex-direction:column;gap:8px;overflow:hidden}.c-left h3{margin:0;font-size:16px}
 .c-left .grid{width:100%;max-width:440px;grid-template-columns:22px repeat(10,1fr);gap:2px}.c-left .grid .hd{min-height:18px;font-size:12px}.c-left .cell{min-height:0;font-size:9px;border-radius:3px}

@@ -13,7 +13,7 @@ function card(c, attrs = "") {
   return `<span class="card${red}" data-c="${c}" ${attrs}>${r}<b>${SUITS[Math.floor(c / 13)]}</b></span>`;
 }
 
-const S = { progress: 0, run: null, data: null, at: -1, snap: null, cache: new Map(), round: 0, step: 0, playing: false, auto: false };
+const S = { speed: 1, progress: 0, run: null, data: null, at: -1, snap: null, cache: new Map(), round: 0, step: 0, playing: false, auto: false };
 
 // ---- the reel: one column per saved version, stacked by final position
 function drawReel() {
@@ -174,6 +174,18 @@ function nearestRow(it) {
 // ---- the film: every version plays the same round, full screen
 const sleep = (ms) => new Promise((r) => setTimeout(r, STILL ? Math.min(ms, 60) : ms));
 let filmId = 0;
+function setSpeed(x) {
+  S.speed = x;
+  $("c-speed").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.speed === x)));
+  try { localStorage.setItem("lab-speed", String(x)); } catch { /* speed just isn't remembered */ }
+}
+$("c-speed").onclick = (e) => { const b = e.target.closest("button"); if (b) setSpeed(+b.dataset.speed); };
+{
+  let saved = 1;
+  try { saved = +localStorage.getItem("lab-speed") || 1; } catch { /* use the default */ }
+  setSpeed([0.5, 1, 2, 4].includes(saved) ? saved : 1);
+}
+const reel = (ms) => sleep(ms / S.speed); // film time: follows the speed control, even mid-wait
 const moved = [];
 function moveInto(node, target) { moved.push([node, node.parentNode, node.nextSibling]); target.append(node); }
 function openCinema() {
@@ -229,25 +241,26 @@ async function film() {
     const round = S.snap.game.rounds[Math.min(S.round, S.snap.game.rounds.length - 1)];
     const total = Math.max(2800, Math.min(7000, 80000 / S.data.versions.length));
     const per = Math.max(35, Math.min(180, (total - 900) / Math.max(round.ev.length, 1)));
-    dealCards(Math.min(650, total * 0.15));
-    await sleep(Math.min(700, total * 0.17));
+    dealCards(Math.min(650, total * 0.15) / S.speed);
+    await reel(Math.min(700, total * 0.17));
     for (let k = 0; k < round.ev.length && id === filmId; k++) {
       await waitWhilePaused(id);
       if (id !== filmId) return;
       S.step = k + 1;
       S.progress = (k + 1) / round.ev.length;
       placeHead();
-      drawTable(true, { flight: Math.min(260, per * 1.7), bubble: Math.max(380, per * 4) });
-      await sleep(per * (round.ev[k].w !== undefined ? 2.4 : 1));
+      drawTable(true, { flight: Math.min(260, per * 1.7) / S.speed, bubble: Math.max(380, per * 4) / S.speed });
+      await reel(per * (round.ev[k].w !== undefined ? 2.4 : 1));
     }
     if (id !== filmId) return;
-    await sleep(Math.max(2400, Math.min(3600, total * 0.6)));
+    await reel(Math.max(2400, Math.min(3600, total * 0.6)));
     await waitWhilePaused(id);
     if (id !== filmId) return;
     i += 1;
-    if (i >= S.data.versions.length) { i = 0; await sleep(STILL ? 300 : 1200); clearTrail(); if (id !== filmId) return; }
+    if (i >= S.data.versions.length) { i = 0; await reel(STILL ? 300 : 1200); clearTrail(); if (id !== filmId) return; }
   }
 }
+addEventListener("resize", () => { const v = S.data?.versions[S.at]; if (v) placeRing(v.probes); });
 function clearTrail() { const t = $("grid").querySelector(".trail"); if (t) t.innerHTML = ""; }
 $("play").onclick = () => { if (S.data?.versions.length > 1) film(); };
 $("c-close").onclick = closeCinema;
