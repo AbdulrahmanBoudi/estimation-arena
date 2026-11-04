@@ -18,8 +18,8 @@ nav{display:flex;gap:16px;margin-bottom:6px}
 .match-head{display:flex;justify-content:space-between;gap:4px 20px;flex-wrap:wrap}
 .match-title{font-weight:600;font-size:18px}
 .match-time{color:var(--muted)}
-.strip{display:flex;align-items:center;height:48px;gap:2px;margin:8px 0}
-.strip i{flex:1 1 0;min-width:1px;max-width:18px;height:6px;border-radius:2px;background:var(--raised)}
+.strip{display:flex;align-items:center;height:48px;gap:1px;margin:8px 0}
+.strip i{flex:1 1 0;min-width:0;max-width:18px;height:6px;border-radius:2px;background:var(--raised)}
 .strip i.W{height:22px;transform:translateY(-11px);background:var(--king)}
 .strip i.L{height:22px;transform:translateY(11px);background:var(--kooz)}
 .strip i.D{height:6px;background:var(--muted)}
