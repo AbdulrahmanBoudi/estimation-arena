@@ -81,6 +81,24 @@ async function fetchSnap(i) {
   if (!S.cache.has(it)) S.cache.set(it, fetch(`/api/lab/${S.run}/snap/${it}`).then((r) => r.json()));
   return S.cache.get(it);
 }
+function setEnabled() {
+  const have = S.data?.versions.length || 0;
+  $("play").disabled = have < 2;
+  for (const id of ["prev", "next", "auto"]) $(id).disabled = !S.snap;
+}
+function clearView(message) {
+  stopPlay(); stopAuto();
+  S.at = -1; S.snap = null; S.round = 0; S.step = 0;
+  $("iter").textContent = "–";
+  $("iter-sub").textContent = message;
+  $("verified").hidden = true;
+  for (const id of ["reel", "rounds", "think", "felt", "race", "probe-hand", "lead", "grid", "move"]) $(id).innerHTML = "";
+  delete $("lead").dataset.ids;
+  $("dash-fill").style.width = $("pass-fill").style.width = "0";
+  $("dash-val").textContent = $("pass-val").textContent = "";
+  $("felt").innerHTML = `<p class="felt-empty">${esc(message)}</p>`;
+  setEnabled();
+}
 function go(i) {
   if (!S.data.versions.length) return;
   S.at = i;
@@ -104,6 +122,7 @@ function go(i) {
     if (!S.playing) drawRoundChips();
     drawTable(false);
     drawRace();
+    setEnabled();
   });
 }
 const millions = (n) => (n >= 1e9 ? `${(n / 1e9).toFixed(2)} billion` : `${Math.round(n / 1e6)} million`);
@@ -121,13 +140,16 @@ function stopPlay() {
 function startPlay() {
   S.playing = true; $("play").textContent = "Pause";
   if (S.at >= S.data.versions.length - 1) go(0);
+  $("reel").scrollIntoView({ block: "nearest", behavior: STILL ? "auto" : "smooth" });
   const tick = () => {
     if (!S.playing) return;
     if (S.at >= S.data.versions.length - 1) return stopPlay();
     go(S.at + 1);
-    playTimer = setTimeout(tick, STILL ? 1200 : 450);
+    playTimer = setTimeout(tick, pace);
   };
-  playTimer = setTimeout(tick, 450);
+  // the whole film takes at least 10 seconds, so a short run is still watchable
+  const pace = Math.max(STILL ? 1200 : 350, 10000 / Math.max(S.data.versions.length - 1, 1));
+  playTimer = setTimeout(tick, pace);
 }
 $("play").onclick = () => (S.playing ? stopPlay() : startPlay());
 
@@ -202,16 +224,17 @@ function drawRoundChips() {
   $("rounds").innerHTML = rounds.map((r, i) => `<button type="button" class="${i === S.round ? "on" : ""}" data-r="${i}" aria-label="Round ${r.no}">${r.no}</button>`).join("");
 }
 $("rounds").onclick = (e) => {
-  const b = e.target.closest("button"); if (!b) return;
+  const b = e.target.closest("button"); if (!b || !S.snap) return;
   S.round = +b.dataset.r; S.step = 0; stopAuto(); drawRoundChips(); drawTable(false); drawRace();
 };
-const move = (d) => { const n = S.snap.game.rounds[S.round].ev.length; S.step = Math.max(0, Math.min(n, S.step + d)); drawTable(d > 0); };
+const move = (d) => { if (!S.snap) return; const n = S.snap.game.rounds[S.round].ev.length; S.step = Math.max(0, Math.min(n, S.step + d)); drawTable(d > 0); };
 $("next").onclick = () => { stopAuto(); move(1); };
 $("prev").onclick = () => { stopAuto(); move(-1); };
 let autoTimer = null;
 function stopAuto() { S.auto = false; clearTimeout(autoTimer); $("auto").textContent = "Play round"; }
 $("auto").onclick = () => {
   if (S.auto) return stopAuto();
+  if (!S.snap) return;
   S.auto = true; $("auto").textContent = "Pause";
   if (S.step >= S.snap.game.rounds[S.round].ev.length) S.step = 0;
   const t = () => {
@@ -247,7 +270,7 @@ const MEASURES = [
   ["per_s", "Decisions per second", "Drops if something else needs the GPU", (x) => Math.round(x).toLocaleString()],
 ];
 function drawMultiples() {
-  const rows = S.data.rows, it = S.data.versions[S.at]?.iteration ?? rows.at(-1)?.iteration;
+  const rows = S.data.rows, it = S.data.versions[S.at]?.iteration ?? rows.at(-1)?.iteration ?? 0;
   const maxIt = rows.at(-1)?.iteration || 1;
   $("multiples").innerHTML = MEASURES.map(([key, name, sub, fmt]) => {
     const pts = rows.filter((r) => r[key] !== undefined && !(key === "rounds_per_game" && !r[key]));
@@ -275,7 +298,8 @@ async function loadRun(run, keepAt) {
   S.data = await res.json();
   const latest = S.data.versions.length - 1;
   drawChecks();
-  if (latest < 0) { $("iter-sub").textContent = "Waiting for the first saved version"; drawMultiples(); return; }
+  if (latest < 0) { clearView(`No versions were recorded for ${run}. Pick another run.`); drawMultiples(); return; }
+  setEnabled();
   if (S.playing) { drawReel(); return; }
   go(keepAt && S.at >= 0 && S.at < latest ? S.at : latest);
 }
@@ -284,7 +308,7 @@ async function loadRun(run, keepAt) {
   $("run").innerHTML = runs.map((r) => `<option>${esc(r)}</option>`).join("");
   if (!runs.length) { $("iter-sub").textContent = "No training runs yet"; return; }
   $("run").value = runs.at(-1);
-  $("run").onchange = () => { stopPlay(); S.cache.clear(); S.at = -1; S.snap = null; loadRun($("run").value); };
+  $("run").onchange = () => { stopPlay(); stopAuto(); S.cache.clear(); S.at = -1; S.snap = null; S.round = 0; S.step = 0; $("rounds").innerHTML = ""; $("felt").innerHTML = ""; setEnabled(); loadRun($("run").value); };
   await loadRun($("run").value);
   setInterval(() => loadRun(S.run, true), 30000);
 })();

@@ -6,7 +6,7 @@ h2{font-size:26px;line-height:1.15}h3{font-size:17px;margin-top:22px}
 .note{color:var(--muted);margin:6px 0 14px;font-size:15px;max-width:60ch}
 section,header{padding-inline:clamp(16px,4vw,56px)}
 button,select{font:inherit;color:var(--text);background:var(--raised);border:1px solid var(--line);border-radius:6px;padding:7px 14px;cursor:pointer}
-button:hover,select:hover{border-color:var(--muted)}
+button:hover,select:hover{border-color:var(--muted)}button:disabled{opacity:.4;cursor:default}.felt-empty{grid-column:1/4;grid-row:1/4;align-self:center;text-align:center;color:var(--muted)}
 :focus-visible{outline:3px solid var(--king);outline-offset:2px}
 .top{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;padding-top:28px}
 .counter{display:flex;flex-direction:column}

@@ -141,12 +141,12 @@ def play(net: Net | None, seed: int, net_seats=(0, 2), record: bool = True) -> d
     return out
 
 
-def capture(run: Path, every: int) -> int:
+def capture(run: Path, every: int, source: Path | None = None) -> int:
     lab = run / "lab"
     lab.mkdir(exist_ok=True)
     index = lab / "index.jsonl"
     seen = {json.loads(l)["iteration"] for l in index.read_text().splitlines()} if index.is_file() else set()
-    source = run / "net.npz"
+    source = source or run / "net.npz"
     if not source.is_file():
         return -1
     net = Net(source)
@@ -173,8 +173,13 @@ def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="python -m jaxenv.lab_capture", description=__doc__.split("\n")[0])
     p.add_argument("run", type=Path)
     p.add_argument("--every", type=int, default=50)
+    p.add_argument("--backfill", action="store_true", help="film the saved net-*.npz once, then exit")
     a = p.parse_args(argv)
     run = a.run.expanduser()
+    if a.backfill:
+        for path in sorted(run.glob("net-*.npz")) + [run / "net.npz"]:
+            capture(run, a.every, path)
+        return 0
     while True:
         try:
             capture(run, a.every)
