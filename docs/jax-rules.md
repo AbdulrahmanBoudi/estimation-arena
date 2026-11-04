@@ -76,7 +76,39 @@ Two GPU lessons: deal from a pre-shuffled pool, because a deal is needed only ev
 and shuffling is the costly part. And never `sort` tiny rows: XLA's GPU sort of many 3-element
 rows was 150x slower past 8,192 games, so `_sort3` ranks by counting instead.
 
-## Next
+## Statistics: JAX vs the CPU engine
 
-One network for every decision (Dash, bids, With, estimates, cards) over raw state, PPO
-self-play against a pool of past versions, all inside `jax.lax.scan` on the GPU.
+`jaxenv.stats` plays full games of uniform random play on independent deals in each
+implementation and compares the distributions (12,000 CPU games, 639,000 GPU games). Games past
+int32's range are dropped on both sides. All 16 stats agree within noise; the largest
+difference is |z| = 1.47. Random play describes the rules, not sensible games: 84% of rounds
+have everyone lose, and nearly every game hits the 20-replay cap.
+
+| Stat | CPU engine | JAX | z |
+|---|---|---|---|
+| rounds skipped | 2.33% | 2.31% | -0.81 |
+| four Dash Calls | 2.14% | 2.12% | -0.98 |
+| Dash Calls per round | 0.686 | 0.685 | -0.50 |
+| rounds with a super call | 64.52% | 64.50% | -0.33 |
+| fixed trump changed | 59.05% | 59.02% | -0.36 |
+| everyone lost the round | 84.35% | 84.40% | +0.68 |
+| doubled by 3+ calls | 31.78% | 31.67% | -1.47 |
+| With players per round | 1.082 | 1.080 | -1.33 |
+| Caller made the call | 0.12% | 0.11% | -1.14 |
+| Risks per round | 9.306 | 9.306 | +0.00 |
+| rounds per game | 37.93 | 37.92 | -0.30 |
+| decisions per game | 2,305 | 2,305 | +0.54 |
+| fixed replays per game | 19.93 | 19.92 | -0.30 |
+| winner's score, mean | 10.7M | 10.3M | -1.12 |
+| score spread, mean | 21.6M | 20.8M | -1.19 |
+| games past int32 range | 20.6% | 20.6% | -0.21 |
+
+Throughput in that run: 0.8M decisions/s on all 6 CPU cores, 8.7M/s on the GTX 1070.
+
+## Self-play
+
+`jaxenv.selfplay` trains one net for every decision from raw state (`jaxenv.encode`, 747
+inputs), with PPO on the GPU against itself and a pool of past versions. `jaxenv.check` also
+requires the GPU encoder to equal `jaxenv.encode_np`, the numpy version an arena bot plays
+through, at every step, so the net sees only what a seat may see. With a 2.4M-parameter net the
+whole loop runs at about 75,000 decisions/s: the net, not the rules, is the bottleneck.
