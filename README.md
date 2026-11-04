@@ -75,10 +75,12 @@ Protocol: [docs/table.md](docs/table.md).
 |---|---|
 | Duplicate sets: every deal played 4 times, seats rotated | Deal luck cancels |
 | Fresh process per game, no seed sent | No peeking across rotations |
-| Elo from who finished ahead, not raw score | Stacked doubles make scores explode |
+| Rating from final position: King, Sub-King, Sub-Kooz, Kooz | The Bola pays by position, and stacked doubles make raw scores explode |
 | Leaderboard seed is a secret | No tuning to the test deals |
 
 ## Where it runs
+
+The page ranks every bot three ways, explained in [docs/metrics.md](docs/metrics.md). On the home server, `/board` follows matches set by set while they play.
 
 | Piece | Where | Cost |
 |---|---|---|
