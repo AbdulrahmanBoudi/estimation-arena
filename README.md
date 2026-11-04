@@ -7,6 +7,8 @@
 
 <img src="brand/how-it-works.svg" width="100%" alt="Your bot exchanges JSON and actions with the harness, which uses the rules engine and plays the anchors. Results feed an Elo fit, which feeds the leaderboard page.">
 
+<sub><a href="https://essamgouda97.github.io/estimation-arena/diagrams/how-it-works.html">Explore this diagram</a>, with the source code behind each part.</sub>
+
 ## Terms
 
 | Term | Meaning |
@@ -41,6 +43,8 @@ Every bot's code name is shown on the page too.
 ## One decision
 
 <img src="brand/one-decision.svg" width="100%" alt="The harness says hello, sends an observation and the legal action ids, and the bot answers with one id. An illegal id or over 5 seconds is a forfeit. Action ids: 0-1 dash, 2-51 bids, 52 with, 53 pass, 54-67 estimates, 68-119 cards.">
+
+<sub><a href="https://essamgouda97.github.io/estimation-arena/diagrams/one-decision.html">Explore this diagram</a>, with the source code behind each part.</sub>
 
 ## Two doors
 

@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "One decision between the harness and your bot",
+    "output": "site/diagrams/one-decision.html",
+    "quality_profile": "showcase",
+    "repository": { "url": "https://github.com/essamgouda97/estimation-arena", "provider": "github", "revision": "a85627e5d3e4e27b9cd4f99656499fa163ee51f6" }
+  },
+  "participants": [
+    { "id": "harness", "type": "backend", "label": "Harness", "sublabel": "arena/", "sources": [{ "path": "arena/protocol.py", "line": 70, "label": "WireBot" }] },
+    { "id": "bot", "type": "external", "label": "Your bot", "sublabel": "fresh process per game", "sources": [{ "path": "bots/lowcard-wire/manifest.json", "label": "example bot" }] }
+  ],
+  "messages": [
+    { "id": "hello", "from": "harness", "to": "bot", "y": 170, "label": "hello: seat seed, rules", "variant": "default" },
+    { "id": "act", "from": "harness", "to": "bot", "y": 230, "label": "act: observation, legal ids", "variant": "emphasis" },
+    { "id": "answer", "from": "bot", "to": "harness", "y": 290, "label": "one legal id", "variant": "return" },
+    { "id": "bye", "from": "harness", "to": "bot", "y": 350, "label": "bye", "variant": "default" }
+  ],
+  "cards": [
+    { "dot": "rose", "title": "Forfeits", "items": ["An illegal id or running over time forfeits"] },
+    { "dot": "amber", "title": "Action ids", "items": ["0-1 dash, 2-51 bids, 52 with, 53 pass", "54-67 estimates, 68-119 cards"] }
+  ]
+}
