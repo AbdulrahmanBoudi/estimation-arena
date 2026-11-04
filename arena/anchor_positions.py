@@ -11,7 +11,7 @@ import argparse
 import json
 
 from .bots import ROOT
-from .positions import summarize
+from .positions import encode_scores, summarize
 from .run import load_anchors, run_sets
 
 OUT = ROOT / "ladder" / "positions.json"
@@ -33,9 +33,11 @@ def main(argv: list[str] | None = None) -> int:
             continue
         run = run_sets((x, y, x, y), a.sets, a.seed, a.workers)
         summary, pairs = summarize(run.results, (x, y, x, y))
-        data["matches"].append({"a": x, "b": y, "summary": summary, "pairs": pairs})
+        data["matches"].append({"a": x, "b": y, "summary": summary, "pairs": pairs["weighted"], "king_pairs": pairs["king"],
+                                "scores": encode_scores(run.results)})  # fmt: skip
         OUT.write_text(json.dumps(data, indent=1) + "\n")
-        print(f"{x} vs {y}: {pairs[0]['a_wins']}-{pairs[0]['draws']}-{pairs[0]['b_wins']}", flush=True)
+        w = pairs["weighted"][0]
+        print(f"{x} vs {y}: {w['a_wins']}-{w['draws']}-{w['b_wins']}", flush=True)
     return 0
 
 

@@ -74,3 +74,16 @@ def test_a_batch_gets_the_same_rewards_as_one_game():
     batch = jnp.array([(50, 10, 0, -5), (7, 7, 7, -5)])
     assert jnp.allclose(position_rewards(batch)[1], position_rewards(batch[1]), atol=1e-6)
     assert jnp.allclose(position_rewards(batch)[0], position_rewards(batch[0]), atol=1e-6)
+
+
+def test_objectives_are_zero_sum_and_pay_what_they_say():
+    from jaxenv.selfplay import objective_rewards
+
+    scores = jnp.array([[300, 10, 10, -320], [50, 50, 0, -5]])
+    for name in ("weighted", "king", "delta"):
+        assert jnp.allclose(objective_rewards(scores, name).sum(1), 0, atol=1e-5)
+    king = objective_rewards(scores, "king")
+    assert jnp.allclose(king[0], jnp.array([0.75, -0.25, -0.25, -0.25]))
+    assert jnp.allclose(king[1], jnp.array([0.25, 0.25, -0.25, -0.25]))
+    delta = objective_rewards(scores, "delta")
+    assert delta[0, 0] > delta[0, 1] > delta[0, 3]

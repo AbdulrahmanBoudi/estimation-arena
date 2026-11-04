@@ -520,10 +520,41 @@ function drawMultiples() {
 }
 
 // ---- arena checks
+const OPPONENT_COLORS = ["#e0b83c", "#35a7e8", "#e8707e", "#6fbf3f"];
+const CHECK_METRICS = [
+  { key: "reward", low: "low", high: "high", name: "Weighted rank", sub: "King +1, Sub-King +0.2, Sub-Kooz −0.2, Kooz −1. Even is 0.", even: 0, fmt: (v) => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(2) },
+  { key: "king", low: "king_low", high: "king_high", name: "King only", sub: "1 for King, 0 for anything else. Even is 25%.", even: 0.25, fmt: pct },
+  { key: "delta", low: "delta_low", high: "delta_high", name: "Score delta per game", sub: "Our seats' mean score minus theirs. Even is 0.", even: 0, fmt: (v) => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(0) },
+];
+function opponentName(o) { return o === "pimc" ? "PIMC" : o[0].toUpperCase() + o.slice(1); }
+function checkChart(m, checks, opponents, maxIt) {
+  const values = checks.flatMap((c) => [c[m.key], c[m.low], c[m.high]]).filter((v) => v != null).concat(m.even);
+  const lo = Math.min(...values), hi = Math.max(...values), span = hi - lo || 1;
+  const X = (i) => 12 + (i / maxIt) * 276, Y = (v) => 92 - ((v - lo) / span) * 84;
+  const series = opponents.map((o, k) => {
+    const pts = checks.filter((c) => c.opponent === o), color = OPPONENT_COLORS[k % OPPONENT_COLORS.length];
+    const line = pts.length > 1 ? `<path d="${pts.map((c, i) => `${i ? "L" : "M"}${X(c.iteration).toFixed(1)} ${Y(c[m.key]).toFixed(1)}`).join("")}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>` : "";
+    const dots = pts.map((c) => {
+      const whisker = c[m.low] != null ? `<line x1="${X(c.iteration)}" x2="${X(c.iteration)}" y1="${Y(c[m.low])}" y2="${Y(c[m.high])}" stroke="${color}" stroke-width="1.5" opacity=".55"/>` : "";
+      return `<g class="check-dot">${whisker}<circle cx="${X(c.iteration)}" cy="${Y(c[m.key])}" r="4" fill="${color}" stroke="#17235e" stroke-width="2"/><circle cx="${X(c.iteration)}" cy="${Y(c[m.key])}" r="11" fill="transparent"><title>${opponentName(o)}, iteration ${c.iteration.toLocaleString()}: ${m.fmt(c[m.key])}${c[m.low] != null ? ` (${m.fmt(c[m.low])} to ${m.fmt(c[m.high])})` : ""}, sets ${c.won}-${c.lost}</title></circle></g>`;
+    }).join("");
+    return line + dots;
+  }).join("");
+  const latest = opponents.map((o) => { const pts = checks.filter((c) => c.opponent === o); return pts.length ? m.fmt(pts[pts.length - 1][m.key]) : ""; }).join(" / ");
+  return `<div class="mult"><h3><span>${m.name}</span><b>${latest}</b></h3><small>${m.sub}</small><svg viewBox="0 0 300 100" role="img" aria-label="${m.name} at each check"><line x1="0" x2="300" y1="${Y(m.even)}" y2="${Y(m.even)}" stroke="#aab4e6" stroke-width="1" stroke-dasharray="3 4"/>${series}</svg></div>`;
+}
 function drawChecks() {
   const c = S.data.checks;
-  if (!c.length) { $("checks").innerHTML = `<p class="empty">The first check runs 30 minutes into training.</p>`; return; }
-  $("checks").innerHTML = c.map((x) => `<div class="check"><span>${x.minutes} min, iteration ${x.iteration.toLocaleString()}</span><div class="bar" role="img" aria-label="${x.shares.map((s, k) => `${POS_NAMES[k]} ${pct(s)}`).join(", ")}">${x.shares.map((s, k) => `<i style="width:${s * 100}%;background:${POS[k]}"></i>`).join("")}</div><span>King ${pct(x.king)}</span><span>${x.won}-${x.lost}</span></div>`).join("");
+  if (!c.length) {
+    $("check-legend").innerHTML = $("check-charts").innerHTML = "";
+    $("checks").innerHTML = `<p class="empty">The first check runs 30 minutes into training.</p>`;
+    return;
+  }
+  const opponents = [...new Set(c.map((x) => x.opponent))];
+  const maxIt = Math.max(...c.map((x) => x.iteration));
+  $("check-legend").innerHTML = opponents.map((o, k) => `<span><i style="background:${OPPONENT_COLORS[k % OPPONENT_COLORS.length]}"></i>vs ${opponentName(o)}</span>`).join("") + `<span class="check-even">Dashed line: an even match. Whiskers: 95% interval.</span>`;
+  $("check-charts").innerHTML = CHECK_METRICS.map((m) => checkChart(m, c, opponents, maxIt)).join("");
+  $("checks").innerHTML = c.map((x) => `<div class="check"><span>Iteration ${x.iteration.toLocaleString()} vs ${opponentName(x.opponent)}</span><div class="bar" role="img" aria-label="${x.shares.map((s, k) => `${POS_NAMES[k]} ${pct(s)}`).join(", ")}">${x.shares.map((s, k) => `<i style="width:${s * 100}%;background:${POS[k]}"></i>`).join("")}</div><span>${CHECK_METRICS[0].fmt(x.reward)}</span><span>King ${pct(x.king)}</span><span>${CHECK_METRICS[2].fmt(x.delta)}</span><span>${x.won}-${x.lost}</span></div>`).join("");
 }
 
 // ---- loading

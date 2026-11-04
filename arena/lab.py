@@ -16,7 +16,8 @@ FIELDS = ("iteration", "decisions", "per_s", "entropy", "kl", "dash", "bid", "wi
           "all_lose", "caller_made", "rounds_per_game", "final_mse", "king_vs_random", "king_vs_start",
           "pos_vs_random", "pos_vs_start", "overflow")  # fmt: skip
 CHECK_HEAD = re.compile(r"== (\d+) min, iter (\d+) vs (\w+)")
-CHECK_ROW = re.compile(r"sets\s+(\d+)-(\d+)-(\d+)\s+first\s+([\d.]+)%.*position ([-+\d.]+) \[([-+\d.]+), ([-+\d.]+)\]\s+K/SK/SKo/Ko (\d+)%/(\d+)%/(\d+)%/(\d+)%")
+CHECK_ROW = re.compile(r"sets\s+(\d+)-(\d+)-(\d+)\s+first\s+([\d.]+)%\s+RSA\s+([-+\d.]+) \[([-+\d.]+), ([-+\d.]+)\].*position ([-+\d.]+) \[([-+\d.]+), ([-+\d.]+)\]\s+K/SK/SKo/Ko (\d+)%/(\d+)%/(\d+)%/(\d+)%")
+CHECK_KING = re.compile(r"king [\d.]+% \[([-\d.]+)%, ([-\d.]+)%\]")
 
 
 def _rows(path: Path) -> list[dict]:
@@ -33,24 +34,29 @@ def _rows(path: Path) -> list[dict]:
 
 def _checks(run: str) -> list[dict]:
     digits = re.sub(r"\D", "", run)
-    path = LAB / f"eval{digits}.log"
-    if not path.is_file():
-        return []
-    checks, head = [], None
-    for line in path.read_text().splitlines():
-        h = CHECK_HEAD.search(line)
-        if h:
-            head = h
+    checks = []
+    for path in [LAB / f"eval{digits}.log", *sorted(LAB.glob(f"eval{digits}-*.log"))]:
+        if not path.is_file():
             continue
-        m = CHECK_ROW.search(line)
-        if m and head:
-            checks.append({
-                "minutes": int(head[1]), "iteration": int(head[2]), "opponent": head[3],
-                "won": int(m[1]), "drawn": int(m[2]), "lost": int(m[3]), "king": float(m[4]) / 100,
-                "reward": float(m[5]), "low": float(m[6]), "high": float(m[7]),
-                "shares": [int(m[k]) / 100 for k in (8, 9, 10, 11)],
-            })  # fmt: skip
-    return checks
+        head = None
+        for line in path.read_text().splitlines():
+            h = CHECK_HEAD.search(line)
+            if h:
+                head = h
+                continue
+            m = CHECK_ROW.search(line)
+            if m and head:
+                k = CHECK_KING.search(line)
+                checks.append({
+                    "minutes": int(head[1]), "iteration": int(head[2]), "opponent": head[3],
+                    "won": int(m[1]), "drawn": int(m[2]), "lost": int(m[3]), "king": float(m[4]) / 100,
+                    "king_low": float(k[1]) / 100 if k else None, "king_high": float(k[2]) / 100 if k else None,
+                    # delta = 1.5 x RSA in a two-against-two lineup (see tests/test_positions.py)
+                    "delta": 1.5 * float(m[5]), "delta_low": 1.5 * float(m[6]), "delta_high": 1.5 * float(m[7]),
+                    "reward": float(m[8]), "low": float(m[9]), "high": float(m[10]),
+                    "shares": [int(m[k]) / 100 for k in (11, 12, 13, 14)],
+                })  # fmt: skip
+    return sorted(checks, key=lambda c: (c["iteration"], c["opponent"]))
 
 
 async def runs(_: Request) -> Response:

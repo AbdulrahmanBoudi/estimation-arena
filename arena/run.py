@@ -30,7 +30,7 @@ from estimation.engine import RulesConfig
 from estimation.engine.config import DEFAULT_CONFIG
 
 from .bots import ROOT, SUB_PREFIX, Manifest, load_manifest, maker
-from .positions import summarize
+from .positions import encode_scores, summarize
 
 ANCHORS_FILE = ROOT / "anchors.json"
 RESULTS_DIR = ROOT / "results"
@@ -142,6 +142,7 @@ def play_submission(
     versus: list[dict[str, Any]] = []
     pairs: list[dict[str, Any]] = []
     position_pairs: list[dict[str, Any]] = []
+    king_pairs: list[dict[str, Any]] = []
     for anchor in anchors:
         lineup = (me, anchor["spec"], me, anchor["spec"])
         if progress:
@@ -150,7 +151,8 @@ def play_submission(
         report = build_report(run)
         mine = next(b for b in report.bots if b.name == me)
         places, by_position = summarize(run.results, lineup)
-        position_pairs += by_position
+        position_pairs += by_position["weighted"]
+        king_pairs += by_position["king"]
         versus.append(
             {
                 "anchor": anchor["name"],
@@ -162,6 +164,9 @@ def play_submission(
                 "first_place": _interval(mine.first),
                 "positions": places[me]["shares"],
                 "position_reward": places[me]["reward"],
+                "king": places[me]["king"],
+                "delta": places[me]["delta"],
+                "scores": encode_scores(run.results),
                 "timing": _timing(run.timings[me]),
                 "wall_s": run.wall_seconds,
             }
@@ -188,6 +193,7 @@ def play_submission(
         "versus": versus,
         "pairs": pairs,
         "position_pairs": position_pairs,
+        "king_pairs": king_pairs,
     }
 
 
@@ -217,7 +223,7 @@ def keep_unplayed(result: dict[str, Any], old: dict[str, Any] | None) -> list[st
         v["carried_from"] = old.get("played_at")
         result["versus"].append(v)
     me = SUB_PREFIX + result["bot"]
-    for key in ("pairs", "position_pairs"):
+    for key in ("pairs", "position_pairs", "king_pairs"):
         for pair in old.get(key, []):
             other = pair["b"] if pair["a"] == me else pair["a"]
             if other in {v["spec"] for v in kept}:

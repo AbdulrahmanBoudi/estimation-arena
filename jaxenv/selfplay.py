@@ -5,9 +5,9 @@
 
 - Policy: one MLP over jaxenv.encode (one seat's raw view) for Dash Calls, bids, With, estimates
   and cards. No hand evaluation, imitation or search; it starts from nothing.
-- Reward: only at the end of the Bola, by final position, zero-sum: King +1, Sub-King +0.2,
-  Sub-Kooz -0.2, Kooz -1, tied seats sharing their positions (``position_rewards``). A game past
-  int32's range is dropped, not scored.
+- Reward: only at the end of the Bola, zero-sum, chosen by --objective (``objective_rewards``):
+  weighted (King +1, Sub-King +0.2, Sub-Kooz -0.2, Kooz -1, ties shared), king (King or nothing)
+  or delta (score lead, scaled and clipped). A game past int32's range is dropped, not scored.
 - Credit: TD(lambda) along each seat's own decisions (``td_lambda``), so a move is judged by how
   it changed the seat's expected final position, without waiting for the end of the game.
 - Critic, training only: the same view plus the three hidden hands, so deal luck stays out of
@@ -94,6 +94,23 @@ def position_rewards(scores):
     p = jnp.arange(4)[:, None] if scores.ndim == 1 else jnp.arange(4)[None, :, None]
     held = (above[..., None, :] <= p) & (p < (above + tied)[..., None, :])
     return (jnp.asarray(REWARDS)[..., None] * held).sum(-2) / tied
+
+
+DELTA_SCALE = 200.0  # a score lead this large is worth the whole reward
+
+
+def objective_rewards(scores, objective="weighted"):
+    """[..., 4]: the end-of-Bola reward that training optimizes, summing to 0 across the seats."""
+    if objective == "weighted":
+        return position_rewards(scores)
+    if objective == "king":
+        top = scores == scores.max(-1, keepdims=True)
+        return top / top.sum(-1, keepdims=True) - 0.25
+    if objective == "delta":
+        lead = scores - (scores.sum(-1, keepdims=True) - scores) / 3.0
+        clipped = jnp.clip(lead / DELTA_SCALE, -1.0, 1.0)
+        return clipped - clipped.mean(-1, keepdims=True)
+    raise ValueError(f"unknown objective {objective}")
 
 
 def round_rewards(r):
@@ -197,7 +214,7 @@ def make_rollout(batch: int, steps: int, lam: float):
                 x=x.astype(jnp.float16), hidden=hidden, action=action, logp=logp, value=value, seat=seat,
                 train=mine & (n_legal > 1), ended=ended, round_rew=round_rewards(r),
                 finished=after.over & ~after.overflow, overflow=after.overflow,
-                reward=position_rewards(after.scores), phase=phase, pre_super=pre_super,
+                reward=objective_rewards(after.scores, objective), phase=phase, pre_super=pre_super,
                 skipped=ended & r.skipped, played=played, made=played & made,
                 all_lose=played & ~(r.est == r.won).any(1), game_rounds=after.round_no,
             )  # fmt: skip
@@ -340,6 +357,7 @@ def main(argv=None) -> int:
     p.add_argument("--depth", type=int, default=3)
     p.add_argument("--lr", type=float, default=3e-4)
     p.add_argument("--clip", type=float, default=0.2)
+    p.add_argument("--objective", choices=("weighted", "king", "delta"), default="weighted", help="what the reward pays")
     p.add_argument("--lam", type=float, default=0.95, help="TD(lambda) per own decision")
     p.add_argument("--entropy", type=float, default=0.02)
     p.add_argument("--entropy-end", type=float, default=0.01)
@@ -364,7 +382,7 @@ def main(argv=None) -> int:
     opts = (tx_policy.init(nets["policy"]), tx_critic.init(nets["critic"]))
     first_policy = jax.device_get(nets["policy"])
     pool = [first_policy]
-    rollout = make_rollout(a.batch, a.steps, a.lam)
+    rollout = make_rollout(a.batch, a.steps, a.lam, a.objective)
     update = make_update(tx_policy, tx_critic, a.clip, a.aux)
     evaluate = make_eval(512, 4000)
     key, k = jax.random.split(key)

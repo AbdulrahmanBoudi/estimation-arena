@@ -2,9 +2,9 @@
 
     uv run python -m arena.leaderboard
 
-Bots rank by final position in the Bola: King, Sub-King, Sub-Kooz, Kooz (arena.positions). One
-Bradley-Terry fit over every pair's set results by position reward, RandomBot fixed at 400, gives
-every bot one rating on one scale. The older score-based Elo is kept as ``score_elo``.
+Every metric of arena.positions gets its own Elo: one Bradley-Terry fit over every pair's set
+results under that metric, RandomBot fixed at 400. ``elo`` is weighted rank, the default ranking;
+``king_elo`` is King only; ``score_elo`` is score delta. The page switches between them.
 Writes ``site/leaderboard.json`` and ``site/index.html``, a single self-contained page.
 """
 
@@ -26,6 +26,25 @@ from .positions import NAMES as POSITION_NAMES
 from .run import ANCHORS_FILE, RESULTS_DIR
 
 SITE_DIR = ROOT / "site"
+
+
+METRICS = (("weighted", "elo", "Weighted rank"), ("king", "king_elo", "King only"), ("delta", "score_elo", "Score delta"))
+RANK_SCRIPT = """
+document.querySelectorAll('[data-rank]').forEach(function (button) {
+  button.addEventListener('click', function () {
+    var m = button.dataset.rank, body = document.querySelector('tbody');
+    document.body.dataset.metric = m;
+    document.querySelectorAll('[data-rank]').forEach(function (b) { b.setAttribute('aria-pressed', b === button); });
+    var rows = Array.from(body.querySelectorAll('tr.bot')).sort(function (a, b) { return b.dataset[m] - a.dataset[m]; });
+    rows.forEach(function (row, k) {
+      var how = row.nextElementSibling && row.nextElementSibling.classList.contains('howrow') ? row.nextElementSibling : null;
+      row.querySelector('.rank').textContent = row.dataset[m] > -1e8 ? k + 1 : '';
+      body.appendChild(row);
+      if (how) body.appendChild(how);
+    });
+  });
+});
+"""
 
 
 def _pairs(records: list[dict[str, Any]]) -> list[PairRecord]:
@@ -52,6 +71,10 @@ def build() -> dict[str, Any]:
     for r in results:
         by_position += _pairs(r.get("position_pairs", []))
     ratings = bradley_terry(by_position, ANCHOR, ANCHOR_RATING, DEFAULT_PRIOR) if by_position else {}
+    by_king = [q for m in matches for q in _pairs(m.get("king_pairs", []))]
+    for r in results:
+        by_king += _pairs(r.get("king_pairs", []))
+    king_ratings = bradley_terry(by_king, ANCHOR, ANCHOR_RATING, DEFAULT_PRIOR) if by_king else {}
     anchor_places: dict[str, list[dict[str, Any]]] = {}
     for m in matches:
         for spec, place in m["summary"].items():
@@ -75,6 +98,7 @@ def build() -> dict[str, Any]:
                 "key": key,
                 "method": current.get("method", []),
                 "elo": ratings.get(key),
+                "king_elo": king_ratings.get(key),
                 "score_elo": score_ratings.get(key),
                 "positions": _mean_shares([v["positions"] for v in r["versus"] if "positions" in v]),
                 "games": sum(v["games"] for v in r["versus"]),
@@ -93,6 +117,7 @@ def build() -> dict[str, Any]:
                         "first_place": v["first_place"]["mean"],
                         "positions": v.get("positions"),
                         "position_reward": v.get("position_reward", {}).get("mean"),
+                        "delta": v.get("delta", {}).get("mean", 1.5 * v["rsa"]["mean"]),
                     }
                     for v in r["versus"]
                 ],
@@ -109,6 +134,7 @@ def build() -> dict[str, Any]:
                 "key": a["spec"],
                 "method": a.get("method", []),
                 "elo": ratings.get(a["spec"]),
+                "king_elo": king_ratings.get(a["spec"]),
                 "score_elo": score_ratings.get(a["spec"]),
                 "positions": _mean_shares([q["shares"] for q in anchor_places.get(a["spec"], [])]),
                 "games": None,
@@ -131,13 +157,14 @@ STYLE = """
 :root{--bg:#fff;--fg:#1b1b1f;--muted:#6b6f76;--line:#e3e5e8;--bar:#3b6ea5;--tint:#f4f6f8;--good:#2e7d32;--bad:#c62828}
 @media(prefers-color-scheme:dark){:root{--bg:#121316;--fg:#e8e9ec;--muted:#9aa0a6;--line:#2b2e33;--bar:#7aa7d9;--tint:#1b1d21;--good:#81c784;--bad:#ef9a9a}}
 *{box-sizing:border-box}body{margin:0;padding:24px 16px;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-main{max-width:1040px;margin:0 auto}h1{font-size:24px;margin:0 0 4px}p.sub{color:var(--muted);margin:0 0 20px}
+main{max-width:1180px;margin:0 auto}h1{font-size:24px;margin:0 0 4px}p.sub{color:var(--muted);margin:0 0 20px}
 table{width:100%;border-collapse:collapse}th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;white-space:nowrap}
 th{font-weight:600;color:var(--muted);font-size:13px}td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
-tr.anchor td{color:var(--muted);background:var(--tint)}tr:has(+ tr.howrow) td{border-bottom:none}tr.howrow td{white-space:normal;padding-top:0}.places{display:flex;gap:2px;width:210px;height:12px;vertical-align:middle}.places span{display:block;height:100%}.places span:first-child{border-radius:3px 0 0 3px}.places span:last-child{border-radius:0 3px 3px 0}.p0{background:#2a78d6}.p1{background:#8fbbef}.p2{background:#f0a8a0}.p3{background:#d03b3b}.key{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 4px 0 12px;vertical-align:-1px}.king{font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted)}
+tr.anchor td{color:var(--muted);background:var(--tint)}tr:has(+ tr.howrow) td{border-bottom:none}tr.howrow td{white-space:normal;padding-top:0}.places{display:flex;gap:2px;width:210px;height:12px;vertical-align:middle}.places span{display:block;height:100%}.places span:first-child{border-radius:3px 0 0 3px}.places span:last-child{border-radius:0 3px 3px 0}.p0{background:#2a78d6}.p1{background:#8fbbef}.p2{background:#f0a8a0}.p3{background:#d03b3b}.key{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 4px 0 12px;vertical-align:-1px}.king{font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted)}.metrics{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}.metrics button{font:inherit;font-size:14px;padding:6px 12px;border:1px solid var(--muted);border-radius:6px;background:transparent;color:inherit;cursor:pointer}.metrics button[aria-pressed=true]{background:#2a78d6;border-color:#2a78d6;color:#fff}.unrated{color:var(--muted);font-size:13px}td.m-weighted,td.m-king,td.m-delta{color:var(--muted)}body[data-metric=weighted] td.m-weighted,body[data-metric=king] td.m-king,body[data-metric=delta] td.m-delta{color:inherit;font-weight:700}span.m-king,span.m-delta{display:none}body[data-metric=king] span.m-weighted,body[data-metric=delta] span.m-weighted{display:none}body[data-metric=king] span.m-king,body[data-metric=delta] span.m-delta{display:inline}
 .tag{font-size:12px;padding:1px 6px;border:1px solid var(--line);border-radius:10px;color:var(--muted)}.desc{color:var(--muted);font-size:13px;white-space:normal}
 .pos{color:var(--good)}.neg{color:var(--bad)}details{margin-top:24px}summary{cursor:pointer;color:var(--muted)}
-@media(max-width:700px){th.opt,td.opt{display:none}}
+.who-cell{white-space:normal;min-width:230px}td.opt{white-space:normal}.places{flex-shrink:0}
+@media(max-width:700px){th.opt,td.opt,.who{display:none}.who-cell{min-width:0}body:not([data-metric=weighted]) .num.m-weighted,body:not([data-metric=king]) .num.m-king,body:not([data-metric=delta]) .num.m-delta{display:none}}
 details.how{margin:6px 0 2px}details.how summary{font-size:13px}.scroll{overflow-x:auto;margin:10px 0}
 svg text{fill:var(--fg);font:12px system-ui,sans-serif}
 .flow .step{fill:var(--tint);stroke:var(--line)}.i-n{fill:var(--muted)!important;font-size:11px!important}
@@ -344,7 +371,11 @@ def render(board: dict[str, Any]) -> str:
         e = html.escape
         rank += 1  # one global ranking: anchors and submissions alike
         elo = r["elo"]
-        elo_text = f"{elo:,.0f}" if elo is not None else "unrated"
+        cells = "".join(
+            f'<td class="num m-{m}">{r[k]:,.0f}</td>' if r.get(k) is not None else f'<td class="num m-{m} unrated">unrated</td>'
+            for m, k, _ in METRICS
+        )
+        sort_keys = " ".join(f'data-{m}="{r[k] if r.get(k) is not None else -1e9}"' for m, k, _ in METRICS)
         places = r.get("positions")
         place_bar = ""
         if places:
@@ -353,13 +384,15 @@ def render(board: dict[str, Any]) -> str:
             place_bar = f'<div class="places" title="{title}" role="img" aria-label="{title}">{parts}</div><span class="king">King {places[0]:.0%}</span>'
         if r["anchor"]:
             name = f'{e(r["name"])} <span class="tag">anchor</span>'
-            meta = f'{e(r["author"])}<br><span class="desc">{e(r["description"])}</span>'
+            meta = f'<span class="desc who">{e(r["author"])}: {e(r["description"])}</span>'
             detail = ""
         else:
             name = f'<strong>{e(r["name"])}</strong> <span class="tag">{e(r["kind"])}</span>'
-            meta = f'{e(r["author"])}<br><span class="desc">{e(r["description"])}</span>'
+            meta = f'<span class="desc who">{e(r["author"])}: {e(r["description"])}</span>'
             vs = " · ".join(
-                f'{e(v["anchor"])} <span class="{"pos" if (v["position_reward"] or 0) >= 0 else "neg"}">{(v["position_reward"] or 0):+.2f}</span>'
+                f'{e(v["anchor"])} <span class="m-weighted {"pos" if (v["position_reward"] or 0) >= 0 else "neg"}">{(v["position_reward"] or 0):+.2f}</span>'
+                f'<span class="m-king {"pos" if v["first_place"] >= 0.25 else "neg"}">{v["first_place"]:.0%}</span>'
+                f'<span class="m-delta {"pos" if v["delta"] >= 0 else "neg"}">{v["delta"]:+.0f}</span>'
                 for v in r["versus"]
             )
             detail = (
@@ -368,34 +401,35 @@ def render(board: dict[str, Any]) -> str:
                 f'{e(r["played_at"][:10])}</span>'
             )
         lines.append(
-            f'<tr class="{"anchor" if r["anchor"] else "sub"}">'
-            f'<td class="num">{rank if elo is not None else ""}</td>'
-            f"<td>{name}</td><td class=\"opt\">{meta}</td>"
-            f'<td class="num">{elo_text}</td><td class="opt">{place_bar}</td><td class="opt">{detail}</td></tr>'
+            f'<tr class="{"anchor" if r["anchor"] else "sub"} bot" {sort_keys}>'
+            f'<td class="num rank">{rank if elo is not None else ""}</td>'
+            f'<td class="who-cell">{name}<br>{meta}</td>'
+            f'{cells}<td class="opt">{place_bar}</td><td class="opt">{detail}</td></tr>'
         )
         how = how_it_plays(r, samples)
         if how:
             cls = "anchor" if r["anchor"] else "sub"
-            lines.append(f'<tr class="{cls} howrow"><td></td><td colspan="5">{how}</td></tr>')
+            lines.append(f'<tr class="{cls} howrow"><td></td><td colspan="6">{how}</td></tr>')
     ladder = board["ladder"]
     built = board["built_at"].replace("T", " ")[:16] + " UTC"
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Estimation Arena</title><style>{STYLE}</style></head>
-<body><main>
+<body data-metric="weighted"><main>
 <h1>Estimation Arena</h1>
-<p class="sub">{board["submissions"]} submissions and {len(anchors)} anchors, ranked by final position in the Bola (Random = {board["anchor_rating"]:.0f}). Built {built}.</p>
+<p class="sub">{board["submissions"]} submissions and {len(anchors)} anchors, rated three ways from the same games (Random = {board["anchor_rating"]:.0f}). Built {built}.</p>
+<div class="metrics" role="group" aria-label="Rank by">{"".join(f'<button type="button" data-rank="{m}"{" aria-pressed=true" if m == "weighted" else " aria-pressed=false"}>{label}</button>' for m, _, label in METRICS)}</div>
 <p class="desc"><span class="key p0"></span>King +1<span class="key p1"></span>Sub-King +0.2<span class="key p2"></span>Sub-Kooz −0.2<span class="key p3"></span>Kooz −1</p>
 <p class="desc">Open “how it plays” under any bot: its algorithm, then one real decision from the same deal (seat 0 vs three Heuristic bots).</p>
 <table>
-<thead><tr><th class="num">#</th><th>Bot</th><th class="opt">Author</th><th class="num">Rating</th><th class="opt">Final positions</th><th class="opt">Position reward vs anchors</th></tr></thead>
+<thead><tr><th class="num">#</th><th>Bot</th>{"".join(f'<th class="num m-{m}">{label}</th>' for m, _, label in METRICS)}<th class="opt">Final positions</th><th class="opt">Against each anchor</th></tr></thead>
 <tbody>
 {chr(10).join(lines)}
 </tbody></table>
 <details><summary>How the numbers are made</summary>
-<p class="desc">A submission plays each anchor in duplicate sets: every deal is played four times with the seats rotated, so luck cancels. A game pays by final position: King +1, Sub-King +0.2, Sub-Kooz −0.2, Kooz −1, tied seats sharing their positions. A set goes to the bot with the higher mean position reward. The rating is one Bradley-Terry fit over every pair's set results, anchors included. The bar shows each position's share, averaged over the bot's opponents. Over budget counts card decisions slower than 0.25 s.</p>
+<p class="desc">A submission plays each anchor in duplicate sets: every deal is played four times with the seats rotated, so luck cancels. A game pays by final position: King +1, Sub-King +0.2, Sub-Kooz −0.2, Kooz −1, tied seats sharing their positions. Every game also counts two other ways: King only pays 1 for King and 0 for anything else, and score delta is our seats' mean score minus the opponent's. Each way decides its own set winner, and each rating is one Bradley-Terry fit over every pair's set results under it, anchors included. Elo counts sets won, so a single exploding score cannot swing it. Against each anchor shows the average per game: reward, King share or delta. The bar shows each position's share, averaged over the bot's opponents. Over budget counts card decisions slower than 0.25 s.</p>
 </details>
-</main></body></html>
+</main><script>{RANK_SCRIPT}</script></body></html>
 """
 
 
