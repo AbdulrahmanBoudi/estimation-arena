@@ -1,0 +1,166 @@
+const POLL_MS = 5000;
+const $ = (id) => document.getElementById(id);
+const metric = () => document.body.dataset.metric;
+let state = null, firstElo = {}, lastOk = null, failed = false, seenSets = {};
+
+function el(tag, cls, text) {
+  const node = document.createElement(tag);
+  if (cls) node.className = cls;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+const signed = (x, digits = 0) => (x >= 0 ? "+" : "−") + Math.abs(x).toFixed(digits);
+const pct = (x) => (100 * x).toFixed(1) + "%";
+
+function duration(seconds) {
+  if (seconds < 90) return "under 2 min";
+  if (seconds < 5400) return `about ${Math.round(seconds / 60)} min`;
+  return `about ${(seconds / 3600).toFixed(1)} h`;
+}
+
+function record(strip) {
+  const count = (c) => (strip || "").split(c).length - 1;
+  return `${count("W")}-${count("D")}-${count("L")}`;
+}
+
+function stats(m) {
+  const box = el("div", "stats");
+  if (!m.done) return box.appendChild(el("span", "", "Waiting for the first set")), box;
+  const rows = [["Sets", record(m.strip)], ["Weighted", signed(m.reward.mean, 2)], ["King", pct(m.king.mean)], ["Kooz", pct(m.shares[3])], ["Delta per game", signed(m.delta.mean, 0)]];
+  for (const [label, value] of rows) {
+    const s = el("span", "", label + " ");
+    s.appendChild(el("b", "", value));
+    box.appendChild(s);
+  }
+  return box;
+}
+
+function strip(m) {
+  const box = el("div", "strip");
+  box.setAttribute("role", "img");
+  box.setAttribute("aria-label", `${m.done} of ${m.sets} sets played, record ${record(m.strip)}`);
+  const seen = seenSets[m.id] ?? m.done;
+  for (let k = 0; k < m.sets; k++) {
+    const c = (m.strip || "")[k];
+    box.appendChild(el("i", c ? c + (k >= seen ? " new" : "") : ""));
+  }
+  seenSets[m.id] = m.done;
+  return box;
+}
+
+function matchRow(m, live) {
+  const box = el("article", "match");
+  const head = el("div", "match-head");
+  head.appendChild(el("span", "match-title", `${m.name} vs ${m.opponent}`));
+  if (live) {
+    const left = m.done ? ((Date.now() / 1000 - m.started_at) / m.done) * (m.sets - m.done) : null;
+    head.appendChild(el("span", "match-time", `${m.done} of ${m.sets} sets` + (left === null ? "" : `, ${duration(left)} left`)));
+  } else if (m.state === "stopped") {
+    head.appendChild(el("span", "match-time stopped", `Stopped after ${m.done} of ${m.sets} sets`));
+  } else {
+    head.appendChild(el("span", "match-time", `${m.sets} sets, finished ${new Date(m.updated_at * 1000).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`));
+  }
+  box.append(head, strip(m), stats(m));
+  return box;
+}
+
+function places(shares) {
+  if (!shares) return el("span", "places-none", "No games yet");
+  const bar = el("div", "places");
+  const names = ["King", "Sub-King", "Sub-Kooz", "Kooz"];
+  bar.setAttribute("role", "img");
+  bar.setAttribute("aria-label", names.map((n, k) => `${n} ${Math.round(shares[k] * 100)}%`).join(", "));
+  bar.title = bar.getAttribute("aria-label");
+  ["k", "sk", "sko", "ko"].forEach((cls, k) => {
+    const part = el("i", cls);
+    part.style.flex = `${Math.max(shares[k], 0.001)} 0 0`;
+    bar.appendChild(part);
+  });
+  return bar;
+}
+
+function eloCell(row, field) {
+  const td = el("td", `num elo m-${field}`);
+  const value = row[field];
+  td.appendChild(document.createTextNode(value == null ? "–" : Math.round(value)));
+  const start = firstElo[row.key]?.[field];
+  const moved = value != null && start != null ? Math.round(value - start) : 0;
+  td.appendChild(el("span", "move", moved ? `${signed(moved)} since opened` : ""));
+  return td;
+}
+
+function renderRows() {
+  const body = $("rows"), field = metric();
+  const before = new Map([...body.children].map((tr) => [tr.dataset.key, tr.getBoundingClientRect().top]));
+  const previous = new Map([...body.children].map((tr) => [tr.dataset.key, tr.dataset.value]));
+  const playing = new Set(state.playing.map((m) => m.key).concat(state.playing.map((m) => m.opponentKey)));
+  const rows = [...state.standings].sort((a, b) => (b[field] ?? -1e9) - (a[field] ?? -1e9));
+  body.replaceChildren(...rows.map((row, index) => {
+    const tr = el("tr");
+    tr.dataset.key = row.key;
+    tr.dataset.value = row[field];
+    tr.appendChild(el("td", "num rank", row[field] == null ? "" : index + 1));
+    const name = el("td", "bot", row.name);
+    if (row.anchor) name.appendChild(el("span", "tag", "Anchor"));
+    if (row.provisional) name.appendChild(el("span", "tag", `Provisional, ${row.games} games`));
+    if (playing.has(row.key)) name.appendChild(el("span", "tag on", "Playing"));
+    tr.appendChild(name);
+    for (const f of ["elo", "king_elo", "score_elo"]) tr.appendChild(eloCell(row, f));
+    const cell = el("td", "places-cell");
+    cell.appendChild(places(row.positions));
+    tr.appendChild(cell);
+    if (previous.has(row.key) && previous.get(row.key) !== tr.dataset.value) tr.classList.add("flash");
+    return tr;
+  }));
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  for (const tr of body.children) {
+    const was = before.get(tr.dataset.key);
+    if (was === undefined) continue;
+    const shift = was - tr.getBoundingClientRect().top;
+    if (shift) tr.animate([{ transform: `translateY(${shift}px)` }, { transform: "none" }], { duration: 500, easing: "ease-out" });
+  }
+  setTimeout(() => [...body.children].forEach((tr) => tr.classList.remove("flash")), 1600);
+}
+
+function render() {
+  for (const row of state.standings) {
+    firstElo[row.key] ??= { elo: row.elo, king_elo: row.king_elo, score_elo: row.score_elo };
+  }
+  const keyByName = Object.fromEntries(state.standings.map((r) => [r.name, r.key]));
+  state.playing.forEach((m) => { m.opponentKey = keyByName[m.opponent]; });
+  const list = (id, matches, live, empty) => $(id).replaceChildren(...(matches.length ? matches.map((m) => matchRow(m, live)) : [el("p", "empty", empty)]));
+  list("playing", state.playing, true, "No matches are playing. Run arena.run or arena.sweep on the server and they appear here.");
+  list("recent", state.recent, false, "Finished matches appear here.");
+  renderRows();
+}
+
+function showStatus() {
+  const box = $("status");
+  box.classList.toggle("bad", failed);
+  if (!lastOk) { box.textContent = failed ? "Can't reach the server. Retrying." : "Loading"; return; }
+  const ago = Math.round((Date.now() - lastOk) / 1000);
+  box.textContent = failed ? `Can't reach the server. Last update ${ago} s ago, retrying.` : `Updated ${ago} s ago`;
+}
+
+async function poll() {
+  if (!document.hidden) {
+    try {
+      const res = await fetch("/api/board", { cache: "no-store" });
+      if (!res.ok) throw new Error(res.status);
+      state = await res.json();
+      lastOk = Date.now(); failed = false;
+      render();
+    } catch { failed = true; }
+    showStatus();
+  }
+  setTimeout(poll, POLL_MS);
+}
+
+document.querySelectorAll("[data-rank]").forEach((button) => button.addEventListener("click", () => {
+  document.body.dataset.metric = button.dataset.rank;
+  document.querySelectorAll("[data-rank]").forEach((b) => b.setAttribute("aria-pressed", b === button));
+  if (state) renderRows();
+}));
+document.addEventListener("visibilitychange", () => { if (!document.hidden) showStatus(); });
+setInterval(showStatus, 1000);
+poll();

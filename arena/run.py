@@ -30,6 +30,7 @@ from estimation.engine import RulesConfig
 from estimation.engine.config import DEFAULT_CONFIG
 
 from .bots import ROOT, SUB_PREFIX, Manifest, load_manifest, maker
+from .live import Match
 from .positions import encode_scores, summarize
 
 ANCHORS_FILE = ROOT / "anchors.json"
@@ -72,6 +73,7 @@ def run_sets(
     config: RulesConfig = DEFAULT_CONFIG,
     budget: float = DEFAULT_BUDGET,
     progress: bool = False,
+    kind: str = "rating",
 ) -> ArenaRun:
     """``estimation.arena.run_arena`` with submissions allowed in the lineup."""
     names = tuple(lineup)
@@ -79,12 +81,14 @@ def run_sets(
     timings = {name: Timing(budget) for name in dict.fromkeys(names)}
     results: list[SetResult] = []
     start = time.perf_counter()
+    match = Match(names, sets, seed, kind)
 
     def collect(outcome: tuple[SetResult, dict[str, Timing]]) -> None:
         result, set_timings = outcome
         results.append(result)
         for name, timing in set_timings.items():
             timings[name].merge(timing)
+        match.update(results)
         if progress:
             elapsed = time.perf_counter() - start
             print(f"  set {len(results)}/{sets}, {elapsed:.0f} s", file=sys.stderr, flush=True)
@@ -96,6 +100,7 @@ def run_sets(
         with ProcessPoolExecutor(max_workers=workers, initializer=_one_thread) as pool:
             for outcome in pool.map(task, range(sets)):
                 collect(outcome)
+    match.update(results, finished=True)
     return ArenaRun(
         lineup=names,
         seed=seed,

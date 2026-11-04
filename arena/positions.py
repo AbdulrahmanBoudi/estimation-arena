@@ -86,7 +86,7 @@ def _pairs(sets: Sequence[dict[str, dict[str, Any]]], bots: Sequence[str], key: 
 
 def summarize(results: Iterable[SetResult], lineup: Sequence[str]) -> tuple[dict[str, dict[str, Any]], dict[str, list[dict[str, Any]]]]:
     """Each bot's position shares and metrics with 95% intervals over sets, and the set-by-set
-    pair records under each metric that decides a set by position ("weighted", "king")."""
+    pair records under each metric ("weighted", "king", "delta")."""
     sets = [_per_set(r, lineup) for r in results]
     bots = list(dict.fromkeys(lineup))
     summary = {
@@ -98,4 +98,15 @@ def summarize(results: Iterable[SetResult], lineup: Sequence[str]) -> tuple[dict
         }
         for b in bots
     }
-    return summary, {"weighted": _pairs(sets, bots, "reward"), "king": _pairs(sets, bots, "king")}
+    return summary, {"weighted": _pairs(sets, bots, "reward"), "king": _pairs(sets, bots, "king"), "delta": _pairs(sets, bots, "delta")}
+
+
+def set_outcomes(results: Iterable[SetResult], lineup: Sequence[str], me: str) -> str:
+    """One letter per set for ``me`` under weighted rank: W, L or D."""
+    out = []
+    for r in results:
+        sides = _per_set(r, lineup)
+        other = max(s["reward"] for b, s in sides.items() if b != me)
+        diff = sides[me]["reward"] - other
+        out.append("W" if diff > 1e-9 else "L" if diff < -1e-9 else "D")
+    return "".join(out)

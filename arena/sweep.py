@@ -42,9 +42,10 @@ def main(argv: list[str] | None = None) -> int:
         values.append(vals.split(","))
     rows = []
     print(f"{args.bot} vs {args.vs}, {args.sets} sets, seed {args.seed}", flush=True)
-    for combo in itertools.product(*values):
+    combos = list(itertools.product(*values))
+    for combo in combos:
         spec = SUB_PREFIX + args.bot + "".join(f":{k}={v}" for k, v in zip(keys, combo))
-        run = run_sets((spec, args.vs, spec, args.vs), args.sets, args.seed, args.workers)
+        run = run_sets((spec, args.vs, spec, args.vs), args.sets, args.seed, args.workers, kind="entry" if len(combos) == 1 else "tuning")
         report = build_report(run)
         places, _ = summarize(run.results, (spec, args.vs, spec, args.vs))
         pr, king, delta = (places[spec][k] for k in ("reward", "king", "delta"))

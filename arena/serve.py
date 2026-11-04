@@ -26,7 +26,7 @@ from starlette.routing import Mount, Route, WebSocketRoute
 from starlette.staticfiles import StaticFiles
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
-from . import lab
+from . import board, lab
 from .bots import ROOT, SUB_PREFIX, list_submissions, load_manifest
 from .run import load_anchors
 from .table import Seat, Table
@@ -100,6 +100,10 @@ async def page(_: Request) -> Response:
 
 async def lab_page(_: Request) -> Response:
     return FileResponse(STATIC / "lab.html")
+
+
+async def board_page(_: Request) -> Response:
+    return FileResponse(STATIC / "board.html")
 
 
 async def health(_: Request) -> Response:
@@ -178,6 +182,8 @@ def app() -> Starlette:
     return Starlette(middleware=[Middleware(GZipMiddleware, minimum_size=1024)], routes=[
         Route("/", page),
         Route("/lab", lab_page),
+        Route("/board", board_page),
+        Route("/api/board", board.api),
         Route("/api/lab/runs", lab.runs),
         Route("/api/lab/{run}/summary", lab.summary),
         Route("/api/lab/{run}/snap/{iteration:int}", lab.snapshot),

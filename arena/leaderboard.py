@@ -58,22 +58,55 @@ def _mean_shares(rows: list[list[float]]) -> list[float] | None:
     return [sum(r[p] for r in rows) / len(rows) for p in range(4)] if rows else None
 
 
-def build() -> dict[str, Any]:
-    anchors: list[dict[str, str]] = json.loads(ANCHORS_FILE.read_text())
-    ladder = json.loads(LADDER_FILE.read_text()) if LADDER_FILE.is_file() else {"pairs": []}
-    results = [json.loads(p.read_text()) for p in sorted(RESULTS_DIR.glob("*.json"))]
+def _add_new(pairs: list[PairRecord], extra: list[PairRecord]) -> None:
+    """Add a live match's sets, unless finished results already rate that pairing."""
+    rated = {frozenset((p.a, p.b)) for p in pairs}
+    pairs += [p for p in extra if frozenset((p.a, p.b)) not in rated]
+
+
+def _overlay_row(key: str, played: list[dict[str, Any]], ratings: tuple[dict, dict, dict]) -> dict[str, Any]:
+    return {
+        "name": played[0]["name"],
+        "author": "",
+        "kind": "provisional",
+        "description": "",
+        "key": key,
+        "method": [],
+        "elo": ratings[0].get(key),
+        "king_elo": ratings[1].get(key),
+        "score_elo": ratings[2].get(key),
+        "positions": _mean_shares([m["shares"] for m in played]),
+        "games": sum(m["done"] * 4 for m in played),
+        "versus": [],
+        "anchor": False,
+        "provisional": True,
+    }
+
+
+def build(root: Path = ROOT, live: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    """Standings from the finished results under ``root``, plus any ``live`` matches
+    (arena.live.read_matches), which count for pairings no finished result covers."""
+    anchors: list[dict[str, str]] = json.loads((root / ANCHORS_FILE.relative_to(ROOT)).read_text())
+    ladder_file, positions_file = root / LADDER_FILE.relative_to(ROOT), root / POSITIONS_FILE.relative_to(ROOT)
+    ladder = json.loads(ladder_file.read_text()) if ladder_file.is_file() else {"pairs": []}
+    results = [json.loads(p.read_text()) for p in sorted((root / RESULTS_DIR.relative_to(ROOT)).glob("*.json"))]
+    counted = [m for m in live or [] if m.get("pairs") and m["state"] != "stopped"
+               and (m["kind"] == "entry" or (m["kind"] == "rating" and m["alive"]))]  # fmt: skip
     pairs = _pairs(ladder["pairs"])
     for r in results:
         pairs += _pairs(r["pairs"])
+    _add_new(pairs, _pairs([q for m in counted for q in m["pairs"]["delta"]]))
     score_ratings = bradley_terry(pairs, ANCHOR, ANCHOR_RATING, DEFAULT_PRIOR) if pairs else {}
-    matches = json.loads(POSITIONS_FILE.read_text())["matches"] if POSITIONS_FILE.is_file() else []
+    matches = json.loads(positions_file.read_text())["matches"] if positions_file.is_file() else []
     by_position = [q for m in matches for q in _pairs(m["pairs"])]
     for r in results:
         by_position += _pairs(r.get("position_pairs", []))
+    _add_new(by_position, _pairs([q for m in counted for q in m["pairs"]["weighted"]]))
     ratings = bradley_terry(by_position, ANCHOR, ANCHOR_RATING, DEFAULT_PRIOR) if by_position else {}
     by_king = [q for m in matches for q in _pairs(m.get("king_pairs", []))]
     for r in results:
         by_king += _pairs(r.get("king_pairs", []))
+    _add_new(by_king, _pairs([q for m in counted for q in m["pairs"]["king"]]))
     king_ratings = bradley_terry(by_king, ANCHOR, ANCHOR_RATING, DEFAULT_PRIOR) if by_king else {}
     anchor_places: dict[str, list[dict[str, Any]]] = {}
     for m in matches:
@@ -142,6 +175,13 @@ def build() -> dict[str, Any]:
                 "anchor": True,
             }
         )
+    known = {row["key"] for row in rows}
+    fresh: dict[str, list[dict[str, Any]]] = {}
+    for m in counted:
+        if m["key"] not in known:
+            fresh.setdefault(m["key"], []).append(m)
+    for key, played in fresh.items():
+        rows.append(_overlay_row(key, played, (ratings, king_ratings, score_ratings)))
     rows.sort(key=lambda row: (row["elo"] is None, -(row["elo"] or 0)))
     return {
         "built_at": datetime.now(UTC).isoformat(timespec="seconds"),
