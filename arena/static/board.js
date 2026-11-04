@@ -26,7 +26,7 @@ function record(strip) {
 function stats(m) {
   const box = el("div", "stats");
   if (!m.done) return box.appendChild(el("span", "", "Waiting for the first set")), box;
-  const rows = [["Sets", record(m.strip)], ["Weighted", signed(m.reward.mean, 2)], ["King", pct(m.king.mean)], ["Kooz", pct(m.shares[3])], ["Delta per game", signed(m.delta.mean, 0)]];
+  const rows = [["Weighted rank", signed(m.reward.mean, 2)], ["King only", pct(m.king.mean)], ["Score delta", signed(m.delta.mean, 0)], ["Sets won, drawn, lost on weighted rank", record(m.strip)]];
   for (const [label, value] of rows) {
     const s = el("span", "", label + " ");
     s.appendChild(el("b", "", value));
@@ -115,6 +115,7 @@ function detailRow(key) {
     shell.appendChild(el("p", "stopped", "Couldn't load this bot's explanation. Close it and open it again to retry."));
   } else {
     if (about.description) shell.appendChild(el("p", "detail-text", about.description));
+    if (about.code_name) shell.appendChild(el("p", "detail-code", `Code name: ${about.code_name}`));
     if (about.method) {
       shell.appendChild(el("h3", "", "How it decides"));
       const steps = el("div", "steps");
@@ -141,7 +142,7 @@ function detailRow(key) {
     if (trained.curves || trained.lab) {
       const links = el("p", "detail-links");
       if (trained.curves) {
-        const a = el("a", "", "See its training curves");
+        const a = el("a", "", "See its training charts");
         a.href = "/tb/?runFilter=" + encodeURIComponent(trained.curves) + "#timeseries";
         links.appendChild(a);
       }
@@ -186,8 +187,8 @@ function renderRows(force = false, animate = true) {
     open.setAttribute("aria-expanded", openKey === row.key);
     open.addEventListener("click", () => toggle(row.key));
     name.appendChild(open);
-    if (row.anchor) name.appendChild(el("span", "tag", "Anchor"));
-    if (row.provisional) name.appendChild(el("span", "tag", `Provisional, ${row.games} games`));
+    if (row.anchor) name.appendChild(el("span", "tag", "Benchmark"));
+    if (row.provisional) name.appendChild(el("span", "tag", `Early result, ${row.games} games`));
     if (playing.has(row.key)) name.appendChild(el("span", "tag on", "Playing"));
     tr.appendChild(name);
     for (const f of ["elo", "king_elo", "score_elo"]) tr.appendChild(eloCell(row, f));
@@ -216,7 +217,7 @@ function render() {
   const keyByName = Object.fromEntries(state.standings.map((r) => [r.name, r.key]));
   state.playing.forEach((m) => { m.opponentKey = keyByName[m.opponent]; });
   const list = (id, matches, live, empty) => $(id).replaceChildren(...(matches.length ? matches.map((m) => matchRow(m, live)) : [el("p", "empty", empty)]));
-  list("playing", state.playing, true, "No matches are playing. Run arena.run or arena.sweep on the server and they appear here.");
+  list("playing", state.playing, true, "No matches are playing right now.");
   list("recent", state.recent, false, "Finished matches appear here.");
   renderRows();
 }

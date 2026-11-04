@@ -12,57 +12,57 @@ from __future__ import annotations
 
 from typing import Any
 
-_RULES = "Nothing is trained. Every decision comes from rules written by hand."
+_RULES = "Nothing is trained. A person wrote every rule."
 _NOT_TRAINED = {"summary": _RULES, "stages": []}
 
 _IMITATE = {
-    "title": "Copy a strong teacher",
+    "title": "Copy a strong player",
     "steps": [
-        ["PIMC-100 plays 802 games, 602k decisions recorded", "data"],
-        ["the net guesses the teacher's card", "net"],
-        ["compare with its card and its value of each card", "reward"],
-        ["nudge the net's weights", "update"],
+        ["Look-ahead plays 802 games; its 602,000 decisions are saved", "data"],
+        ["the model guesses which card it chose", "net"],
+        ["check the guess against its real choice", "reward"],
+        ["adjust the model a little", "update"],
     ],
-    "repeat": "12 passes over the games",
+    "repeat": "12 times through all the games",
 }
 _RL_CARDS = {
-    "title": "Then improve by playing itself",
+    "title": "Then improve by practising",
     "steps": [
-        ["play 512 rounds, half against itself, half against its starting net", "play"],
-        ["reward: round score minus the other three's", "reward"],
-        ["PPO update, kept near the starting net", "update"],
+        ["play 512 rounds: half against itself, half against its starting version", "play"],
+        ["reward: its round score minus the other three's", "reward"],
+        ["adjust the model, staying close to where it started", "update"],
     ],
-    "repeat": "650 times, in two runs of 280 and 370",
+    "repeat": "650 times",
 }
 _RL_V2 = [
     {
-        "title": "Copy PIMC's card play",
+        "title": "Copy Look-ahead's card play",
         "steps": [
-            ["four PIMC bots play whole games, every card recorded", "data"],
-            ["the card net learns PIMC's choices and values", "net"],
-            ["nudge the weights", "update"],
+            ["four Look-ahead bots play full games, every card saved", "data"],
+            ["the card model learns their choices", "net"],
+            ["adjust the model a little", "update"],
         ],
-        "repeat": "up to 24 passes over the games",
+        "repeat": "up to 24 times through the games",
     },
     {
-        "title": "Then self-play, with the bid net starting from nothing",
+        "title": "Then practise, with the bidding model starting from nothing",
         "steps": [
-            ["play against itself, recent versions, Heuristic and a light PIMC", "play"],
-            ["reward: that round's result, for every decision in it", "reward"],
-            ["each net learns the value of what it chose", "update"],
-            ["every 5 rounds of this, a version joins the opponents", "data"],
+            ["play itself, recent versions, Basic rules and a lighter Look-ahead", "play"],
+            ["reward: how that round went, for every decision in it", "reward"],
+            ["each model learns what its choices were worth", "update"],
+            ["every 5 rounds, a copy joins the opponents", "data"],
         ],
         "repeat": "once per batch of games",
     },
 ]
 _BITTER = {
-    "title": "Self-play from nothing, on the GPU",
+    "title": "Practice from nothing",
     "steps": [
-        ["4,096 games at once: half itself, half a past version", "play"],
-        ["128 decisions per game, then stop to learn", "data"],
-        ["reward only at the end of the game: King +1, Sub-King +0.2, Sub-Kooz -0.2, Kooz -1", "reward"],
-        ["a critic that sees hidden hands judges each move", "net"],
-        ["PPO update; every 25 rounds a version joins the 16 past ones", "update"],
+        ["4,096 games at once: half against itself, half against a past version", "play"],
+        ["128 decisions per game, then pause to learn", "data"],
+        ["reward only when the game ends: King +1, Sub-King +0.2, Sub-Kooz -0.2, Kooz -1", "reward"],
+        ["a coach who can see every hand judges each move", "net"],
+        ["adjust the model; every 25 rounds a copy joins the 16 past versions", "update"],
     ],
     "repeat": "5,000 times, about 4.6 hours",
 }
@@ -70,49 +70,49 @@ _BITTER = {
 TRAINING: dict[str, dict[str, Any]] = {
     "random": {"summary": "Nothing is trained. It plays a random legal move.", "stages": []},
     "heuristic": _NOT_TRAINED,
-    "pimc": {"summary": "Nothing is trained. It searches at play time, using Heuristic to play imagined rounds.", "stages": []},
-    "search": {"summary": "Nothing is trained. It searches at play time, using hand-written rules.", "stages": []},
+    "pimc": {"summary": "Nothing is trained. It works things out during play, using Basic rules on imagined hands.", "stages": []},
+    "search": {"summary": "Nothing is trained. It works things out during play, using rules a person wrote.", "stages": []},
     "rl:checkpoint=runs/m4-rules-v2/checkpoints/final.pt": {
-        "summary": "Yosif's two nets: card play starts by copying PIMC, then both nets learn from self-play.",
+        "summary": "Two models: the card model starts by copying Look-ahead, then both learn by playing.",
         "stages": _RL_V2,
     },
     "hybrid": {
-        "summary": "The search isn't trained. It uses RL v2's two nets, trained like this.",
+        "summary": "The look-ahead isn't trained. It uses Yosif's two models, trained like this.",
         "stages": _RL_V2,
     },
     "lowcard-wire": _NOT_TRAINED,
     "highcard-wire": _NOT_TRAINED,
     "cautious-heuristic": _NOT_TRAINED,
     "table-pressure": _NOT_TRAINED,
-    "pimc-clone": {"summary": "A net that only copies PIMC-100's card play. It bids with Heuristic.", "stages": [_IMITATE], "curves": "full-512x3"},
+    "pimc-clone": {"summary": "A model that only copies Look-ahead's card play. It bids with Basic rules.", "stages": [_IMITATE], "curves": "full-512x3"},
     "net-pimc": {
-        "summary": "The search isn't trained. Its net only copies PIMC-100, then picks which cards to search.",
+        "summary": "The look-ahead isn't trained. Its model only copies Look-ahead, then picks which cards to try.",
         "stages": [_IMITATE],
         "curves": "full-512x3",
     },
     "rl-cards": {
-        "summary": "Card play only. It starts as a copy of PIMC-100, then self-play improves it. It bids with Heuristic.",
+        "summary": "Card play only. It starts by copying Look-ahead, then improves by playing. It bids with Basic rules.",
         "stages": [_IMITATE, _RL_CARDS],
         "curves": "rl-cards-cards2",
     },
     "rl-pimc": {
-        "summary": "The search isn't trained. It uses rl-cards' net, trained like this.",
+        "summary": "The look-ahead isn't trained. It uses the model from Copycat with practice, trained like this.",
         "stages": [_IMITATE, _RL_CARDS],
         "curves": "rl-cards-cards2",
     },
     "rl-hybrid": {
-        "summary": "The search isn't trained. Its card net is rl-cards'; its bid net is RL v2's.",
+        "summary": "The look-ahead isn't trained. Its card model comes from Copycat with practice; its bidding model is Yosif's.",
         "stages": [_IMITATE, _RL_CARDS],
         "curves": "rl-cards-cards2",
     },
     "bitter-net": {
-        "summary": "One net for every decision, starting from nothing. No copying, no hand-written rules.",
+        "summary": "One model for every decision, starting from nothing. Nothing copied and no rules written in.",
         "stages": [_BITTER],
         "curves": "bitter-run2",
         "lab": True,
     },
     "bitter-search": {
-        "summary": "The search isn't trained. It uses bitter-net's net, trained like this.",
+        "summary": "The look-ahead isn't trained. It uses the Self-taught model, trained like this.",
         "stages": [_BITTER],
         "curves": "bitter-run2",
         "lab": True,

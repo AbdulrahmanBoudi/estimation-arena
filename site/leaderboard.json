@@ -1,5 +1,5 @@
 {
- "built_at": "2026-11-04T18:25:41+00:00",
+ "built_at": "2026-11-04T20:38:33+00:00",
  "anchor": "random",
  "anchor_rating": 400.0,
  "ladder": {
@@ -11,30 +11,30 @@
  "submissions": 9,
  "rows": [
   {
-   "name": "Hybrid (B-Tig)",
+   "name": "Yosif's trained bot + look-ahead",
    "author": "Yosif Elessawi",
    "kind": "anchor",
-   "description": "hybrid",
+   "description": "Yosif's trained models choose which cards are worth considering. It then tries each one on imagined hands.",
    "key": "hybrid",
    "method": [
     [
-     "RL v2 bid net picks the bid",
+     "bidding model picks the bid",
      "bid"
     ],
     [
-     "RL v2 card net keeps its top 3 cards",
+     "card model keeps its top 3 cards",
      "net"
     ],
     [
-     "imagine hidden hands that fit everyone's bids x16",
+     "imagine hands that fit everyone's bids x16",
      "deal"
     ],
     [
-     "each kept card: RL v2 plays all 4 seats to the end",
+     "try each card: the models play out the round",
      "rollout"
     ],
     [
-     "play the best average score",
+     "play the card with the best average score",
      "pick"
     ]
    ],
@@ -49,33 +49,34 @@
    ],
    "games": null,
    "versus": [],
-   "anchor": true
+   "anchor": true,
+   "code_name": "Hybrid (B-Tig)"
   },
   {
-   "name": "rl-hybrid",
+   "name": "Yosif's bidding, our cards + look-ahead",
    "author": "Essam",
    "kind": "python",
-   "description": "Rung 4: Yosif's Hybrid search (RL v2 bidding, bid-weighted deals) with our self-play RL card net as the prior and the rollout player.",
+   "description": "Yosif's look-ahead bot with its card model swapped for Copycat with practice. It keeps Yosif's bidding.",
    "key": "sub:rl-hybrid",
    "method": [
     [
-     "RL v2 bid net picks the bid",
+     "Yosif's bidding model picks the bid",
      "bid"
     ],
     [
-     "our RL card net keeps its top 3 cards",
+     "our card model keeps its top 3 cards",
      "net"
     ],
     [
-     "imagine hidden hands that fit everyone's bids x16",
+     "imagine hands that fit everyone's bids x16",
      "deal"
     ],
     [
-     "each kept card: our RL net plays all 4 seats to the end",
+     "try each card: our model plays out the round",
      "rollout"
     ],
     [
-     "play the best average score",
+     "play the card with the best average score",
      "pick"
     ]
    ],
@@ -187,21 +188,22 @@
      "delta": 43.4125
     }
    ],
-   "anchor": false
+   "anchor": false,
+   "code_name": "rl-hybrid"
   },
   {
-   "name": "rl-pimc",
+   "name": "Copycat with practice + look-ahead",
    "author": "Essam",
    "kind": "python",
-   "description": "Rung 3: PIMC search over the top 2 cards of a card net trained by imitation, then self-play PPO. Heuristic bidding.",
+   "description": "The practised model picks its 2 best cards, then Look-ahead tries them on imagined hands.",
    "key": "sub:rl-pimc",
    "method": [
     [
-     "Heuristic bids: count tricks the hand should win",
+     "bid the tricks the hand should win",
      "bid"
     ],
     [
-     "RL card net keeps its top 2 cards",
+     "card model keeps its top 2 cards",
      "net"
     ],
     [
@@ -209,11 +211,11 @@
      "deal"
     ],
     [
-     "each kept card: Heuristic plays the round out on every hand",
+     "try each card: Basic rules plays out the round",
      "rollout"
     ],
     [
-     "play the best average score",
+     "play the card with the best average score",
      "pick"
     ]
    ],
@@ -325,25 +327,26 @@
      "delta": 37.875
     }
    ],
-   "anchor": false
+   "anchor": false,
+   "code_name": "rl-pimc"
   },
   {
-   "name": "rl-cards",
+   "name": "Copycat with practice",
    "author": "Essam",
    "kind": "python",
-   "description": "Rung 3: the imitation card net, fine-tuned by self-play PPO. Heuristic bidding.",
+   "description": "Copycat's model, improved further by playing itself. It bids with Basic rules.",
    "key": "sub:rl-cards",
    "method": [
     [
-     "Heuristic bids: count tricks the hand should win",
+     "bid the tricks the hand should win",
      "bid"
     ],
     [
-     "card net: copied PIMC, then self-play PPO",
+     "card model rates every legal card",
      "net"
     ],
     [
-     "play its top card, no search",
+     "play its top card",
      "pick"
     ]
    ],
@@ -455,25 +458,26 @@
      "delta": -25.395
     }
    ],
-   "anchor": false
+   "anchor": false,
+   "code_name": "rl-cards"
   },
   {
-   "name": "RL v2",
+   "name": "Yosif's trained bot",
    "author": "Yosif Elessawi",
    "kind": "anchor",
-   "description": "rl:checkpoint=runs/m4-rules-v2/checkpoints/final.pt",
+   "description": "Two trained models, one for bidding and one for cards. It started by copying Look-ahead, then improved by playing itself.",
    "key": "rl:checkpoint=runs/m4-rules-v2/checkpoints/final.pt",
    "method": [
     [
-     "trained by self-play",
+     "learned from thousands of practice games",
      "data"
     ],
     [
-     "bid net scores every bid",
+     "bidding model rates every bid",
      "bid"
     ],
     [
-     "card net scores every legal card",
+     "card model rates every legal card",
      "net"
     ],
     [
@@ -492,17 +496,18 @@
    ],
    "games": null,
    "versus": [],
-   "anchor": true
+   "anchor": true,
+   "code_name": "RL v2"
   },
   {
-   "name": "PIMC",
+   "name": "Look-ahead",
    "author": "Yosif Elessawi",
    "kind": "anchor",
-   "description": "pimc",
+   "description": "Imagines what the others might hold, plays each card to the end of the round using Basic rules, and picks what scored best.",
    "key": "pimc",
    "method": [
     [
-     "Heuristic bids: count tricks the hand should win",
+     "bid the tricks the hand should win",
      "bid"
     ],
     [
@@ -510,11 +515,11 @@
      "deal"
     ],
     [
-     "each legal card: Heuristic plays the round out on every hand",
+     "try each card: Basic rules plays out the round",
      "rollout"
     ],
     [
-     "play the best average score",
+     "play the card with the best average score",
      "pick"
     ]
    ],
@@ -529,21 +534,22 @@
    ],
    "games": null,
    "versus": [],
-   "anchor": true
+   "anchor": true,
+   "code_name": "PIMC"
   },
   {
-   "name": "net-pimc",
+   "name": "Copycat + look-ahead",
    "author": "Essam",
    "kind": "python",
-   "description": "Rung 2: PIMC search that only considers the cards a net trained on PIMC-100 rates highest, with the saved effort spent on deeper search. HeuristicBot bidding, like PIMC.",
+   "description": "Copycat's model picks the most promising cards, so Look-ahead can spend its effort trying only those.",
    "key": "sub:net-pimc",
    "method": [
     [
-     "Heuristic bids: count tricks the hand should win",
+     "bid the tricks the hand should win",
      "bid"
     ],
     [
-     "card net (copies PIMC-100) keeps its top 3 cards",
+     "card model keeps its top 3 cards",
      "net"
     ],
     [
@@ -551,11 +557,11 @@
      "deal"
     ],
     [
-     "each kept card: Heuristic plays the round out on every hand",
+     "try each card: Basic rules plays out the round",
      "rollout"
     ],
     [
-     "play the best average score",
+     "play the card with the best average score",
      "pick"
     ]
    ],
@@ -667,17 +673,18 @@
      "delta": -88.275
     }
    ],
-   "anchor": false
+   "anchor": false,
+   "code_name": "net-pimc"
   },
   {
-   "name": "Search bot",
+   "name": "Look-ahead, tuned rules",
    "author": "Yosif Elessawi",
    "kind": "anchor",
-   "description": "search",
+   "description": "Like Look-ahead, but it plays each card out with rules tuned for that job.",
    "key": "search",
    "method": [
     [
-     "Heuristic bids: count tricks the hand should win",
+     "bid the tricks the hand should win",
      "bid"
     ],
     [
@@ -685,11 +692,11 @@
      "deal"
     ],
     [
-     "each legal card: a tuned rule plays the round out",
+     "try each card: a tuned rule plays out the round",
      "rollout"
     ],
     [
-     "play the best average score",
+     "play the card with the best average score",
      "pick"
     ]
    ],
@@ -704,25 +711,26 @@
    ],
    "games": null,
    "versus": [],
-   "anchor": true
+   "anchor": true,
+   "code_name": "Search bot"
   },
   {
-   "name": "pimc-clone",
+   "name": "Copycat",
    "author": "Essam",
    "kind": "python",
-   "description": "Rung 2 baseline: net-pimc's card net playing alone, no search. Shows what imitation gives without search.",
+   "description": "A trained model that learned its card play by copying Look-ahead. It bids with Basic rules and does no look-ahead itself.",
    "key": "sub:pimc-clone",
    "method": [
     [
-     "Heuristic bids: count tricks the hand should win",
+     "bid the tricks the hand should win",
      "bid"
     ],
     [
-     "card net (copies PIMC-100) scores every legal card",
+     "card model rates every legal card",
      "net"
     ],
     [
-     "play its top card, no search",
+     "play its top card",
      "pick"
     ]
    ],
@@ -834,17 +842,18 @@
      "delta": -116.6625
     }
    ],
-   "anchor": false
+   "anchor": false,
+   "code_name": "pimc-clone"
   },
   {
-   "name": "table-pressure",
+   "name": "Rules + trump count",
    "author": "Essam",
    "kind": "python",
-   "description": "Rung 1: HeuristicBot that stops chasing tricks once its unbeatable trumps cover what it still needs. Also sweeps table-pressure estimates, which did not help.",
+   "description": "Basic rules, except it stops chasing tricks once its unbeatable trumps cover what it still needs.",
    "key": "sub:table-pressure",
    "method": [
     [
-     "Heuristic bids: count tricks the hand should win",
+     "bid the tricks the hand should win",
      "bid"
     ],
     [
@@ -852,11 +861,11 @@
      "rule"
     ],
     [
-     "they cover the tricks I still need? throw low now",
+     "they cover the tricks I need? throw low now",
      "rule"
     ],
     [
-     "else play like Heuristic",
+     "otherwise play like Basic rules",
      "pick"
     ]
    ],
@@ -968,17 +977,18 @@
      "delta": -158.0
     }
    ],
-   "anchor": false
+   "anchor": false,
+   "code_name": "table-pressure"
   },
   {
-   "name": "Heuristic",
+   "name": "Basic rules",
    "author": "Yosif Elessawi",
    "kind": "anchor",
-   "description": "heuristic",
+   "description": "Follows a short list of rules a person wrote.",
    "key": "heuristic",
    "method": [
     [
-     "Heuristic bids: count tricks the hand should win",
+     "bid the tricks the hand should win",
      "bid"
     ],
     [
@@ -1005,21 +1015,22 @@
    ],
    "games": null,
    "versus": [],
-   "anchor": true
+   "anchor": true,
+   "code_name": "Heuristic"
   },
   {
-   "name": "cautious-heuristic",
+   "name": "Cautious rules",
    "author": "Essam",
    "kind": "python",
-   "description": "Example Python-tier bot: the engine's HeuristicBot with a higher risk aversion.",
+   "description": "Basic rules, set to take fewer risks.",
    "key": "sub:cautious-heuristic",
    "method": [
     [
-     "Heuristic bids: count tricks the hand should win",
+     "bid the tricks the hand should win",
      "bid"
     ],
     [
-     "last to estimate? avoid the risky number",
+     "last to call? avoid the risky number",
      "rule"
     ],
     [
@@ -1139,21 +1150,22 @@
      "delta": -190.63125
     }
    ],
-   "anchor": false
+   "anchor": false,
+   "code_name": "cautious-heuristic"
   },
   {
-   "name": "highcard-wire",
+   "name": "Always highest card",
    "author": "Essam",
    "kind": "wire",
-   "description": "Mirror of lowcard-wire: never bids, estimates the minimum, plays the highest legal card. Submitted through a pull request to prove the smoke flow.",
+   "description": "A simple example bot. It never bids and always plays its highest card.",
    "key": "sub:highcard-wire",
    "method": [
     [
-     "never bid; estimate the minimum",
+     "never bid; call the minimum",
      "bid"
     ],
     [
-     "list legal cards",
+     "list the legal cards",
      "rule"
     ],
     [
@@ -1269,21 +1281,22 @@
      "delta": -1320.54375
     }
    ],
-   "anchor": false
+   "anchor": false,
+   "code_name": "highcard-wire"
   },
   {
-   "name": "lowcard-wire",
+   "name": "Always lowest card",
    "author": "Essam",
    "kind": "wire",
-   "description": "Example wire-protocol bot: never bids, estimates the minimum, plays the lowest legal card. Pure stdlib, no engine import.",
+   "description": "A simple example bot. It never bids and always plays its lowest card.",
    "key": "sub:lowcard-wire",
    "method": [
     [
-     "never bid; estimate the minimum",
+     "never bid; call the minimum",
      "bid"
     ],
     [
-     "list legal cards",
+     "list the legal cards",
      "rule"
     ],
     [
@@ -1399,21 +1412,22 @@
      "delta": -1231.525
     }
    ],
-   "anchor": false
+   "anchor": false,
+   "code_name": "lowcard-wire"
   },
   {
    "name": "Random",
    "author": "Yosif Elessawi",
    "kind": "anchor",
-   "description": "random",
+   "description": "Plays any legal move. It's the bottom of the scale.",
    "key": "random",
    "method": [
     [
-     "any legal bid",
+     "make any legal bid",
      "bid"
     ],
     [
-     "list legal cards",
+     "list the legal cards",
      "rule"
     ],
     [
@@ -1432,7 +1446,8 @@
    ],
    "games": null,
    "versus": [],
-   "anchor": true
+   "anchor": true,
+   "code_name": "Random"
   }
  ]
 }
