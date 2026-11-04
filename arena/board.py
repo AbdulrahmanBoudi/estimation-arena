@@ -13,6 +13,7 @@ from starlette.responses import JSONResponse, Response
 from .guide import GUIDE, STYLE as GUIDE_STYLE
 from .leaderboard import SITE_DIR, _pick_frame, build, method_svg, move_html
 from .live import LIVE, public, read_matches
+from .plain import about_bot, plain_name
 from .training import training_of
 from .bots import ROOT, SUB_PREFIX
 
@@ -20,7 +21,7 @@ from .bots import ROOT, SUB_PREFIX
 RESULTS_ROOT = Path(os.environ.get("ESTIMATION_RESULTS_ROOT", Path.home() / "workspace" / "estimation-arena"))
 RECENT = 8
 _cache: dict[str, Any] = {"signature": None, "standings": []}
-ROW_FIELDS = ("name", "key", "kind", "anchor", "provisional", "elo", "king_elo", "score_elo", "positions", "games", "played_at")
+ROW_FIELDS = ("name", "code_name", "key", "kind", "anchor", "provisional", "elo", "king_elo", "score_elo", "positions", "games", "played_at")
 MATCH_FIELDS = ("id", "kind", "key", "name", "opponent", "sets", "done", "state", "strip", "shares", "reward", "king", "delta", "started_at", "updated_at")
 
 
@@ -48,7 +49,7 @@ def payload() -> dict[str, Any]:
         _cache["standings"] = [{k: row.get(k) for k in ROW_FIELDS} for row in board["rows"]]
         _cache["signature"] = signature
     names = {row["key"]: row["name"] for row in _cache["standings"]}
-    view = [{**{k: m.get(k) for k in MATCH_FIELDS}, "opponent": names.get(m["opponent"], public(m["opponent"])[1])} for m in matches]
+    view = [{**{k: m.get(k) for k in MATCH_FIELDS}, "name": plain_name(m["key"], m["name"]), "opponent": names.get(m["opponent"], plain_name(m["opponent"], public(m["opponent"])[1]))} for m in matches]
     return {
         "standings": _cache["standings"],
         "playing": [m for m in view if m["state"] == "playing"],
@@ -85,11 +86,13 @@ def explain(key: str) -> dict[str, Any] | None:
     else:
         anchors = json.loads((_root() / "anchors.json").read_text())
         about = next((a for a in anchors if a["spec"] == key), {})
+    plain = about_bot(key)
     frame = _pick_frame(_sample(key).get("frames", []))
     trained = training_of(key) or {}
     return {
-        "description": about.get("description", ""),
-        "method": method_svg(about.get("method", [])),
+        "description": plain.get("about", about.get("description", "")),
+        "code_name": next(row["code_name"] for row in _cache["standings"] if row["key"] == key),
+        "method": method_svg(plain.get("method", about.get("method", []))),
         "move": move_html(frame) if frame else "",
         "training": {
             "summary": trained.get("summary", ""),

@@ -91,3 +91,4 @@ tr.flash td{background:var(--raised);transition:background 1.4s}
 }
 @media (prefers-reduced-motion:reduce){.strip i.new{animation:none}tr{transition:none!important}tr.flash td{transition:none}}
 #guide-slot{margin-top:0}.guide{margin-top:0}.guide h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:700}
+.detail-code{margin:-4px 0 8px;color:var(--muted);font-size:13px}

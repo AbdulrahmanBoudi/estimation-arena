@@ -24,6 +24,7 @@ from .guide import GUIDE, STYLE as GUIDE_STYLE
 from .anchor_positions import OUT as POSITIONS_FILE
 from .import_ladder import LADDER_FILE
 from .positions import NAMES as POSITION_NAMES
+from .plain import about_bot, benchmark_name, plain_name
 from .run import ANCHORS_FILE, RESULTS_DIR
 
 SITE_DIR = ROOT / "site"
@@ -183,6 +184,12 @@ def build(root: Path = ROOT, live: list[dict[str, Any]] | None = None) -> dict[s
             fresh.setdefault(m["key"], []).append(m)
     for key, played in fresh.items():
         rows.append(_overlay_row(key, played, (ratings, king_ratings, score_ratings)))
+    for row in rows:
+        row["code_name"] = row["name"]
+        row["name"] = plain_name(row["key"], row["name"])
+        about = about_bot(row["key"])
+        row["description"] = about.get("about", row["description"])
+        row["method"] = about.get("method", row["method"])
     rows.sort(key=lambda row: (row["elo"] is None, -(row["elo"] or 0)))
     return {
         "built_at": datetime.now(UTC).isoformat(timespec="seconds"),
@@ -383,7 +390,7 @@ def move_html(frame: dict[str, Any]) -> str:
     scores = {name: {int(k): v for k, v in vals.items()} for name, vals in frame.get("scores", {}).items()}
     net, search = scores.get("net", {}), scores.get("search", {})
     lo, hi = (min(search.values()), max(search.values())) if search else (0.0, 1.0)
-    head = "<tr><th>card</th>" + ("<th>net</th>" if net else "") + ("<th>search avg</th>" if search else "") + "<th></th></tr>"
+    head = "<tr><th>card</th>" + ("<th>model's preference</th>" if net else "") + ("<th>average on imagined hands</th>" if search else "") + "<th></th></tr>"
     rows = []
     order = sorted(legal, key=lambda c: (-search.get(c, -1e9), -net.get(c, 0.0), c))
     for c in order:
@@ -397,7 +404,7 @@ def move_html(frame: dict[str, Any]) -> str:
                 w = 8 + 92 * (v - lo) / ((hi - lo) or 1)
                 cells += f'<td><span class="track"><span class="fill f-search" style="width:{w:.0f}%"></span></span>{v:+.1f}</td>'
             else:
-                cells += '<td class="desc">not searched</td>'
+                cells += '<td class="desc">not tried</td>'
         cells += f'<td class="tick">{"✓ played" if c == chosen else ""}</td>'
         rows.append(f"<tr>{cells}</tr>")
     rest_html = " ".join(_card(c, "dim") for c in rest)
@@ -416,7 +423,7 @@ def how_it_plays(row: dict[str, Any], samples: dict[str, Any]) -> str:
     if frame is not None:
         move = f'<div class="lbl2">one real decision</div>{move_html(frame)}'
     return (f'<details class="how"><summary>how it plays</summary>'
-            f'<div class="lbl2">algorithm</div><div class="scroll">{method_svg(row.get("method", []))}</div>'
+            f'<div class="lbl2">how it decides</div><div class="scroll">{method_svg(row.get("method", []))}</div>'
             f"{move}</details>")
 
 
@@ -443,22 +450,21 @@ def render(board: dict[str, Any]) -> str:
             parts = "".join(f'<span class="p{k}" style="width:{x * 100:.1f}%"></span>' for k, x in enumerate(places))
             place_bar = f'<div class="places" title="{title}" role="img" aria-label="{title}">{parts}</div><span class="king">King {places[0]:.0%}</span>'
         if r["anchor"]:
-            name = f'{e(r["name"])} <span class="tag">anchor</span>'
-            meta = f'<span class="desc who">{e(r["author"])}: {e(r["description"])}</span>'
+            name = f'{e(r["name"])} <span class="tag">benchmark</span>'
+            meta = f'<span class="desc who">{e(r["description"])} By {e(r["author"])}. Code name: {e(r["code_name"])}.</span>'
             detail = ""
         else:
-            name = f'<strong>{e(r["name"])}</strong> <span class="tag">{e(r["kind"])}</span>'
-            meta = f'<span class="desc who">{e(r["author"])}: {e(r["description"])}</span>'
+            name = f'<strong>{e(r["name"])}</strong>'
+            meta = f'<span class="desc who">{e(r["description"])} By {e(r["author"])}. Code name: {e(r["code_name"])}.</span>'
             vs = " · ".join(
-                f'{e(v["anchor"])} <span class="m-weighted {"pos" if (v["position_reward"] or 0) >= 0 else "neg"}">{(v["position_reward"] or 0):+.2f}</span>'
+                f'{e(benchmark_name(v["anchor"]))} <span class="m-weighted {"pos" if (v["position_reward"] or 0) >= 0 else "neg"}">{(v["position_reward"] or 0):+.2f}</span>'
                 f'<span class="m-king {"pos" if v["first_place"] >= 0.25 else "neg"}">{v["first_place"]:.0%}</span>'
                 f'<span class="m-delta {"pos" if v["delta"] >= 0 else "neg"}">{v["delta"]:+.0f}</span>'
                 for v in r["versus"]
             )
             detail = (
-                f'<span class="desc">{vs}</span><br><span class="desc">{r["games"]} games, '
-                f'seed {r["seed"]}, p95 {r["p95_ms"]:.0f} ms, over budget {r["over_budget"]:.1%}, '
-                f'{e(r["played_at"][:10])}</span>'
+                f'<span class="desc">{vs}</span><br><span class="desc">{r["games"]:,} games, '
+                f'last played {e(r["played_at"][:10])}</span>'
             )
         lines.append(
             f'<tr class="{"anchor" if r["anchor"] else "sub"} bot" {sort_keys}>'
@@ -477,13 +483,13 @@ def render(board: dict[str, Any]) -> str:
 <title>Estimation Arena</title><style>{STYLE}{GUIDE_STYLE}:root{{--guide-line:var(--line)}}</style></head>
 <body data-metric="weighted"><main>
 <h1>Estimation Arena</h1>
-<p class="sub">{board["submissions"]} submissions and {len(anchors)} anchors, rated three ways from the same games (Random = {board["anchor_rating"]:.0f}). Built {built}.</p>
+<p class="sub">{len(rows)} bots ranked three ways from the same games, including {len(anchors)} fixed benchmarks. Updated {built}.</p>
 <div class="metrics" role="group" aria-label="Rank by">{"".join(f'<button type="button" data-rank="{m}"{" aria-pressed=true" if m == "weighted" else " aria-pressed=false"}>{label}</button>' for m, _, label in METRICS)}</div>
 <p class="desc"><span class="key p0"></span>King +1<span class="key p1"></span>Sub-King +0.2<span class="key p2"></span>Sub-Kooz −0.2<span class="key p3"></span>Kooz −1</p>
 <p class="desc"><a href="#guide">What the numbers mean</a></p>
-<p class="desc">Open “how it plays” under any bot: its algorithm, then one real decision from the same deal (seat 0 vs three Heuristic bots).</p>
+<p class="desc">Open “how it plays” under any bot to see how it decides, then one real decision from the same deal against three Basic rules bots.</p>
 <table>
-<thead><tr><th class="num">#</th><th>Bot</th>{"".join(f'<th class="num m-{m}">{label}</th>' for m, _, label in METRICS)}<th class="opt">Final positions</th><th class="opt">Against each anchor</th></tr></thead>
+<thead><tr><th class="num">#</th><th>Bot</th>{"".join(f'<th class="num m-{m}">{label}</th>' for m, _, label in METRICS)}<th class="opt">Finishing places</th><th class="opt">Against each benchmark</th></tr></thead>
 <tbody>
 {chr(10).join(lines)}
 </tbody></table>
