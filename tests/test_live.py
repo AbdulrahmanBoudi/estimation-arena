@@ -79,7 +79,7 @@ def test_payload_hides_internals(tmp_path, monkeypatch):
     match = live.Match(("sub:a:net=/x/n.npz", "heuristic", "sub:a:net=/x/n.npz", "heuristic"), 3, 1, kind="entry")
     match.update([_result(0, 100, 50)])
     data = board.payload()
-    assert data["playing"][0]["opponent"] == "Heuristic"
+    assert data["playing"][0]["opponent"] == "Basic rules"
     assert data["playing"][0]["done"] == 1
     assert any(r["key"] == "sub:a:n" for r in data["standings"])
     text = json.dumps(data)
@@ -137,7 +137,7 @@ def test_tensorboard_forwarding_drops_identity(monkeypatch):
 def test_the_guide_defines_every_metric_on_both_pages():
     from arena.guide import GUIDE
 
-    for word in ("Weighted rank", "King only", "Score delta", "Elo", "Provisional", "Anchor"):
+    for word in ("Weighted rank", "King only", "Score delta", "Elo", "early result", "Benchmark"):
         assert word in GUIDE
     assert GUIDE in leaderboard.render(leaderboard.build(ROOT))
 
@@ -155,3 +155,13 @@ def test_tensorboard_page_is_not_rewritten_by_the_cdn():
     script["Content-Type"] = "text/javascript"
     script["Cache-Control"] = "private, max-age=86400"
     assert tensorboard._reply_headers(script)["Cache-Control"] == "private, max-age=86400"
+
+
+def test_reader_text_has_no_inside_terms():
+    from arena.guide import GUIDE
+    from arena.plain import BOTS
+    from arena.training import TRAINING
+
+    text = json.dumps([BOTS, TRAINING]) + GUIDE
+    for word in ("PPO", "PIMC", "GPU", "Heuristic", "self-play", "Rung", "RL v2", "bitter", " net ", "critic"):
+        assert word not in text.replace("bitter-net", "").replace("bitter-search", "").replace("bitter-run", ""), word
