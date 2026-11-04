@@ -14,8 +14,8 @@ function card(c, attrs = "") {
 }
 
 const ATTEMPTS = {
-  run1: ["First attempt: rewarded for points each round", "Its first try was rewarded for points in each round and was stopped early. It reached only 9% King against Basic rules, which is why the later attempts reward finishing place instead."],
-  run2: ["Best attempt: rewarded for finishing place", "Rewarded at the end of each game for its final place, using the weighted rank payouts. It won 59 of 60 sets against Basic rules and ended about level with Yosif's best bot on finishing place."],
+  run1: ["First try: rewarded for round points", "Its first try was rewarded for points in each round and was stopped early. It reached only 9% King against Basic rules, which is why the later attempts reward finishing place instead."],
+  run2: ["Best: rewarded for finishing place", "Rewarded at the end of each game for its final place, using the weighted rank payouts. It won 59 of 60 sets against Basic rules and ended about level with Yosif's best bot on finishing place."],
   run3: ["Rewarded only for coming first", "Rewarded only for finishing King. It became reckless: it won 48 of 60 sets against Basic rules but lost to Look-ahead, and it finished last more often."],
 };
 const attemptName = (run) => ATTEMPTS[run]?.[0] ?? run;
