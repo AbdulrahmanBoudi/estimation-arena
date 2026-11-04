@@ -175,3 +175,13 @@ def test_the_lab_page_has_no_inside_terms():
     for word in ('"Heuristic', "Iteration", "self-play", "GPU", "engines", ">vs PIMC"):
         assert word not in script, word
 
+
+def test_page_files_stay_out_of_shared_caches():
+    import asyncio
+
+    from arena.serve import STATIC, PrivateStatic
+
+    scope = {"type": "http", "method": "GET", "path": "/lab.css", "headers": []}
+    response = asyncio.run(PrivateStatic(directory=STATIC).get_response("lab.css", scope))
+    assert response.headers["Cache-Control"] == "private, no-cache"
+

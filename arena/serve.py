@@ -32,6 +32,16 @@ from .run import load_anchors
 from .table import Seat, Table
 
 STATIC = Path(__file__).resolve().parent / "static"
+
+
+class PrivateStatic(StaticFiles):
+    """Page files stay out of Cloudflare's cache, which would serve them past the sign-in check
+    and keep old versions for hours after a deploy. Browsers still revalidate them cheaply."""
+
+    async def get_response(self, path: str, scope: Any) -> Response:
+        response = await super().get_response(path, scope)
+        response.headers["Cache-Control"] = "private, no-cache"
+        return response
 MAX_TABLES = 24
 IDLE_S = 12 * 3600
 TABLES: dict[str, Table] = {}
@@ -197,7 +207,7 @@ def app() -> Starlette:
         Route("/api/tables", tables, methods=["GET"]),
         Route("/api/tables", create, methods=["POST"]),
         WebSocketRoute("/ws/{tid}", socket),
-        Mount("/static", StaticFiles(directory=STATIC)),
+        Mount("/static", PrivateStatic(directory=STATIC)),
     ])
 
 
