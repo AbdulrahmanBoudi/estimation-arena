@@ -185,6 +185,7 @@ def app() -> Starlette:
         Route("/board", board_page),
         Route("/api/board", board.api),
         Route("/api/board/bot", board.bot),
+        Route("/api/board/guide", board.guide),
         Route("/tb", tensorboard.root),
         Route("/tb/{path:path}", tensorboard.forward, methods=["GET", "POST"]),
         Route("/api/lab/runs", lab.runs),

@@ -250,4 +250,11 @@ document.querySelectorAll("[data-rank]").forEach((button) => button.addEventList
 }));
 document.addEventListener("visibilitychange", () => { if (!document.hidden) showStatus(); });
 setInterval(showStatus, 1000);
+fetch("/api/board/guide").then((r) => r.json()).then((guide) => {
+  const style = document.createElement("style");
+  style.textContent = guide.css;
+  document.head.appendChild(style);
+  $("guide-slot").innerHTML = guide.html;
+  if (location.hash === "#guide") document.getElementById("guide").scrollIntoView();
+}).catch(() => {});
 poll();

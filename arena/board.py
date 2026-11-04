@@ -10,6 +10,7 @@ from typing import Any
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
+from .guide import GUIDE, STYLE as GUIDE_STYLE
 from .leaderboard import SITE_DIR, _pick_frame, build, method_svg, move_html
 from .live import LIVE, public, read_matches
 from .training import training_of
@@ -101,6 +102,10 @@ def explain(key: str) -> dict[str, Any] | None:
 
 def api(_: Request) -> Response:
     return JSONResponse(payload())
+
+
+def guide(_: Request) -> Response:
+    return JSONResponse({"html": GUIDE, "css": GUIDE_STYLE})
 
 
 def bot(request: Request) -> Response:

@@ -132,3 +132,11 @@ def test_tensorboard_forwarding_drops_identity(monkeypatch):
     scope = {"type": "http", "method": "GET", "path": "/tb/x", "query_string": b"", "path_params": {"path": "x"},
              "headers": [(b"remote-user", b"egouda"), (b"cookie", b"secret"), (b"x-home-estimation-key", b"k"), (b"accept", b"*/*")]}
     assert tensorboard._headers(Request(scope)) == {"accept": "*/*"}
+
+
+def test_the_guide_defines_every_metric_on_both_pages():
+    from arena.guide import GUIDE
+
+    for word in ("Weighted rank", "King only", "Score delta", "Elo", "Provisional", "Anchor"):
+        assert word in GUIDE
+    assert GUIDE in leaderboard.render(leaderboard.build(ROOT))

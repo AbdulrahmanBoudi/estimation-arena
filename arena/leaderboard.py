@@ -20,6 +20,7 @@ from typing import Any
 from estimation.arena.ratings import ANCHOR, ANCHOR_RATING, DEFAULT_PRIOR, PairRecord, bradley_terry
 
 from .bots import ROOT, SUB_PREFIX, load_manifest
+from .guide import GUIDE, STYLE as GUIDE_STYLE
 from .anchor_positions import OUT as POSITIONS_FILE
 from .import_ladder import LADDER_FILE
 from .positions import NAMES as POSITION_NAMES
@@ -473,21 +474,20 @@ def render(board: dict[str, Any]) -> str:
     built = board["built_at"].replace("T", " ")[:16] + " UTC"
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Estimation Arena</title><style>{STYLE}</style></head>
+<title>Estimation Arena</title><style>{STYLE}{GUIDE_STYLE}:root{{--guide-line:var(--line)}}</style></head>
 <body data-metric="weighted"><main>
 <h1>Estimation Arena</h1>
 <p class="sub">{board["submissions"]} submissions and {len(anchors)} anchors, rated three ways from the same games (Random = {board["anchor_rating"]:.0f}). Built {built}.</p>
 <div class="metrics" role="group" aria-label="Rank by">{"".join(f'<button type="button" data-rank="{m}"{" aria-pressed=true" if m == "weighted" else " aria-pressed=false"}>{label}</button>' for m, _, label in METRICS)}</div>
 <p class="desc"><span class="key p0"></span>King +1<span class="key p1"></span>Sub-King +0.2<span class="key p2"></span>Sub-Kooz −0.2<span class="key p3"></span>Kooz −1</p>
+<p class="desc"><a href="#guide">What the numbers mean</a></p>
 <p class="desc">Open “how it plays” under any bot: its algorithm, then one real decision from the same deal (seat 0 vs three Heuristic bots).</p>
 <table>
 <thead><tr><th class="num">#</th><th>Bot</th>{"".join(f'<th class="num m-{m}">{label}</th>' for m, _, label in METRICS)}<th class="opt">Final positions</th><th class="opt">Against each anchor</th></tr></thead>
 <tbody>
 {chr(10).join(lines)}
 </tbody></table>
-<details><summary>How the numbers are made</summary>
-<p class="desc">A submission plays each anchor in duplicate sets: every deal is played four times with the seats rotated, so luck cancels. A game pays by final position: King +1, Sub-King +0.2, Sub-Kooz −0.2, Kooz −1, tied seats sharing their positions. Every game also counts two other ways: King only pays 1 for King and 0 for anything else, and score delta is our seats' mean score minus the opponent's. Each way decides its own set winner, and each rating is one Bradley-Terry fit over every pair's set results under it, anchors included. Elo counts sets won, so a single exploding score cannot swing it. Against each anchor shows the average per game: reward, King share or delta. The bar shows each position's share, averaged over the bot's opponents. Over budget counts card decisions slower than 0.25 s.</p>
-</details>
+{GUIDE}
 </main><script>{RANK_SCRIPT}</script></body></html>
 """
 
