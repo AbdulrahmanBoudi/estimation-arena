@@ -11,18 +11,23 @@
   "timeout_s": 5.0,
   "method": [
    [
-    "Heuristic bidding",
+    "Heuristic bids: count tricks the hand should win",
+    "bid"
+   ],
+   [
+    "last to estimate? avoid the risky number",
     "rule"
    ],
    [
-    "last estimate avoids risk",
+    "still need tricks? win cheaply, else throw low",
     "rule"
    ],
    [
-    "Heuristic card play",
-    "out"
+    "play that card",
+    "pick"
    ]
-  ]
+  ],
+  "needs": ""
  },
  "engine": "0.1.0",
  "rules": {
@@ -31,7 +36,7 @@
  },
  "seed": 1157764928,
  "sets": 20,
- "played_at": "2026-11-03T10:33:35+00:00",
+ "played_at": "2026-11-04T10:32:26+00:00",
  "versus": [
   {
    "anchor": "Random",
@@ -53,13 +58,13 @@
    },
    "timing": {
     "count": 65572,
-    "mean_s": 8.326284374428109e-06,
-    "p95_s": 1.2365788487295415e-05,
-    "max_s": 0.0011746760000050926,
+    "mean_s": 6.598883273348381e-06,
+    "p95_s": 7.998674705139815e-06,
+    "max_s": 0.003026875000003315,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 1.4824024520000023
+   "wall_s": 1.2029140320000025
   },
   {
    "anchor": "Heuristic",
@@ -81,13 +86,13 @@
    },
    "timing": {
     "count": 38272,
-    "mean_s": 7.966430732650502e-06,
-    "p95_s": 1.1885609849380443e-05,
-    "max_s": 0.00467049999998892,
+    "mean_s": 5.343291962792642e-06,
+    "p95_s": 7.841837946215504e-06,
+    "max_s": 0.004027186000001848,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 1.0808084989999998
+   "wall_s": 0.7587449119999974
   },
   {
    "anchor": "PIMC",
@@ -109,13 +114,13 @@
    },
    "timing": {
     "count": 38272,
-    "mean_s": 9.462743049749165e-06,
-    "p95_s": 1.3122673669025794e-05,
-    "max_s": 0.0030352349999986927,
+    "mean_s": 6.978251959657191e-06,
+    "p95_s": 9.750339832918646e-06,
+    "max_s": 0.0001101459999972576,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 157.525890828
+   "wall_s": 90.999518655
   },
   {
    "anchor": "Search bot",
@@ -137,13 +142,13 @@
    },
    "timing": {
     "count": 38558,
-    "mean_s": 1.12967554333731e-05,
-    "p95_s": 1.507382716484852e-05,
-    "max_s": 0.005041718000029505,
+    "mean_s": 7.113420898386846e-06,
+    "p95_s": 9.750339832918646e-06,
+    "max_s": 0.0002057320000119489,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 170.428324035
+   "wall_s": 97.48256188600001
   }
  ],
  "pairs": [

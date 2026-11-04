@@ -11,22 +11,23 @@
   "timeout_s": 5.0,
   "method": [
    [
-    "Heuristic bidding",
+    "Heuristic bids: count tricks the hand should win",
+    "bid"
+   ],
+   [
+    "count my trumps nobody can beat",
     "rule"
    ],
    [
-    "count trumps nobody can beat",
+    "they cover the tricks I still need? throw low now",
     "rule"
    ],
    [
-    "they cover what I need?",
-    "rule"
-   ],
-   [
-    "yes: duck now",
-    "out"
+    "else play like Heuristic",
+    "pick"
    ]
-  ]
+  ],
+  "needs": ""
  },
  "engine": "0.1.0",
  "rules": {
@@ -35,7 +36,7 @@
  },
  "seed": 1157764928,
  "sets": 20,
- "played_at": "2026-11-03T12:03:54+00:00",
+ "played_at": "2026-11-04T11:24:57+00:00",
  "versus": [
   {
    "anchor": "Random",
@@ -57,13 +58,13 @@
    },
    "timing": {
     "count": 65130,
-    "mean_s": 8.911515768463074e-06,
-    "p95_s": 1.2613104257041323e-05,
-    "max_s": 0.0002544330000091577,
+    "mean_s": 6.138977736834025e-06,
+    "p95_s": 8.488257586492013e-06,
+    "max_s": 0.00017135500002041226,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 1.3609499409994896
+   "wall_s": 0.8650419199998396
   },
   {
    "anchor": "Heuristic",
@@ -85,13 +86,13 @@
    },
    "timing": {
     "count": 38272,
-    "mean_s": 8.548285247700669e-06,
-    "p95_s": 1.2123322046368054e-05,
-    "max_s": 7.531000028393464e-05,
+    "mean_s": 5.860297084030101e-06,
+    "p95_s": 7.998674705139815e-06,
+    "max_s": 0.00029257400001370115,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 0.9234390920000806
+   "wall_s": 0.5819539260000965
   },
   {
    "anchor": "PIMC",
@@ -113,13 +114,13 @@
    },
    "timing": {
     "count": 38272,
-    "mean_s": 1.0764558241011706e-05,
-    "p95_s": 1.4204404004538714e-05,
-    "max_s": 8.968699967226712e-05,
+    "mean_s": 7.732661266722408e-06,
+    "p95_s": 1.0144253562168559e-05,
+    "max_s": 5.91629996051779e-05,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 154.98758734000057
+   "wall_s": 90.7188011760004
   },
   {
    "anchor": "Search bot",
@@ -141,13 +142,13 @@
    },
    "timing": {
     "count": 38636,
-    "mean_s": 1.2171185422921628e-05,
-    "p95_s": 1.599646597795457e-05,
-    "max_s": 0.0010502130007807864,
+    "mean_s": 8.133530644994305e-06,
+    "p95_s": 1.0765163034201773e-05,
+    "max_s": 0.0005168519996914256,
     "budget_s": 0.25,
     "over_budget": 0
    },
-   "wall_s": 166.70211552399996
+   "wall_s": 96.85716741600027
   },
   {
    "anchor": "RL v2",
@@ -176,7 +177,7 @@
     "over_budget": 0
    },
    "wall_s": 6.899446129100397,
-   "carried_from": "2026-11-03T01:34:41+00:00"
+   "carried_from": "2026-11-03T12:03:54+00:00"
   },
   {
    "anchor": "Hybrid (B-Tig)",
@@ -205,7 +206,7 @@
     "over_budget": 0
    },
    "wall_s": 575.0598031390691,
-   "carried_from": "2026-11-03T01:34:41+00:00"
+   "carried_from": "2026-11-03T12:03:54+00:00"
   }
  ],
  "pairs": [
