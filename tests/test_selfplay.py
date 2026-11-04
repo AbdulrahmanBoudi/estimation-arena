@@ -87,3 +87,13 @@ def test_objectives_are_zero_sum_and_pay_what_they_say():
     assert jnp.allclose(king[1], jnp.array([0.25, 0.25, -0.25, -0.25]))
     delta = objective_rewards(scores, "delta")
     assert delta[0, 0] > delta[0, 1] > delta[0, 3]
+
+
+@pytest.mark.parametrize("objective", ["king", "delta"])
+def test_training_runs_with_each_objective(tmp_path, objective):
+    from jaxenv.selfplay import main
+
+    args = ["--objective", objective, "--out", str(tmp_path), "--iterations", "1", "--batch", "16", "--steps", "8",
+            "--minibatch", "64", "--hidden", "16", "--depth", "1"]  # fmt: skip
+    assert main(args) in (0, None)
+    assert (tmp_path / "log.jsonl").read_text().strip()

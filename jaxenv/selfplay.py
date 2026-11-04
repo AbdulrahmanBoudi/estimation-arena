@@ -189,7 +189,7 @@ def _advance(g, used, base, pool, action):
     return _where_games(stop, fresh, after), used + stop, r, ended, after
 
 
-def make_rollout(batch: int, steps: int, lam: float):
+def make_rollout(batch: int, steps: int, lam: float, objective: str = "weighted"):
     base = jnp.arange(batch) * POOL_DEALS
 
     def rollout(nets, opp, g, key):
@@ -344,7 +344,9 @@ def save_npz(policy, path: Path, meta: dict) -> None:
         arrays[f"w{k}"], arrays[f"b{k}"] = np.asarray(layer["w"]), np.asarray(layer["b"])
     arrays["pw"], arrays["pb"] = np.asarray(policy["policy"]["w"]), np.asarray(policy["policy"]["b"])
     path.parent.mkdir(parents=True, exist_ok=True)
-    np.savez_compressed(path, **{k: v.astype(np.float32) for k, v in arrays.items()}, meta=json.dumps(meta))
+    partial = path.with_name(path.name + ".part.npz")  # readers never see a half-written net
+    np.savez_compressed(partial, **{k: v.astype(np.float32) for k, v in arrays.items()}, meta=json.dumps(meta))
+    partial.replace(path)
 
 
 def main(argv=None) -> int:

@@ -14,6 +14,7 @@ import argparse
 import json
 import time
 from pathlib import Path
+from zipfile import BadZipFile
 
 import jax
 import jax.numpy as jnp
@@ -183,7 +184,7 @@ def main(argv=None) -> int:
     while True:
         try:
             capture(run, a.every)
-        except (OSError, ValueError, EOFError, KeyError) as error:  # net.npz mid-write: try again
+        except (OSError, ValueError, EOFError, KeyError, BadZipFile) as error:  # net.npz mid-write: try again
             print("retry:", error, flush=True)
         time.sleep(20)
 
