@@ -1,46 +1,64 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Estimation lab</title>
+<title>Estimation training lab</title>
 <link rel="icon" href="data:,"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/static/lab.css"></head>
+<link rel="stylesheet" href="/static/lab.css?v=2"></head>
 <body>
 <header class="top">
-  <div class="counter"><span id="iter" class="iter">–</span><span class="iter-sub" id="iter-sub">Waiting for the first saved version</span></div>
-  <div class="top-side">
-    <p id="verified" class="verified" hidden></p>
-    <label class="run-pick">Run <select id="run"></select></label>
-    <a class="back" href="/board">Live board</a>
-    <a class="back" href="/tb/">TensorBoard</a>
-    <a class="back" href="/">Play at the table</a>
+  <div class="intro">
+    <h1>Watch a bot teach itself Estimation</h1>
+    <p>This bot began by playing randomly and got better only by playing against itself. Nobody gave it a strategy. Move along its training below to see what it knew at each point.</p>
   </div>
+  <nav class="top-side"><a class="back" href="/board">Live board</a><a class="back" href="/tb/">Training charts</a><a class="back" href="/">Play at the table</a></nav>
 </header>
 
-<section class="mind" aria-label="What this version thinks about a fixed hand">
-  <div class="mind-left">
-    <h2>Same hand, every version</h2>
-    <p class="note">Seat 1 opens the bidding with this hand. Brighter means this version is more likely to choose it.</p>
-    <div id="probe-hand" class="hand-row"></div>
-    <div class="dash"><span>Dash Call</span><div class="dash-track"><i id="dash-fill"></i></div><b id="dash-val"></b></div>
-    <div id="pass" class="dash"><span>Pass</span><div class="dash-track"><i id="pass-fill"></i></div><b id="pass-val"></b></div>
-    <h3>Its lead after winning the bid at 6♠</h3>
-    <div id="lead" class="lead"></div>
-  </div>
-  <div id="grid" class="grid" role="img" aria-label="Opening bid probabilities by tricks and trump"></div>
+<section class="attempt" aria-label="Choose a training attempt">
+  <label class="run-pick" for="run">Training attempt</label>
+  <select id="run"></select>
+  <p id="attempt-about" class="note"></p>
+  <p class="only">Only this bot was recorded through its training. To see how the others decide, open them on the <a href="/board">live board</a>.</p>
 </section>
 
-<section class="reel-wrap" aria-label="Model versions">
+<section class="reel-wrap" aria-labelledby="progress-title">
+  <h2 id="progress-title">Its progress</h2>
+  <div class="counter"><span id="iter" class="iter">–</span><span class="counter-text"><span id="iter-sub" class="iter-sub">Waiting for the first saved version</span><span id="at-line" class="at-line"></span></span></div>
   <div class="reel-head">
     <button id="play" class="play" type="button">Play timelapse</button>
-    <div class="legend"><span><i class="k0"></i>King</span><span><i class="k1"></i>Sub-King</span><span><i class="k2"></i>Sub-Kooz</span><span><i class="k3"></i>Kooz</span><span class="legend-note">6 games against Heuristic at each version, so expect noise</span></div>
+    <div class="legend"><span><i class="k0"></i>King</span><span><i class="k1"></i>Sub-King</span><span><i class="k2"></i>Sub-Kooz</span><span><i class="k3"></i>Kooz</span></div>
   </div>
-  <div id="reel" class="reel" tabindex="0" role="slider" aria-label="Model version"></div>
+  <div id="reel" class="reel" tabindex="0" role="slider" aria-label="Training step"></div>
+  <p class="note reel-note">Each bar is the bot at one point in training, from the start on the left to the end on the right. Its colours show where it finished in 6 test games against Basic rules, so single bars jump around. Click or drag to choose a point, and the rest of the page shows the bot at that point.</p>
 </section>
 
-<section class="table-wrap" aria-label="A game played by this version">
+<section class="mind" aria-labelledby="bid-title">
+  <div class="mind-left">
+    <h2 id="bid-title">What it would bid</h2>
+    <p class="note">We give it this same hand at every point in training, with the bot first to bid. If its bid changes, it has changed its mind.</p>
+    <div id="probe-hand" class="hand-row"></div>
+    <p id="bid-line" class="bid-line" role="status"></p>
+    <div class="dash"><span>Dash Call</span><div class="dash-track"><i id="dash-fill"></i></div><b id="dash-val"></b></div>
+    <div id="pass" class="dash"><span>Pass</span><div class="dash-track"><i id="pass-fill"></i></div><b id="pass-val"></b></div>
+    <h3>If it won the bid at 6♠, what would it lead?</h3>
+    <p class="note lead-note">How likely it is to play each card first. Even bars mean it has no preference yet.</p>
+    <div id="lead" class="lead"></div>
+  </div>
+  <div class="grid-wrap">
+    <h3 class="grid-title">Its opening bid</h3>
+    <ul class="grid-key">
+      <li><i class="gk-box"></i>A bigger, brighter square is a more likely bid</li>
+      <li><i class="gk-ring"></i>The ring is its favourite right now</li>
+      <li><i class="gk-line"></i>The line shows how its favourite moved during training</li>
+    </ul>
+    <p class="grid-axis">Tricks it bids to win</p>
+    <div id="grid" class="grid" role="img" aria-label="Opening bid chances by tricks and trump suit"></div>
+  </div>
+</section>
+
+<section class="table-wrap" aria-labelledby="game-title">
   <div class="table-side">
-    <h2>This version against Heuristic</h2>
-    <p class="note">Seats 1 and 3 are the model. Same deals for every version.</p>
+    <h2 id="game-title">Watch it play</h2>
+    <p class="note">A real game from this point in training: two copies of the bot against two Basic rules bots. Every point plays the same deals, so you can compare. Choose a round, then step through it.</p>
     <div id="rounds" class="rounds"></div>
     <div class="transport">
       <button id="prev" type="button" aria-label="Previous move">Back</button>
@@ -49,37 +67,39 @@
       <span id="move" class="move-count"></span>
     </div>
     <div id="board" class="board" aria-live="off"></div>
-    <h3 id="think-title">What it considered</h3>
+    <h3 id="think-title">How likely it was to make each move</h3>
     <div id="think" class="think"></div>
-    <p class="race-key">Scores through this game. Gold is the model, blue is Heuristic.</p>
+    <p class="race-key">Scores through this game. Gold is the bot, blue is Basic rules.</p>
     <svg id="race" class="race" role="img" aria-label="Scores through this game"></svg>
+    <p id="verified" class="verified" hidden></p>
   </div>
   <div id="felt" class="felt"></div>
 </section>
 
 <section class="behave" aria-label="How behaviour changed over training">
-  <h2>How its play changed</h2>
+  <h2>How its habits changed</h2>
+  <p class="note">Each small chart runs from the start of training on the left to the end on the right. The upright line marks the point you've chosen.</p>
   <div id="multiples" class="multiples"></div>
 </section>
 
-<section class="checks" aria-label="Arena checks">
-  <h2>Real strength: arena checks</h2>
-  <p class="note">The net plays duplicate sets against fixed bots, on the same deals each time. Three ways to score the same games. The old round-score reward reached 9% King against Heuristic.</p>
+<section class="checks" aria-labelledby="test-title">
+  <h2 id="test-title">The real test</h2>
+  <p class="note">Every so often, the bot left practice to play full matches against fixed benchmark bots, with the same deals each time. These are the three scores used on the <a href="/board#guide">live board</a>.</p>
   <div id="check-legend" class="check-legend"></div>
   <div id="check-charts" class="multiples check-charts"></div>
   <div id="checks"></div>
 </section>
-<div id="cinema" class="cinema" role="dialog" aria-modal="true" aria-label="Timelapse: each version plays the same hand" hidden>
+<div id="cinema" class="cinema" role="dialog" aria-modal="true" aria-label="Timelapse: the bot plays the same round at each point in training" hidden>
   <div class="c-top">
-    <div><span id="c-iter" class="c-iter"></span><span id="c-sub" class="c-sub"></span></div>
+    <div><span id="c-iter" class="c-iter"></span><span id="c-sub" class="c-sub"></span><span class="c-hint">The same round replayed at each point in training.</span></div>
     <div class="c-places"><div id="c-bar" class="c-bar"></div><div id="c-names" class="c-names"></div></div>
     <div class="c-buttons"><div id="c-speed" class="c-speed" role="group" aria-label="Playback speed"><button type="button" data-speed="0.5">0.5×</button><button type="button" data-speed="1">1×</button><button type="button" data-speed="2">2×</button><button type="button" data-speed="4">4×</button></div><button id="c-pause" type="button">Pause</button><button id="c-close" type="button">Close</button></div>
   </div>
   <div class="c-stage">
-    <div id="c-left" class="c-left"><h3 id="c-grid-title">Its opening bid on a fixed hand</h3></div>
+    <div id="c-left" class="c-left"><h3 id="c-grid-title">Its opening bid on the same hand</h3></div>
     <div id="c-felt" class="c-felt"></div>
   </div>
   <div id="c-reel" class="c-reel"></div>
 </div>
-<script src="/static/lab.js"></script>
+<script src="/static/lab.js?v=2"></script>
 </body></html>

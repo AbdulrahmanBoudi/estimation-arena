@@ -13,12 +13,20 @@ function card(c, attrs = "") {
   return `<span class="card${red}" data-c="${c}" ${attrs}>${r}<b>${SUITS[Math.floor(c / 13)]}</b></span>`;
 }
 
+const ATTEMPTS = {
+  run1: ["First try: rewarded for round points", "Its first try was rewarded for points in each round and was stopped early. It reached only 9% King against Basic rules, which is why the later attempts reward finishing place instead."],
+  run2: ["Best: rewarded for finishing place", "Rewarded at the end of each game for its final place, using the weighted rank payouts. It won 59 of 60 sets against Basic rules and ended about level with Yosif's best bot on finishing place."],
+  run3: ["Rewarded only for coming first", "Rewarded only for finishing King. It became reckless: it won 48 of 60 sets against Basic rules but lost to Look-ahead, and it finished last more often."],
+};
+const attemptName = (run) => ATTEMPTS[run]?.[0] ?? run;
+const OPPONENTS = { heuristic: "Basic rules", pimc: "Look-ahead", search: "Look-ahead, tuned rules", random: "Random", rl: "Yosif's trained bot", hybrid: "Yosif's trained bot + look-ahead" };
+
 const S = { speed: 1, progress: 0, run: null, data: null, at: -1, snap: null, cache: new Map(), round: 0, step: 0, playing: false, auto: false };
 
 // ---- the reel: one column per saved version, stacked by final position
 function drawReel() {
   const vs = S.data.versions;
-  $("reel").innerHTML = `<div class="head" id="head"></div>` + vs.map((v, i) => `<div class="v${i === S.at ? " on" : ""}${S.playing && i < S.at ? " done" : ""}" data-i="${i}" title="Iteration ${v.iteration.toLocaleString()}: ${v.quick.map((x, k) => `${POS_NAMES[k]} ${pct(x)}`).join(", ")}">${v.quick.map((x, k) => `<i style="height:${x * 100}%;background:${POS[k]}"></i>`).join("")}</div>`).join("");
+  $("reel").innerHTML = `<div class="head" id="head"></div>` + vs.map((v, i) => `<div class="v${i === S.at ? " on" : ""}${S.playing && i < S.at ? " done" : ""}" data-i="${i}" title="Training step ${v.iteration.toLocaleString()}: ${v.quick.map((x, k) => `${POS_NAMES[k]} ${pct(x)}`).join(", ")}">${v.quick.map((x, k) => `<i style="height:${x * 100}%;background:${POS[k]}"></i>`).join("")}</div>`).join("");
   const r = $("reel");
   placeHead();
   r.setAttribute("aria-valuemin", 0); r.setAttribute("aria-valuemax", Math.max(vs.length - 1, 0)); r.setAttribute("aria-valuenow", S.at);
@@ -49,7 +57,7 @@ function pickFromX(x) {
 
 // ---- what it thinks: the fixed probes, updated in place so the colours morph between versions
 function buildGrid() {
-  let h = `<div></div>`;
+  let h = `<div class="hd corner">Trump</div>`;
   for (let n = 4; n <= 13; n++) h += `<div class="hd">${n}</div>`;
   TRUMPS.forEach((t, k) => {
     h += `<div class="hd${k === 1 || k === 2 ? " red" : ""}">${t}</div>`;
@@ -72,6 +80,10 @@ function drawProbes(p) {
     cell.querySelector("span").textContent = x >= 0.1 ? pct(x) : "";
   });
   placeRing(p);
+  const best = topBid(p);
+  $("bid-line").textContent = p.opening[best] < 0.15
+    ? "It has no clear favourite bid yet. It's close to guessing."
+    : `Its favourite opening bid is ${label(+best)}, chosen ${pct(p.opening[best])} of the time.`;
   const pass = p.opening["53"] ?? 0;
   $("dash-fill").style.width = pct(p.dash_call); $("dash-val").textContent = pct(p.dash_call);
   $("pass-fill").style.width = pct(pass); $("pass-val").textContent = pct(pass);
@@ -129,6 +141,7 @@ function clearView(message) {
   S.at = -1; S.snap = null; S.round = 0; S.step = 0;
   $("iter").textContent = "–";
   $("iter-sub").textContent = message;
+  $("at-line").textContent = $("bid-line").textContent = "";
   $("verified").hidden = true;
   for (const id of ["reel", "rounds", "think", "felt", "race", "probe-hand", "lead", "grid", "move", "board"]) $(id).innerHTML = "";
   delete $("lead").dataset.ids;
@@ -143,13 +156,15 @@ function go(i) {
   const v = S.data.versions[i];
   const row = nearestRow(v.iteration);
   $("iter").textContent = v.iteration.toLocaleString();
-  $("iter-sub").textContent = `Iteration, after ${row ? millions(row.decisions) : "?"} decisions of self-play`;
+  const last = S.data.versions.at(-1).iteration;
+  $("iter-sub").textContent = `of ${last.toLocaleString()} training steps, after ${row ? millions(row.decisions) : "?"} practice decisions`;
+  $("at-line").textContent = `In its test games at this point, it finished King ${pct(v.quick[0])} of the time and Kooz ${pct(v.quick[3])}. Evenly matched would be 25% each.`;
   drawReel();
   drawProbes(v.probes);
   const ok = $("verified");
   ok.hidden = false;
   ok.className = `verified${v.verified ? "" : " bad"}`;
-  ok.textContent = v.verified ? "Both engines agree on this game" : "The two engines disagreed on this game";
+  ok.textContent = v.verified ? "This game was replayed in Yosif's original game code and came out the same." : "This game came out differently when replayed in Yosif's original game code.";
   drawMultiples();
   return fetchSnap(i).then((snap) => {
     if (S.at !== i) return;
@@ -218,7 +233,7 @@ function rollCounter(to) {
 function drawCinemaTop(v) {
   rollCounter(v.iteration);
   const row = nearestRow(v.iteration);
-  $("c-sub").textContent = row ? `iterations, ${millions(row.decisions)} decisions` : "iterations";
+  $("c-sub").textContent = row ? `training steps, ${millions(row.decisions)} practice decisions` : "training steps";
   const bar = $("c-bar");
   if (!bar.children.length) bar.innerHTML = POS.map((c) => `<i style="background:${c}"></i>`).join("");
   [...bar.children].forEach((el, k) => { el.style.width = `${v.quick[k] * 100}%`; });
@@ -364,7 +379,7 @@ function drawBoard(g, round, st, done, animate) {
     const est = st.est[k] ?? "–";
     return `<div class="b-row${st.turn === k && !done ? " turn" : ""}" data-k="${k}"><span><i class="k${places[k].index}"></i>${places[k].name}</span><span>${seatName(g, k)}</span><span>${est}</span><span>${st.won[k]}</span>${pts}<b>${totals[k].toLocaleString()}</b></div>`;
   }).join("");
-  box.innerHTML = `<h4><span>${fin}Round ${round.no}</span><span>${call}${trump}${round.carry > 1 ? `, ×${round.carry}` : ""}</span></h4><div class="b-row head"><span>Standing</span><span>Seat</span><span>Est</span><span>Won</span><span>Round</span><span>Game</span></div>${rows}`;
+  box.innerHTML = `<h4><span>${fin}Round ${round.no}</span><span>${call}${trump}${round.carry > 1 ? `, ×${round.carry}` : ""}</span></h4><div class="b-row head"><span>Standing</span><span>Seat</span><span>Estimate</span><span>Won</span><span>Round</span><span>Game</span></div>${rows}`;
   if (old.size) box.querySelectorAll("[data-k]").forEach((el) => {
     const was = old.get(el.dataset.k);
     const dy = was === undefined ? 0 : was - el.getBoundingClientRect().top;
@@ -374,7 +389,7 @@ function drawBoard(g, round, st, done, animate) {
 function seatName(g, k) {
   const net = g.net_seats.includes(k);
   const same = [0, 1, 2, 3].filter((j) => g.net_seats.includes(j) === net);
-  return `${net ? "Model" : "Heuristic"} ${same.indexOf(k) + 1}`;
+  return `${net ? "Self-taught" : "Basic rules"} ${same.indexOf(k) + 1}`;
 }
 function pips(est, won) {
   if (est === null || est === undefined) return won ? `<span class="pips">${"<i class=on></i>".repeat(won)}</span>` : "";
@@ -417,7 +432,7 @@ function sheet(g, round, st) {
     const best = [0, 1, 2, 3].sort((a, b) => g.scores[b] - g.scores[a] || a - b);
     whole = `<p class="whole">This version's whole game, ${g.rounds.length} rounds: ${best.map((k) => `${fin[k].name} ${seatName(g, k)} ${g.scores[k].toLocaleString()}`).join(", ")}</p>`;
   }
-  return `<div class="sheet"><h4>${last ? "Final standings. " : ""}${title}</h4><table><thead><tr><th>${last ? "Final place" : "Standing"}</th><th>Seat</th><th class="n">Est</th><th class="n">Won</th><th class="n">Round</th><th class="n">Game</th></tr></thead><tbody>${rows}</tbody></table>${notes.length ? `<p>${esc(notes.join(". "))}.</p>` : ""}${whole}</div>`;
+  return `<div class="sheet"><h4>${last ? "Final standings. " : ""}${title}</h4><table><thead><tr><th>${last ? "Final place" : "Standing"}</th><th>Seat</th><th class="n">Estimate</th><th class="n">Won</th><th class="n">Round</th><th class="n">Game</th></tr></thead><tbody>${rows}</tbody></table>${notes.length ? `<p>${esc(notes.join(". "))}.</p>` : ""}${whole}</div>`;
 }
 function sweepTrick(before, prior, flight) {
   if (!prior || prior.lastWin === null || !prior.trick.length) return;
@@ -443,7 +458,7 @@ function popBubble(k, text, ms) {
 function drawThink(round) {
   const e = round.ev[S.step];
   if (!e) { $("think").innerHTML = `<p class="none">End of the round.</p>`; return; }
-  if (!S.snap.game.net_seats.includes(e.s)) { $("think").innerHTML = `<p class="none">Heuristic is playing ${esc(e.l)}.</p>`; return; }
+  if (!S.snap.game.net_seats.includes(e.s)) { $("think").innerHTML = `<p class="none">Basic rules plays ${esc(e.l)}. It doesn't show its reasoning.</p>`; return; }
   if (!e.p) { $("think").innerHTML = `<p class="none">Only one legal move: ${esc(e.l)}.</p>`; return; }
   $("think").innerHTML = e.p.map(([a, x]) => `<div class="opt${a === e.a ? " chosen" : ""}"><span>${esc(label(a))}</span><div class="t"><i style="width:${x * 100}%"></i></div><b>${pct(x)}</b></div>`).join("");
 }
@@ -491,18 +506,17 @@ function drawRace() {
 
 // ---- behaviour, one small chart per measure
 const MEASURES = [
-  ["caller_made", "Caller makes its bid", "Higher means bids it can actually make", (x) => pct(x)],
-  ["all_lose", "Everyone lost the round", "Should fall as estimates improve", (x) => pct(x)],
-  ["skipped", "Rounds skipped", "Nobody called, so stakes double", (x) => pct(x)],
+  ["caller_made", "Makes the tricks it bid", "Higher means it bids what it can win", (x) => pct(x)],
+  ["all_lose", "Everyone missed their estimate", "Should fall as its estimates improve", (x) => pct(x)],
+  ["skipped", "Rounds nobody called", "The stakes double when this happens", (x) => pct(x)],
   ["dash", "Dash Calls", "Share of Dash decisions", (x) => pct(x)],
-  ["with_", "With", "Share of auction moves", (x) => pct(x)],
-  ["pass_", "Pass", "Share of auction moves", (x) => pct(x)],
-  ["super_", "Super calls", "Bids at fixed-trump estimation", (x) => pct(x)],
-  ["rounds_per_game", "Rounds per game", "18 with no replays, 38 at the cap", (x) => x.toFixed(1)],
-  ["entropy", "Randomness left", "Near 0 would mean it stopped exploring", (x) => x.toFixed(2)],
-  ["final_mse", "Error predicting final position", "0.52 means no idea; lower is better", (x) => x.toFixed(3)],
-  ["pos_vs_start", "Reward against its first version", "0 is even, the best possible is +0.6", (x) => (x > 0 ? "+" : "") + x.toFixed(2)],
-  ["per_s", "Decisions per second", "Drops if something else needs the GPU", (x) => Math.round(x).toLocaleString()],
+  ["with_", "With", "Share of its bidding moves", (x) => pct(x)],
+  ["pass_", "Pass", "Share of its bidding moves", (x) => pct(x)],
+  ["super_", "Super calls", "Share of bids at fixed-trump estimation", (x) => pct(x)],
+  ["rounds_per_game", "Rounds per game", "18 with no replays, 38 at most", (x) => x.toFixed(1)],
+  ["entropy", "How random its choices are", "Lower means it has made up its mind", (x) => x.toFixed(2)],
+  ["final_mse", "Error guessing how it will finish", "0.52 means no idea; lower is better", (x) => x.toFixed(3)],
+  ["pos_vs_start", "Weighted rank against its first self", "0 is even; +0.6 is the most possible", (x) => (x > 0 ? "+" : "") + x.toFixed(2)],
 ];
 function drawMultiples() {
   const rows = S.data.rows, it = S.data.versions[S.at]?.iteration ?? rows.at(-1)?.iteration ?? 0;
@@ -524,9 +538,9 @@ const OPPONENT_COLORS = ["#e0b83c", "#35a7e8", "#e8707e", "#6fbf3f"];
 const CHECK_METRICS = [
   { key: "reward", low: "low", high: "high", name: "Weighted rank", sub: "King +1, Sub-King +0.2, Sub-Kooz −0.2, Kooz −1. Even is 0.", even: 0, fmt: (v) => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(2) },
   { key: "king", low: "king_low", high: "king_high", name: "King only", sub: "1 for King, 0 for anything else. Even is 25%.", even: 0.25, fmt: pct },
-  { key: "delta", low: "delta_low", high: "delta_high", name: "Score delta per game", sub: "Our seats' mean score minus theirs. Even is 0.", even: 0, fmt: (v) => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(0) },
+  { key: "delta", low: "delta_low", high: "delta_high", name: "Score delta", sub: "Its average score minus its opponent's. Even is 0.", even: 0, fmt: (v) => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(0) },
 ];
-function opponentName(o) { return o === "pimc" ? "PIMC" : o[0].toUpperCase() + o.slice(1); }
+function opponentName(o) { return OPPONENTS[o] ?? o; }
 function checkChart(m, checks, opponents, maxIt) {
   const values = checks.flatMap((c) => [c[m.key], c[m.low], c[m.high]]).filter((v) => v != null).concat(m.even);
   const lo = Math.min(...values), hi = Math.max(...values), span = hi - lo || 1;
@@ -536,7 +550,7 @@ function checkChart(m, checks, opponents, maxIt) {
     const line = pts.length > 1 ? `<path d="${pts.map((c, i) => `${i ? "L" : "M"}${X(c.iteration).toFixed(1)} ${Y(c[m.key]).toFixed(1)}`).join("")}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>` : "";
     const dots = pts.map((c) => {
       const whisker = c[m.low] != null ? `<line x1="${X(c.iteration)}" x2="${X(c.iteration)}" y1="${Y(c[m.low])}" y2="${Y(c[m.high])}" stroke="${color}" stroke-width="1.5" opacity=".55"/>` : "";
-      return `<g class="check-dot">${whisker}<circle cx="${X(c.iteration)}" cy="${Y(c[m.key])}" r="4" fill="${color}" stroke="#17235e" stroke-width="2"/><circle cx="${X(c.iteration)}" cy="${Y(c[m.key])}" r="11" fill="transparent"><title>${opponentName(o)}, iteration ${c.iteration.toLocaleString()}: ${m.fmt(c[m.key])}${c[m.low] != null ? ` (${m.fmt(c[m.low])} to ${m.fmt(c[m.high])})` : ""}, sets ${c.won}-${c.lost}</title></circle></g>`;
+      return `<g class="check-dot">${whisker}<circle cx="${X(c.iteration)}" cy="${Y(c[m.key])}" r="4" fill="${color}" stroke="#17235e" stroke-width="2"/><circle cx="${X(c.iteration)}" cy="${Y(c[m.key])}" r="11" fill="transparent"><title>${opponentName(o)}, training step ${c.iteration.toLocaleString()}: ${m.fmt(c[m.key])}${c[m.low] != null ? ` (${m.fmt(c[m.low])} to ${m.fmt(c[m.high])})` : ""}, sets ${c.won}-${c.lost}</title></circle></g>`;
     }).join("");
     return line + dots;
   }).join("");
@@ -547,33 +561,34 @@ function drawChecks() {
   const c = S.data.checks;
   if (!c.length) {
     $("check-legend").innerHTML = $("check-charts").innerHTML = "";
-    $("checks").innerHTML = `<p class="empty">The first check runs 30 minutes into training.</p>`;
+    $("checks").innerHTML = `<p class="empty">The first test match runs 30 minutes into training.</p>`;
     return;
   }
   const opponents = [...new Set(c.map((x) => x.opponent))];
   const maxIt = Math.max(...c.map((x) => x.iteration));
-  $("check-legend").innerHTML = opponents.map((o, k) => `<span><i style="background:${OPPONENT_COLORS[k % OPPONENT_COLORS.length]}"></i>vs ${opponentName(o)}</span>`).join("") + `<span class="check-even">Dashed line: an even match. Whiskers: 95% interval.</span>`;
+  $("check-legend").innerHTML = opponents.map((o, k) => `<span><i style="background:${OPPONENT_COLORS[k % OPPONENT_COLORS.length]}"></i>vs ${opponentName(o)}</span>`).join("") + `<span class="check-even">The dashed line is an even match. Thin upright lines show the likely range.</span>`;
   $("check-charts").innerHTML = CHECK_METRICS.map((m) => checkChart(m, c, opponents, maxIt)).join("");
-  $("checks").innerHTML = c.map((x) => `<div class="check"><span>Iteration ${x.iteration.toLocaleString()} vs ${opponentName(x.opponent)}</span><div class="bar" role="img" aria-label="${x.shares.map((s, k) => `${POS_NAMES[k]} ${pct(s)}`).join(", ")}">${x.shares.map((s, k) => `<i style="width:${s * 100}%;background:${POS[k]}"></i>`).join("")}</div><span>${CHECK_METRICS[0].fmt(x.reward)}</span><span>King ${pct(x.king)}</span><span>${CHECK_METRICS[2].fmt(x.delta)}</span><span>${x.won}-${x.lost}</span></div>`).join("");
+  $("checks").innerHTML = `<div class="check check-head"><span>Match</span><span>Finishing places</span><span>Weighted rank</span><span>King only</span><span>Score delta</span><span>Sets won-lost on score</span></div>` + c.map((x) => `<div class="check"><span>Training step ${x.iteration.toLocaleString()} vs ${opponentName(x.opponent)}</span><div class="bar" role="img" aria-label="${x.shares.map((s, k) => `${POS_NAMES[k]} ${pct(s)}`).join(", ")}">${x.shares.map((s, k) => `<i style="width:${s * 100}%;background:${POS[k]}"></i>`).join("")}</div><span>${CHECK_METRICS[0].fmt(x.reward)}</span><span>${pct(x.king)}</span><span>${CHECK_METRICS[2].fmt(x.delta)}</span><span>${x.won}-${x.lost}</span></div>`).join("");
 }
 
 // ---- loading
 async function loadRun(run, keepAt) {
   S.run = run;
+  $("attempt-about").textContent = ATTEMPTS[run]?.[1] ?? "";
   const res = await fetch(`/api/lab/${run}/summary`);
   S.data = await res.json();
   const latest = S.data.versions.length - 1;
   drawChecks();
-  if (latest < 0) { clearView(`No versions were recorded for ${run}. Pick another run.`); drawMultiples(); return; }
+  if (latest < 0) { clearView(`This attempt wasn't recorded step by step. Choose another attempt.`); drawMultiples(); return; }
   setEnabled();
   if (S.playing) { drawReel(); return; }
   go(keepAt && S.at >= 0 && S.at < latest ? S.at : latest);
 }
 (async () => {
   const runs = await (await fetch("/api/lab/runs")).json();
-  $("run").innerHTML = runs.map((r) => `<option>${esc(r)}</option>`).join("");
-  if (!runs.length) { $("iter-sub").textContent = "No training runs yet"; return; }
-  $("run").value = runs.at(-1);
+  $("run").innerHTML = runs.map((r) => `<option value="${esc(r)}">${esc(attemptName(r))}</option>`).join("");
+  if (!runs.length) { $("iter-sub").textContent = "No training has been recorded yet"; return; }
+  $("run").value = runs.includes("run2") ? "run2" : runs.at(-1);
   $("run").onchange = () => { stopPlay(); stopAuto(); S.cache.clear(); S.at = -1; S.snap = null; S.round = 0; S.step = 0; $("rounds").innerHTML = ""; $("felt").innerHTML = ""; setEnabled(); loadRun($("run").value); };
   await loadRun($("run").value);
   setInterval(() => loadRun(S.run, true), 30000);

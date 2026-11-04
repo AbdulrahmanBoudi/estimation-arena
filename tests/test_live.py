@@ -165,3 +165,23 @@ def test_reader_text_has_no_inside_terms():
     text = json.dumps([BOTS, TRAINING]) + GUIDE
     for word in ("PPO", "PIMC", "GPU", "Heuristic", "self-play", "Rung", "RL v2", "bitter", " net ", "critic"):
         assert word not in text.replace("bitter-net", "").replace("bitter-search", "").replace("bitter-run", ""), word
+
+
+def test_the_lab_page_has_no_inside_terms():
+    page = (ROOT / "arena/static/lab.html").read_text()
+    script = (ROOT / "arena/static/lab.js").read_text()
+    for word in ("Heuristic", "PIMC", "TensorBoard", "Iteration", "self-play", "GPU", "engine"):
+        assert word not in page, word
+    for word in ('"Heuristic', "Iteration", "self-play", "GPU", "engines", ">vs PIMC"):
+        assert word not in script, word
+
+
+def test_page_files_stay_out_of_shared_caches():
+    import asyncio
+
+    from arena.serve import STATIC, PrivateStatic
+
+    scope = {"type": "http", "method": "GET", "path": "/lab.css", "headers": []}
+    response = asyncio.run(PrivateStatic(directory=STATIC).get_response("lab.css", scope))
+    assert response.headers["Cache-Control"] == "private, no-cache"
+
