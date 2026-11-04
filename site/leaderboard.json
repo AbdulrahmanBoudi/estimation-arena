@@ -1,5 +1,5 @@
 {
- "built_at": "2026-11-04T22:21:06+00:00",
+ "built_at": "2026-11-04T23:31:34+00:00",
  "anchor": "random",
  "anchor_rating": 400.0,
  "ladder": {
@@ -8,8 +8,147 @@
   "seed": 0,
   "imported_at": "2026-11-02T19:24:43+00:00"
  },
- "submissions": 9,
+ "submissions": 11,
  "rows": [
+  {
+   "name": "Self-taught + look-ahead",
+   "author": "Essam",
+   "kind": "python",
+   "description": "The Self-taught model bids alone and picks its best cards, then tries each one on imagined hands.",
+   "key": "sub:bitter-search",
+   "method": [
+    [
+     "the model picks the bid",
+     "bid"
+    ],
+    [
+     "the model keeps its top 3 cards",
+     "net"
+    ],
+    [
+     "imagine the hidden hands x16",
+     "deal"
+    ],
+    [
+     "try each card: the model plays out the round",
+     "rollout"
+    ],
+    [
+     "play the card with the best average score",
+     "pick"
+    ]
+   ],
+   "elo": 1853.7052934234162,
+   "king_elo": 1688.5841544884024,
+   "score_elo": 4577.154615801324,
+   "positions": [
+    0.3979166666666667,
+    0.34270833333333334,
+    0.146875,
+    0.11249999999999999
+   ],
+   "games": 960,
+   "sets": 20,
+   "seed": 2000,
+   "played_at": "2026-11-04T23:29:55+00:00",
+   "engine": "0.1.0",
+   "p95_ms": 111.76371372654457,
+   "over_budget": 0.0007786200105342708,
+   "versus": [
+    {
+     "anchor": "Random",
+     "rsa": 1641.7833333333333,
+     "rsa_low": 1559.1021743606848,
+     "rsa_high": 1724.4644923059818,
+     "first_place": 0.5,
+     "positions": [
+      0.5,
+      0.5,
+      0.0,
+      0.0
+     ],
+     "position_reward": 0.6,
+     "delta": 2462.675
+    },
+    {
+     "anchor": "Heuristic",
+     "rsa": 118.44583333333333,
+     "rsa_low": 105.99437259210458,
+     "rsa_high": 130.89729407456207,
+     "first_place": 0.5,
+     "positions": [
+      0.5,
+      0.425,
+      0.06875,
+      0.00625
+     ],
+     "position_reward": 0.5650000000000001,
+     "delta": 177.66875
+    },
+    {
+     "anchor": "PIMC",
+     "rsa": 43.575,
+     "rsa_low": 33.81398329917337,
+     "rsa_high": 53.33601670082663,
+     "first_place": 0.38125,
+     "positions": [
+      0.38125,
+      0.2875,
+      0.175,
+      0.15625
+     ],
+     "position_reward": 0.2475,
+     "delta": 65.3625
+    },
+    {
+     "anchor": "Search bot",
+     "rsa": 56.44583333333334,
+     "rsa_low": 41.33320768528178,
+     "rsa_high": 71.5584589813849,
+     "first_place": 0.425,
+     "positions": [
+      0.425,
+      0.325,
+      0.15625,
+      0.09375
+     ],
+     "position_reward": 0.365,
+     "delta": 84.66875
+    },
+    {
+     "anchor": "RL v2",
+     "rsa": 20.779166666666665,
+     "rsa_low": 4.192007143192441,
+     "rsa_high": 37.36632619014089,
+     "first_place": 0.325,
+     "positions": [
+      0.325,
+      0.26875,
+      0.23125,
+      0.175
+     ],
+     "position_reward": 0.1575,
+     "delta": 31.16875
+    },
+    {
+     "anchor": "Hybrid (B-Tig)",
+     "rsa": -6.795833333333334,
+     "rsa_low": -22.37889941398099,
+     "rsa_high": 8.787232747314322,
+     "first_place": 0.25625,
+     "positions": [
+      0.25625,
+      0.25,
+      0.25,
+      0.24375
+     ],
+     "position_reward": 0.012500000000000006,
+     "delta": -10.19375
+    }
+   ],
+   "anchor": false,
+   "code_name": "bitter-search"
+  },
   {
    "name": "Yosif's trained bot + look-ahead",
    "author": "Yosif Elessawi",
@@ -38,9 +177,9 @@
      "pick"
     ]
    ],
-   "elo": 1884.4318872064016,
-   "king_elo": 1769.36885479961,
-   "score_elo": 4763.208361854941,
+   "elo": 1813.5319936559024,
+   "king_elo": 1703.9235288935577,
+   "score_elo": 4636.35181563322,
    "positions": [
     0.426875,
     0.353125,
@@ -80,9 +219,9 @@
      "pick"
     ]
    ],
-   "elo": 1861.1405905322442,
-   "king_elo": 1757.2401039087306,
-   "score_elo": 4737.416522795232,
+   "elo": 1793.9508594860704,
+   "king_elo": 1695.558038163344,
+   "score_elo": 4613.226856120175,
    "positions": [
     0.4015625,
     0.3335763888888889,
@@ -192,6 +331,137 @@
    "code_name": "rl-hybrid"
   },
   {
+   "name": "Self-taught",
+   "author": "Essam",
+   "kind": "python",
+   "description": "One trained model makes every decision. It began by playing randomly and learned only by playing itself, with no strategy written in and nothing copied.",
+   "key": "sub:bitter-net",
+   "method": [
+    [
+     "learned from millions of practice decisions",
+     "data"
+    ],
+    [
+     "the model rates every legal move",
+     "net"
+    ],
+    [
+     "play its top move",
+     "pick"
+    ]
+   ],
+   "elo": 1773.0221036405521,
+   "king_elo": 1568.4479202559385,
+   "score_elo": 4492.881325231727,
+   "positions": [
+    0.3572916666666666,
+    0.36041666666666666,
+    0.17447916666666666,
+    0.10781249999999999
+   ],
+   "games": 960,
+   "sets": 20,
+   "seed": 2000,
+   "played_at": "2026-11-04T22:40:05+00:00",
+   "engine": "0.1.0",
+   "p95_ms": 0.7604270202340138,
+   "over_budget": 0.0,
+   "versus": [
+    {
+     "anchor": "Hybrid (B-Tig)",
+     "rsa": -1.3083333333333322,
+     "rsa_low": -22.745173046667738,
+     "rsa_high": 20.12850638000107,
+     "first_place": 0.23125,
+     "positions": [
+      0.23125,
+      0.290625,
+      0.265625,
+      0.2125
+     ],
+     "position_reward": 0.02375,
+     "delta": -1.9625
+    },
+    {
+     "anchor": "Random",
+     "rsa": 1761.8166666666668,
+     "rsa_low": 1583.3510821529712,
+     "rsa_high": 1940.2822511803624,
+     "first_place": 0.5,
+     "positions": [
+      0.5,
+      0.5,
+      0.0,
+      0.0
+     ],
+     "position_reward": 0.6,
+     "delta": 2642.725
+    },
+    {
+     "anchor": "Heuristic",
+     "rsa": 94.40833333333333,
+     "rsa_low": 75.6567447361394,
+     "rsa_high": 113.15992193052726,
+     "first_place": 0.4375,
+     "positions": [
+      0.4375,
+      0.375,
+      0.15,
+      0.0375
+     ],
+     "position_reward": 0.445,
+     "delta": 141.6125
+    },
+    {
+     "anchor": "PIMC",
+     "rsa": 43.95833333333333,
+     "rsa_low": 27.494936475335976,
+     "rsa_high": 60.42173019133068,
+     "first_place": 0.36875,
+     "positions": [
+      0.36875,
+      0.346875,
+      0.15625,
+      0.128125
+     ],
+     "position_reward": 0.27875,
+     "delta": 65.9375
+    },
+    {
+     "anchor": "Search bot",
+     "rsa": 34.425,
+     "rsa_low": 13.40003077912856,
+     "rsa_high": 55.44996922087144,
+     "first_place": 0.3625,
+     "positions": [
+      0.3625,
+      0.30625,
+      0.2,
+      0.13125
+     ],
+     "position_reward": 0.2525,
+     "delta": 51.6375
+    },
+    {
+     "anchor": "RL v2",
+     "rsa": -0.4333333333333321,
+     "rsa_low": -27.78054165524484,
+     "rsa_high": 26.913874988578172,
+     "first_place": 0.24375,
+     "positions": [
+      0.24375,
+      0.34375,
+      0.275,
+      0.1375
+     ],
+     "position_reward": 0.12,
+     "delta": -0.65
+    }
+   ],
+   "anchor": false,
+   "code_name": "bitter-net"
+  },
+  {
    "name": "Copycat with practice + look-ahead",
    "author": "Essam",
    "kind": "python",
@@ -219,9 +489,9 @@
      "pick"
     ]
    ],
-   "elo": 1834.3777970887525,
-   "king_elo": 1685.922412065559,
-   "score_elo": 4698.736395426589,
+   "elo": 1767.5420823942584,
+   "king_elo": 1625.2077185526994,
+   "score_elo": 4575.01466330883,
    "positions": [
     0.3822916666666667,
     0.3709722222222222,
@@ -350,9 +620,9 @@
      "pick"
     ]
    ],
-   "elo": 1763.0333223640666,
-   "king_elo": 1603.1016380731635,
-   "score_elo": 4629.967644231833,
+   "elo": 1697.3618469755286,
+   "king_elo": 1543.8540624121613,
+   "score_elo": 4507.342360795703,
    "positions": [
     0.3670833333333334,
     0.3403472222222222,
@@ -485,9 +755,9 @@
      "pick"
     ]
    ],
-   "elo": 1670.6199805656227,
-   "king_elo": 1548.5686125692719,
-   "score_elo": 4469.017007070656,
+   "elo": 1620.3867848257585,
+   "king_elo": 1508.758061971758,
+   "score_elo": 4362.983619029141,
    "positions": [
     0.36,
     0.33187500000000003,
@@ -523,9 +793,9 @@
      "pick"
     ]
    ],
-   "elo": 1504.4115828719225,
-   "king_elo": 1424.6892145017916,
-   "score_elo": 4253.5347570521635,
+   "elo": 1455.0553948923448,
+   "king_elo": 1373.915755127809,
+   "score_elo": 4147.882426016362,
    "positions": [
     0.31375000000000003,
     0.32875,
@@ -565,9 +835,9 @@
      "pick"
     ]
    ],
-   "elo": 1485.5905605886167,
-   "king_elo": 1397.8467785998964,
-   "score_elo": 4254.950247833691,
+   "elo": 1434.8468847955162,
+   "king_elo": 1350.974360840523,
+   "score_elo": 4148.539715276711,
    "positions": [
     0.28958333333333336,
     0.3359375,
@@ -700,9 +970,9 @@
      "pick"
     ]
    ],
-   "elo": 1432.126591555609,
-   "king_elo": 1370.462683187778,
-   "score_elo": 4215.197004207701,
+   "elo": 1380.5937141047352,
+   "king_elo": 1318.5344957488553,
+   "score_elo": 4111.615110703098,
    "positions": [
     0.286875,
     0.3125,
@@ -734,9 +1004,9 @@
      "pick"
     ]
    ],
-   "elo": 1358.6788888949372,
-   "king_elo": 1315.682979521929,
-   "score_elo": 4071.1928075180986,
+   "elo": 1310.6028205730736,
+   "king_elo": 1270.623689150456,
+   "score_elo": 3966.0155267412,
    "positions": [
     0.25729166666666664,
     0.3,
@@ -869,9 +1139,9 @@
      "pick"
     ]
    ],
-   "elo": 1060.852834546948,
-   "king_elo": 1007.6412747708096,
-   "score_elo": 3430.4370689896505,
+   "elo": 1024.0459455737941,
+   "king_elo": 975.5288365216163,
+   "score_elo": 3353.8110941753116,
    "positions": [
     0.15729166666666666,
     0.20729166666666665,
@@ -1004,9 +1274,9 @@
      "pick"
     ]
    ],
-   "elo": 1013.107916739975,
-   "king_elo": 994.2333731170261,
-   "score_elo": 3203.3427960164327,
+   "elo": 985.0361143182648,
+   "king_elo": 975.2662518415904,
+   "score_elo": 3130.8067767616917,
    "positions": [
     0.1125,
     0.17250000000000001,
@@ -1042,9 +1312,9 @@
      "pick"
     ]
    ],
-   "elo": 995.6180612966334,
-   "king_elo": 973.9201178847462,
-   "score_elo": 3280.690990962088,
+   "elo": 961.6059203403452,
+   "king_elo": 943.4490026740924,
+   "score_elo": 3206.789308450365,
    "positions": [
     0.13541666666666666,
     0.1864583333333333,
@@ -1173,9 +1443,9 @@
      "pick"
     ]
    ],
-   "elo": 746.4238037127991,
-   "king_elo": 725.6723171994934,
-   "score_elo": 2810.959689854019,
+   "elo": 725.5447593389631,
+   "king_elo": 708.2568971214407,
+   "score_elo": 2738.1584488809467,
    "positions": [
     0.07604166666666666,
     0.06666666666666667,
@@ -1304,9 +1574,9 @@
      "pick"
     ]
    ],
-   "elo": 746.4238037127991,
-   "king_elo": 725.6723171994934,
-   "score_elo": 2810.959689854019,
+   "elo": 725.5447593389631,
+   "king_elo": 708.2568971214407,
+   "score_elo": 2738.1584488809467,
    "positions": [
     0.07395833333333333,
     0.071875,
