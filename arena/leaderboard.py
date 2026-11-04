@@ -20,6 +20,7 @@ from typing import Any
 from estimation.arena.ratings import ANCHOR, ANCHOR_RATING, DEFAULT_PRIOR, PairRecord, bradley_terry
 
 from .bots import ROOT, SUB_PREFIX, load_manifest
+from .guide import GUIDE, STYLE as GUIDE_STYLE
 from .anchor_positions import OUT as POSITIONS_FILE
 from .import_ladder import LADDER_FILE
 from .positions import NAMES as POSITION_NAMES
@@ -304,19 +305,38 @@ def _icon(kind: str, x: float, y: float, label: str) -> str:
             out.append(f'<rect class="i-mean{" i-best" if k == 2 else ""}" x="{cx - 34 + k * 18}" y="{y + 46 - h}" width="12" height="{h}" rx="2"/>')
         out.append(f'<path class="i-tick" d="M{cx + 2} {y + 1}l4 4l8 -8"/>')
         return "".join(out)
+    if kind == "play":  # four seats round a table
+        out = [f'<circle class="i-card" cx="{cx}" cy="{y + 26}" r="13"/>']
+        for dx, dy in ((0, -19), (19, 0), (0, 19), (-19, 0)):
+            out.append(f'<circle class="i-net" cx="{cx + dx}" cy="{y + 26 + dy}" r="5"/>')
+        return "".join(out)
+    if kind == "reward":  # the four places, the best one marked
+        out = []
+        for k, h in enumerate((40, 26, 16, 8)):
+            out.append(f'<rect class="{"i-mean i-best" if k == 0 else "i-mean"}" x="{cx - 34 + k * 18}" y="{y + 46 - h}" width="12" height="{h}" rx="2"/>')
+        return "".join(out)
+    if kind == "update":  # a net with an arrow into it
+        out = [f'<circle class="i-net" cx="{cx + 14 + 16 * (k % 2)}" cy="{y + 12 + 12 * k}" r="4"/>' for k in range(4)]
+        out.append(f'<path class="i-tick" d="M{cx - 34} {y + 28}h28m-7 -6l7 6l-7 6"/>')
+        return "".join(out)
     if kind == "data":  # stacked game records
         return "".join(f'<rect class="i-data" x="{cx - 28 + k * 6}" y="{y + 6 + k * 7}" width="44" height="22" rx="3"/>' for k in range(4))
     return ""
 
 
-def method_svg(steps: list[list[str]]) -> str:
+def method_svg(steps: list[list[str]], repeat: str = "") -> str:
     """The algorithm as a strip of steps, each a small picture of what it does and a short
-    label, left to right."""
+    label, left to right. ``repeat`` draws a loop from the last step back to the first."""
     if not steps:
         return ""
     bw, gap, h = 140, 22, 132
     width = len(steps) * bw + (len(steps) - 1) * gap
-    parts = [f'<svg class="flow" viewBox="0 0 {width} {h}" width="{width}" role="img">']
+    height = h + 34 if repeat else h
+    parts = [f'<svg class="flow" viewBox="0 0 {width} {height}" width="{width}" role="img">']
+    if repeat:
+        first, last = bw / 2, width - bw / 2
+        parts.append(f'<path class="loop" d="M{last} {h}v14a8 8 0 0 1 -8 8H{first + 8}a8 8 0 0 1 -8 -8v-10m-4 5l4 -6l4 6"/>')
+        parts.append(f'<text class="loop-text" x="{first + 14}" y="{h + 16}">{html.escape(repeat)}</text>')
     for i, (label, kind) in enumerate(steps):
         x = i * (bw + gap)
         parts.append(f'<rect class="step" x="{x + 1}" y="1" width="{bw - 2}" height="{h - 2}" rx="10"/>')
@@ -454,21 +474,20 @@ def render(board: dict[str, Any]) -> str:
     built = board["built_at"].replace("T", " ")[:16] + " UTC"
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Estimation Arena</title><style>{STYLE}</style></head>
+<title>Estimation Arena</title><style>{STYLE}{GUIDE_STYLE}:root{{--guide-line:var(--line)}}</style></head>
 <body data-metric="weighted"><main>
 <h1>Estimation Arena</h1>
 <p class="sub">{board["submissions"]} submissions and {len(anchors)} anchors, rated three ways from the same games (Random = {board["anchor_rating"]:.0f}). Built {built}.</p>
 <div class="metrics" role="group" aria-label="Rank by">{"".join(f'<button type="button" data-rank="{m}"{" aria-pressed=true" if m == "weighted" else " aria-pressed=false"}>{label}</button>' for m, _, label in METRICS)}</div>
 <p class="desc"><span class="key p0"></span>King +1<span class="key p1"></span>Sub-King +0.2<span class="key p2"></span>Sub-Kooz −0.2<span class="key p3"></span>Kooz −1</p>
+<p class="desc"><a href="#guide">What the numbers mean</a></p>
 <p class="desc">Open “how it plays” under any bot: its algorithm, then one real decision from the same deal (seat 0 vs three Heuristic bots).</p>
 <table>
 <thead><tr><th class="num">#</th><th>Bot</th>{"".join(f'<th class="num m-{m}">{label}</th>' for m, _, label in METRICS)}<th class="opt">Final positions</th><th class="opt">Against each anchor</th></tr></thead>
 <tbody>
 {chr(10).join(lines)}
 </tbody></table>
-<details><summary>How the numbers are made</summary>
-<p class="desc">A submission plays each anchor in duplicate sets: every deal is played four times with the seats rotated, so luck cancels. A game pays by final position: King +1, Sub-King +0.2, Sub-Kooz −0.2, Kooz −1, tied seats sharing their positions. Every game also counts two other ways: King only pays 1 for King and 0 for anything else, and score delta is our seats' mean score minus the opponent's. Each way decides its own set winner, and each rating is one Bradley-Terry fit over every pair's set results under it, anchors included. Elo counts sets won, so a single exploding score cannot swing it. Against each anchor shows the average per game: reward, King share or delta. The bar shows each position's share, averaged over the bot's opponents. Over budget counts card decisions slower than 0.25 s.</p>
-</details>
+{GUIDE}
 </main><script>{RANK_SCRIPT}</script></body></html>
 """
 

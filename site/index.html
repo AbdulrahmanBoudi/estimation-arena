@@ -30,12 +30,24 @@ table.opts{width:auto;margin:4px 0 8px}table.opts td,table.opts th{border:none;p
 .scroll{max-width:calc(100vw - 72px)}.move{max-width:min(520px,calc(100vw - 72px))}
 @media(max-width:700px){.bar{max-width:48px}th,td{padding:8px 6px}.track{width:54px}.sit{line-height:1.9}}
 .fill{display:block;height:100%}.f-net{background:#3987e5}.f-search{background:#eb6834}.tick{color:#1baf7a;font-weight:600}
-</style></head>
+.guide{margin-top:36px}.guide h2{margin:0 0 6px}.guide h3{margin:0 0 6px;font-size:17px}
+.g-lead{margin:0 0 16px;max-width:70ch}
+.g-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:24px 32px;margin-bottom:24px}
+.g-metrics p{margin:0}.g-metrics article>p:first-of-type{min-height:6em}
+.g-scale{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin:10px 0 8px}
+.g-cell{padding:6px 4px;border-radius:3px;text-align:center;color:#1c2147;font-size:12px;line-height:1.3}.g-cell b{display:block;font-size:16px}
+.g0{background:#f2c14e}.g1{background:#f8e3a8}.g2{background:#f3a6a8}.g3{background:#e5484d;color:#fff}
+.g-formula{display:flex;gap:10px;align-items:center;margin:10px 0 8px;min-height:54px}.g-formula span{flex:1;padding:8px 4px;text-align:center;border:1px solid var(--guide-line);border-radius:3px;font-size:13px}
+.g-even{color:var(--muted);font-size:14px}
+.g-terms{margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px 32px}.g-terms dt{font-weight:600}.g-terms dd{margin:2px 0 0;color:var(--muted);font-size:14px}
+@media(max-width:680px){.g-metrics article>p:first-of-type{min-height:0}}
+:root{--guide-line:var(--line)}</style></head>
 <body data-metric="weighted"><main>
 <h1>Estimation Arena</h1>
-<p class="sub">9 submissions and 6 anchors, rated three ways from the same games (Random = 400). Built 2026-11-04 16:34 UTC.</p>
+<p class="sub">9 submissions and 6 anchors, rated three ways from the same games (Random = 400). Built 2026-11-04 18:25 UTC.</p>
 <div class="metrics" role="group" aria-label="Rank by"><button type="button" data-rank="weighted" aria-pressed=true>Weighted rank</button><button type="button" data-rank="king" aria-pressed=false>King only</button><button type="button" data-rank="delta" aria-pressed=false>Score delta</button></div>
 <p class="desc"><span class="key p0"></span>King +1<span class="key p1"></span>Sub-King +0.2<span class="key p2"></span>Sub-Kooz −0.2<span class="key p3"></span>Kooz −1</p>
+<p class="desc"><a href="#guide">What the numbers mean</a></p>
 <p class="desc">Open “how it plays” under any bot: its algorithm, then one real decision from the same deal (seat 0 vs three Heuristic bots).</p>
 <table>
 <thead><tr><th class="num">#</th><th>Bot</th><th class="num m-weighted">Weighted rank</th><th class="num m-king">King only</th><th class="num m-delta">Score delta</th><th class="opt">Final positions</th><th class="opt">Against each anchor</th></tr></thead>
@@ -71,9 +83,23 @@ table.opts{width:auto;margin:4px 0 8px}table.opts td,table.opts th{border:none;p
 <tr class="anchor bot" data-weighted="400.0" data-king="400.0" data-delta="400.0"><td class="num rank">15</td><td class="who-cell">Random <span class="tag">anchor</span><br><span class="desc who">Yosif Elessawi: random</span></td><td class="num m-weighted">400</td><td class="num m-king">400</td><td class="num m-delta">400</td><td class="opt"><div class="places" title="King 0% · Sub-King 0% · Sub-Kooz 50% · Kooz 50%" role="img" aria-label="King 0% · Sub-King 0% · Sub-Kooz 50% · Kooz 50%"><span class="p0" style="width:0.0%"></span><span class="p1" style="width:0.1%"></span><span class="p2" style="width:49.9%"></span><span class="p3" style="width:50.0%"></span></div><span class="king">King 0%</span></td><td class="opt"></td></tr>
 <tr class="anchor howrow"><td></td><td colspan="6"><details class="how"><summary>how it plays</summary><div class="lbl2">algorithm</div><div class="scroll"><svg class="flow" viewBox="0 0 464 132" width="464" role="img"><rect class="step" x="1" y="1" width="138" height="130" rx="10"/><text class="i-n" x="12" y="16">1</text><path class="i-bid" d="M44 18h52a6 6 0 0 1 6 6v20a6 6 0 0 1 -6 6h-34l-10 10v-10h-8a6 6 0 0 1 -6 -6v-20a6 6 0 0 1 6 -6z"/><text class="i-t" x="70" y="35" text-anchor="middle" dominant-baseline="central">3?</text><text x="70.0" y="86" text-anchor="middle">any legal bid</text><path class="arrow" d="M142 66.0h16m-5 -4l5 4l-5 4"/><rect class="step" x="163" y="1" width="138" height="130" rx="10"/><text class="i-n" x="174" y="16">2</text><path class="i-line" d="M232 14l16 14l-16 14l-16 -14z"/><text class="i-t" x="232" y="28" text-anchor="middle" dominant-baseline="central">?</text><path class="i-line" d="M216 28h-22v22M248 28h22v22"/><text class="i-s" x="194" y="62" text-anchor="middle">yes</text><text class="i-s" x="270" y="62" text-anchor="middle">no</text><text x="232.0" y="86" text-anchor="middle">list legal cards</text><path class="arrow" d="M304 66.0h16m-5 -4l5 4l-5 4"/><rect class="step" x="325" y="1" width="138" height="130" rx="10"/><text class="i-n" x="336" y="16">3</text><rect class="i-mean" x="360" y="40" width="12" height="18" rx="2"/><rect class="i-mean" x="378" y="28" width="12" height="30" rx="2"/><rect class="i-mean i-best" x="396" y="18" width="12" height="40" rx="2"/><rect class="i-mean" x="414" y="34" width="12" height="24" rx="2"/><path class="i-tick" d="M396 13l4 4l8 -8"/><text x="394.0" y="86" text-anchor="middle">pick one at random</text></svg></div><div class="lbl2">one real decision</div><div class="move"><div class="sit"><b>no trump</b> · won 0 of 7 tricks bid</div><div class="sit"><span class="lbl">table</span> <span class="desc">empty: it leads</span></div><table class="opts"><tr><th>card</th><th></th></tr><tr><td><span class="pc ">4♣</span></td><td class="tick"></td></tr><tr><td><span class="pc ">10♣</span></td><td class="tick"></td></tr><tr><td><span class="pc ">J♣</span></td><td class="tick"></td></tr><tr><td><span class="pc ">K♣</span></td><td class="tick"></td></tr><tr><td><span class="pc red ">9♦</span></td><td class="tick"></td></tr><tr><td><span class="pc red ">10♦</span></td><td class="tick"></td></tr><tr><td><span class="pc red ">10♥</span></td><td class="tick"></td></tr><tr><td><span class="pc red ">K♥</span></td><td class="tick"></td></tr><tr><td><span class="pc ">2♠</span></td><td class="tick"></td></tr><tr><td><span class="pc on">3♠</span></td><td class="tick">✓ played</td></tr><tr><td><span class="pc ">4♠</span></td><td class="tick"></td></tr><tr><td><span class="pc ">8♠</span></td><td class="tick"></td></tr><tr><td><span class="pc ">J♠</span></td><td class="tick"></td></tr></table></div></details></td></tr>
 </tbody></table>
-<details><summary>How the numbers are made</summary>
-<p class="desc">A submission plays each anchor in duplicate sets: every deal is played four times with the seats rotated, so luck cancels. A game pays by final position: King +1, Sub-King +0.2, Sub-Kooz −0.2, Kooz −1, tied seats sharing their positions. Every game also counts two other ways: King only pays 1 for King and 0 for anything else, and score delta is our seats' mean score minus the opponent's. Each way decides its own set winner, and each rating is one Bradley-Terry fit over every pair's set results under it, anchors included. Elo counts sets won, so a single exploding score cannot swing it. Against each anchor shows the average per game: reward, King share or delta. The bar shows each position's share, averaged over the bot's opponents. Over budget counts card decisions slower than 0.25 s.</p>
-</details>
+<section class="guide" id="guide" aria-labelledby="guide-title">
+<h2 id="guide-title">What the numbers mean</h2>
+<p class="g-lead">All three scores come from the same games. They only disagree about what counts as doing well.</p>
+<div class="g-metrics">
+<article><h3>Weighted rank</h3><p>How good is its finishing order? Each game pays by final place, with the two ends counting most. It's the default ranking.</p><div class="g-scale" role="img" aria-label="King +1, Sub-King +0.2, Sub-Kooz −0.2, Kooz −1"><div class="g-cell g0"><span>King</span><b>+1</b></div><div class="g-cell g1"><span>Sub-King</span><b>+0.2</b></div><div class="g-cell g2"><span>Sub-Kooz</span><b>−0.2</b></div><div class="g-cell g3"><span>Kooz</span><b>−1</b></div></div><p class="g-even">An even match averages 0.</p></article>
+<article><h3>King only</h3><p>How often does it win the game? First place is all that counts.</p><div class="g-scale" role="img" aria-label="King 1, Sub-King 0, Sub-Kooz 0, Kooz 0"><div class="g-cell g0"><span>King</span><b>1</b></div><div class="g-cell g1"><span>Sub-King</span><b>0</b></div><div class="g-cell g2"><span>Sub-Kooz</span><b>0</b></div><div class="g-cell g3"><span>Kooz</span><b>0</b></div></div><p class="g-even">An even match is 25%.</p></article>
+<article><h3>Score delta</h3><p>How much does it win by? This is its average game score minus its opponent's. One huge game can move the average.</p><div class="g-formula"><span>its score</span><b>−</b><span>opponent's score</span></div><p class="g-even">An even match averages 0.</p></article>
+</div>
+<dl class="g-terms">
+<div><dt>Elo</dt><dd>A rating from who won each set, using every match played. A 200-point lead means winning about 76% of sets. Random is fixed at 400 as the reference. Each score has its own Elo, so compare numbers within a column, not across columns.</dd></div>
+<div><dt>Set</dt><dd>The same deal played four times with the seats rotated, so lucky cards cancel out. Two copies of each bot sit at the table.</dd></div>
+<div><dt>Sets record</dt><dd>Sets won, drawn and lost, in that order. A win under one score isn't always a win under another.</dd></div>
+<div><dt>Places</dt><dd>The share of games it finished in each place. Tied seats share the places they occupy.</dd></div>
+<div><dt>Anchor</dt><dd>A fixed reference bot that everything else is measured against.</dd></div>
+<div><dt>Provisional</dt><dd>Rated only from test matches, so far fewer games stand behind it. Treat a small lead as a tie.</dd></div>
+</dl>
+</section>
 </main><script>
 document.querySelectorAll('[data-rank]').forEach(function (button) {
   button.addEventListener('click', function () {
