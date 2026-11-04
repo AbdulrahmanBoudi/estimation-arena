@@ -241,8 +241,7 @@ async function film() {
       await sleep(per * (round.ev[k].w !== undefined ? 2.4 : 1));
     }
     if (id !== filmId) return;
-    floatScores(round);
-    await sleep(STILL ? 300 : 900);
+    await sleep(Math.max(2400, Math.min(3600, total * 0.6)));
     await waitWhilePaused(id);
     if (id !== filmId) return;
     i += 1;
@@ -272,29 +271,15 @@ function dealCards(ms) {
   });
 }
 function seatEl(k) { return $("felt").querySelector(`.seat.s${k}`); }
-function floatAt(k, text, cls) {
-  const felt = $("felt"), box = felt.getBoundingClientRect(), r = seatEl(k).querySelector("h4").getBoundingClientRect();
-  const el = document.createElement("div");
-  el.className = `float ${cls}`; el.textContent = text;
-  el.style.left = `${r.left - box.left + r.width / 2}px`; el.style.top = `${r.top - box.top}px`;
-  felt.append(el);
-  el.animate([{ transform: "translate(-50%,16px) scale(.6)", opacity: 0 }, { transform: "translate(-50%,-10px) scale(1.1)", opacity: 1, offset: 0.25 }, { transform: "translate(-50%,-28px) scale(1)", opacity: 0 }], { duration: STILL ? 1 : 1300, easing: "ease-out" }).onfinish = () => el.remove();
-}
-function floatScores(round) {
-  if (round.skipped) return;
-  const best = Math.max(...round.result);
-  round.result.forEach((x, k) => floatAt(k, `${x > 0 ? "+" : ""}${x}`, `${x < 0 ? "neg" : ""} ${x === best && x > 0 ? "big" : ""}`));
-}
-
 // ---- the table
 function stateAt(round, step) {
   const hands = round.hands.map((h) => new Set(h));
-  const st = { hands, trick: [], won: [0, 0, 0, 0], est: [null, null, null, null], calls: ["", "", "", ""], trump: round.fixed ?? null, caller: null, lastWin: null, turn: round.first, phase: round.fixed == null ? 0 : 2 };
+  const st = { hands, trick: [], won: [0, 0, 0, 0], est: [null, null, null, null], calls: ["", "", "", ""], top: null, trump: round.fixed ?? null, caller: null, lastWin: null, turn: round.first, phase: round.fixed == null ? 0 : 2 };
   let clear = false;
   for (let i = 0; i < step; i++) {
     const e = round.ev[i];
     if (clear) { st.trick = []; clear = false; st.lastWin = null; }
-    if (e.a >= 68) { hands[e.s].delete(e.a - 68); st.trick.push([e.s, e.a - 68]); } else st.calls[e.s] = e.l;
+    if (e.a >= 68) { hands[e.s].delete(e.a - 68); st.trick.push([e.s, e.a - 68]); } else { st.calls[e.s] = e.l; if (e.a >= 2 && e.a <= 51) st.top = e.l; }
     if (e.ph !== undefined) st.phase = e.ph;
     if (e.est) st.est = e.est;
     if (e.tr !== undefined) st.trump = e.tr;
@@ -317,19 +302,21 @@ function drawTable(animate = true, opts = {}) {
   const round = g.rounds[S.round], st = stateAt(round, S.step);
   const prior = S.step > 0 ? stateAt(round, S.step - 1) : null;
   const seat = (k) => {
-    const model = g.net_seats.includes(k);
-    const role = st.caller === k ? ", Caller" : "";
-    const est = st.est[k] == null ? "" : `, ${st.won[k]} of ${st.est[k]}`;
-    const call = st.phase < 3 && st.calls[k] ? `, said ${esc(st.calls[k])}` : "";
-    const cards = [...st.hands[k]].sort((a, b) => b - a).map((c) => card(c)).join("");
-    return `<div class="seat s${k}${st.turn === k && S.step < round.ev.length ? " turn" : ""}"><h4>${model ? "Model" : "Heuristic"}<span class="sub">${role}${est}${call}</span></h4><div class="cards">${cards}</div></div>`;
+    const est = st.est[k];
+    const chips = [];
+    if (st.caller === k) chips.push("Caller");
+    else if (st.calls[k] === "With" && st.phase >= 2) chips.push("With");
+    if (st.calls[k] === "Dash Call") chips.push("Dash");
+    const said = st.phase < 2 && st.calls[k] && !["No Dash", "Dash Call"].includes(st.calls[k]) ? `<span class="said">${esc(st.calls[k])}</span>` : "";
+    const hand = [...st.hands[k]].sort((a, b) => b - a);
+    const cards = hand.map((c, i) => card(c, i && Math.floor(hand[i - 1] / 13) !== Math.floor(c / 13) ? 'data-gap="1"' : "")).join("");
+    return `<div class="seat s${k}${st.turn === k && S.step < round.ev.length ? " turn" : ""}"><h4><span>${seatName(g, k)}</span>${chips.map((c) => `<em>${c}</em>`).join("")}${said}${pips(est, st.won[k])}</h4><div class="cards">${cards}</div></div>`;
   };
   const pit = st.trick.map(([s, c]) => card(c, `data-p`).replace('class="card', `class="card p${s}${st.lastWin === s ? " win" : ""}`)).join("");
-  const trump = st.trump == null ? "no trump yet" : `trump ${TRUMPS[st.trump]}`;
   const done = S.step >= round.ev.length;
-  const end = round.skipped ? "Round skipped, stakes double" : `Round ${round.no} scores ${round.result.map((x, k) => `${g.net_seats.includes(k) ? "M" : "H"} ${x > 0 ? "+" : ""}${x}`).join(", ")}`;
-  const banner = !st.trick.length ? `<div class="banner">${done ? end : `Round ${round.no}, ${trump}${round.carry > 1 ? `, stakes ×${round.carry}` : ""}`}</div>` : "";
-  $("felt").innerHTML = seat(2) + seat(1) + `<div class="pit">${banner}${pit}</div>` + seat(3) + seat(0);
+  const hud = st.trump == null && st.phase < 2 ? `<div class="hud"><p>Round ${round.no}</p><p>${st.phase === 0 ? "Dash Calls" : st.top ? `Top bid ${esc(st.top)}` : "Bidding"}${round.carry > 1 ? `, stakes ×${round.carry}` : ""}</p></div>`
+    : `<div class="hud"><b class="${st.trump === 1 || st.trump === 2 ? "red" : ""}">${st.trump == null ? "" : TRUMPS[st.trump]}</b><p>${callLine(g, round, st)}</p><p>${totalLine(st)}${round.carry > 1 ? ` ×${round.carry}` : ""}</p></div>`;
+  $("felt").innerHTML = seat(2) + seat(1) + `<div class="pit">${st.trick.length && !done ? "" : done ? "" : hud}${done ? "" : pit}</div>` + seat(3) + seat(0) + (done ? sheet(g, round, st) : "");
   if (before.size) {
     $("felt").querySelectorAll(".card").forEach((el) => {
       const a = before.get(el.dataset.c);
@@ -347,6 +334,54 @@ function drawTable(animate = true, opts = {}) {
   }
   $("move").textContent = `Move ${S.step} of ${round.ev.length}`;
   drawThink(round);
+}
+function seatName(g, k) {
+  const net = g.net_seats.includes(k);
+  const same = [0, 1, 2, 3].filter((j) => g.net_seats.includes(j) === net);
+  return `${net ? "Model" : "Heuristic"} ${same.indexOf(k) + 1}`;
+}
+function pips(est, won) {
+  if (est === null || est === undefined) return won ? `<span class="pips">${"<i class=on></i>".repeat(won)}</span>` : "";
+  const made = Math.min(est, won), left = Math.max(est - won, 0), over = Math.max(won - est, 0);
+  return `<span class="pips" title="Won ${won} of ${est}">${"<i class=on></i>".repeat(made)}${"<i></i>".repeat(left)}${"<i class=over></i>".repeat(over)}${est === 0 && !won ? "<small>0</small>" : ""}</span>`;
+}
+function callLine(g, round, st) {
+  if (st.caller === null || st.caller === undefined) return round.fixed != null ? "Fixed trump: estimates" : "Estimates";
+  const contract = st.top ?? `${st.est[st.caller]}${st.trump == null ? "" : TRUMPS[st.trump]}`;
+  return `${seatName(g, st.caller)} called ${esc(contract)}`;
+}
+function totalLine(st) {
+  const known = st.est.filter((x) => x !== null && x !== undefined);
+  if (known.length < 4) return "";
+  const t = known.reduce((a, b) => a + b, 0);
+  return `Estimates ${t}, ${t > 13 ? "over" : "under"} by ${Math.abs(t - 13)}`;
+}
+function standing(scores) {
+  return scores.map((x) => {
+    const above = scores.filter((y) => y > x).length, tied = scores.filter((y) => y === x).length;
+    return { index: above, name: POS_NAMES[above], tied: tied > 1 };
+  });
+}
+const signed = (x) => `${x > 0 ? "+" : ""}${x.toLocaleString()}`;
+function sheet(g, round, st) {
+  const totals = round.scores.map((x, k) => x + round.result[k]);
+  const places = standing(totals);
+  const order = [0, 1, 2, 3].sort((a, b) => totals[b] - totals[a] || a - b);
+  const last = round === g.rounds.at(-1);
+  const title = round.skipped ? `Round ${round.no} skipped: nobody called` : `Round ${round.no}: ${callLine(g, round, st)}`;
+  const rows = order.map((k) => `<tr><td><i class="dot k${places[k].index}"></i>${places[k].tied ? "Tied " : ""}${places[k].name}</td><td>${seatName(g, k)}</td><td class="n">${round.skipped ? "" : st.est[k]}</td><td class="n">${round.skipped ? "" : st.won[k]}</td><td class="n ${round.result[k] < 0 ? "neg" : ""}">${round.skipped ? "" : signed(round.result[k])}</td><td class="n"><b>${totals[k].toLocaleString()}</b></td></tr>`).join("");
+  const notes = [];
+  if (!round.skipped) notes.push(totalLine(st) + (round.fixed != null ? `, trump ${TRUMPS[round.fixed]} fixed` : ""));
+  if (round.carry > 1) notes.push(`Stakes ×${round.carry}`);
+  if (round.skipped) notes.push("The next round's stakes double");
+  if (!round.skipped && st.est.every((x, k) => x !== st.won[k])) notes.push("Everyone missed their estimate, so nobody scores and the next round's stakes double");
+  let whole = "";
+  if (!last) {
+    const fin = standing(g.scores);
+    const best = [0, 1, 2, 3].sort((a, b) => g.scores[b] - g.scores[a] || a - b);
+    whole = `<p class="whole">This version's whole game, ${g.rounds.length} rounds: ${best.map((k) => `${fin[k].name} ${seatName(g, k)} ${g.scores[k].toLocaleString()}`).join(", ")}</p>`;
+  }
+  return `<div class="sheet"><h4>${last ? "Final standings. " : ""}${title}</h4><table><thead><tr><th>${last ? "Final place" : "Standing"}</th><th>Seat</th><th class="n">Est</th><th class="n">Won</th><th class="n">Round</th><th class="n">Game</th></tr></thead><tbody>${rows}</tbody></table>${notes.length ? `<p>${esc(notes.join(". "))}.</p>` : ""}${whole}</div>`;
 }
 function sweepTrick(before, prior, flight) {
   if (!prior || prior.lastWin === null || !prior.trick.length) return;
