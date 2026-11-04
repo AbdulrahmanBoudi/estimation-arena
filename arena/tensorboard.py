@@ -19,6 +19,17 @@ DROP = {"host", "cookie", "authorization", "accept-encoding", "connection", "con
 KEEP_BACK = {"content-type", "cache-control", "etag", "last-modified"}
 
 
+def _reply_headers(reply_headers) -> dict[str, str]:
+    headers = {k: v for k, v in reply_headers.items() if k.lower() in KEEP_BACK}
+    # Cloudflare's Rocket Loader rewrites script tags in HTML, which leaves TensorBoard's page blank.
+    if reply_headers.get("content-type", "").startswith("text/html"):
+        cache = headers.get("Cache-Control") or headers.get("cache-control")
+        for k in ("Cache-Control", "cache-control"):
+            headers.pop(k, None)
+        headers["Cache-Control"] = f"{cache}, no-transform" if cache else "no-transform"
+    return headers
+
+
 class _NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, *args, **kwargs):
         return None
@@ -51,7 +62,7 @@ async def forward(request: Request) -> Response:
         return PlainTextResponse("TensorBoard isn't running. Start the home-server-tensorboard service on the server.", status_code=502)
     with reply:
         content = reply.read(LIMIT + 1)
-        headers = {k: v for k, v in reply.headers.items() if k.lower() in KEEP_BACK}
+        headers = _reply_headers(reply.headers)
         if len(content) > LIMIT:
             return PlainTextResponse("That response is too large.", status_code=502)
         return Response(content, status_code=reply.status, headers=headers)

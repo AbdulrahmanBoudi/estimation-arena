@@ -140,3 +140,18 @@ def test_the_guide_defines_every_metric_on_both_pages():
     for word in ("Weighted rank", "King only", "Score delta", "Elo", "Provisional", "Anchor"):
         assert word in GUIDE
     assert GUIDE in leaderboard.render(leaderboard.build(ROOT))
+
+
+def test_tensorboard_page_is_not_rewritten_by_the_cdn():
+    from email.message import Message
+
+    from arena import tensorboard
+
+    page = Message()
+    page["Content-Type"] = "text/html; charset=utf-8"
+    page["Cache-Control"] = "no-cache, must-revalidate"
+    assert tensorboard._reply_headers(page)["Cache-Control"] == "no-cache, must-revalidate, no-transform"
+    script = Message()
+    script["Content-Type"] = "text/javascript"
+    script["Cache-Control"] = "private, max-age=86400"
+    assert tensorboard._reply_headers(script)["Cache-Control"] == "private, max-age=86400"
