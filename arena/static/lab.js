@@ -130,7 +130,7 @@ function clearView(message) {
   $("iter").textContent = "–";
   $("iter-sub").textContent = message;
   $("verified").hidden = true;
-  for (const id of ["reel", "rounds", "think", "felt", "race", "probe-hand", "lead", "grid", "move"]) $(id).innerHTML = "";
+  for (const id of ["reel", "rounds", "think", "felt", "race", "probe-hand", "lead", "grid", "move", "board"]) $(id).innerHTML = "";
   delete $("lead").dataset.ids;
   $("dash-fill").style.width = $("pass-fill").style.width = "0";
   $("dash-val").textContent = $("pass-val").textContent = "";
@@ -189,7 +189,7 @@ const reel = (ms) => sleep(ms / S.speed); // film time: follows the speed contro
 const moved = [];
 function moveInto(node, target) { moved.push([node, node.parentNode, node.nextSibling]); target.append(node); }
 function openCinema() {
-  moveInto($("grid"), $("c-left")); moveInto($("think"), $("c-left"));
+  moveInto($("grid"), $("c-left")); moveInto($("board"), $("c-left")); moveInto($("think"), $("c-left"));
   moveInto($("felt"), $("c-felt")); moveInto($("reel"), $("c-reel"));
   $("cinema").hidden = false; document.body.style.overflow = "hidden";
   $("c-pause").focus();
@@ -346,7 +346,30 @@ function drawTable(animate = true, opts = {}) {
     if (e && e.a < 68) popBubble(e.s, e.l, opts.bubble || 900);
   }
   $("move").textContent = `Move ${S.step} of ${round.ev.length}`;
+  drawBoard(g, round, st, done, animate);
   drawThink(round);
+}
+function drawBoard(g, round, st, done, animate) {
+  const box = $("board");
+  const old = new Map();
+  if (animate && !STILL) box.querySelectorAll("[data-k]").forEach((el) => old.set(el.dataset.k, el.getBoundingClientRect().top));
+  const totals = round.scores.map((x, k) => x + (done ? round.result[k] : 0));
+  const places = standing(totals);
+  const order = [0, 1, 2, 3].sort((a, b) => totals[b] - totals[a] || a - b);
+  const trump = st.trump == null ? "" : `, trump ${TRUMPS[st.trump]}`;
+  const call = st.caller == null ? (st.top ? `Top bid ${esc(st.top)}` : round.fixed != null ? "Estimating" : st.phase === 0 ? "Dash Calls" : "Bidding") : callLine(g, round, st);
+  const fin = done && round === g.rounds.at(-1) ? "Final, " : "";
+  const rows = order.map((k) => {
+    const pts = done && !round.skipped ? `<span class="${round.result[k] < 0 ? "neg" : ""}">${signed(round.result[k])}</span>` : "<span></span>";
+    const est = st.est[k] ?? "–";
+    return `<div class="b-row${st.turn === k && !done ? " turn" : ""}" data-k="${k}"><span><i class="k${places[k].index}"></i>${places[k].name}</span><span>${seatName(g, k)}</span><span>${est}</span><span>${st.won[k]}</span>${pts}<b>${totals[k].toLocaleString()}</b></div>`;
+  }).join("");
+  box.innerHTML = `<h4><span>${fin}Round ${round.no}</span><span>${call}${trump}${round.carry > 1 ? `, ×${round.carry}` : ""}</span></h4><div class="b-row head"><span>Standing</span><span>Seat</span><span>Est</span><span>Won</span><span>Round</span><span>Game</span></div>${rows}`;
+  if (old.size) box.querySelectorAll("[data-k]").forEach((el) => {
+    const was = old.get(el.dataset.k);
+    const dy = was === undefined ? 0 : was - el.getBoundingClientRect().top;
+    if (Math.abs(dy) > 1) el.animate([{ transform: `translateY(${dy}px)` }, { transform: "none" }], { duration: 450, easing: "cubic-bezier(.2,.9,.3,1)" });
+  });
 }
 function seatName(g, k) {
   const net = g.net_seats.includes(k);
