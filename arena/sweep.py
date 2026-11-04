@@ -20,6 +20,7 @@ from pathlib import Path
 from estimation.arena.report import build_report
 
 from .bots import SUB_PREFIX, load_manifest
+from .positions import summarize
 from .run import run_sets
 
 
@@ -45,6 +46,8 @@ def main(argv: list[str] | None = None) -> int:
         spec = SUB_PREFIX + args.bot + "".join(f":{k}={v}" for k, v in zip(keys, combo))
         run = run_sets((spec, args.vs, spec, args.vs), args.sets, args.seed, args.workers)
         report = build_report(run)
+        places, _ = summarize(run.results, (spec, args.vs, spec, args.vs))
+        pr = places[spec]["reward"]
         me = next(b for b in report.bots if b.name == spec)
         pair = next(p for p in report.pairs if spec in (p.a, p.b))
         won, lost = (pair.a_wins, pair.b_wins) if pair.a == spec else (pair.b_wins, pair.a_wins)
@@ -58,12 +61,16 @@ def main(argv: list[str] | None = None) -> int:
             "rsa_low": me.rsa.low,
             "rsa_high": me.rsa.high,
             "wall_s": round(run.wall_seconds),
+            "positions": places[spec]["shares"],
+            "position_reward": pr["mean"],
         }
         rows.append(row)
         label = " ".join(f"{k}={v}" for k, v in zip(keys, combo))
         print(
             f"  {label:<34} sets {won:>3}-{pair.draws}-{lost:<3} first {me.first.mean:5.1%}"
-            f"  RSA {me.rsa.mean:+7.1f} [{me.rsa.low:+.1f}, {me.rsa.high:+.1f}]",
+            f"  RSA {me.rsa.mean:+7.1f} [{me.rsa.low:+.1f}, {me.rsa.high:+.1f}]"
+            f"  position {pr['mean']:+.2f} [{pr['low']:+.2f}, {pr['high']:+.2f}]"
+            f"  K/SK/Ko/SKo " + "/".join(f"{x:.0%}" for x in places[spec]["shares"]),
             flush=True,
         )
     rows.sort(key=lambda r: r["rsa"], reverse=True)

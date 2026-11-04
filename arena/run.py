@@ -30,6 +30,7 @@ from estimation.engine import RulesConfig
 from estimation.engine.config import DEFAULT_CONFIG
 
 from .bots import ROOT, SUB_PREFIX, Manifest, load_manifest, maker
+from .positions import summarize
 
 ANCHORS_FILE = ROOT / "anchors.json"
 RESULTS_DIR = ROOT / "results"
@@ -140,6 +141,7 @@ def play_submission(
     me = SUB_PREFIX + manifest.name
     versus: list[dict[str, Any]] = []
     pairs: list[dict[str, Any]] = []
+    position_pairs: list[dict[str, Any]] = []
     for anchor in anchors:
         lineup = (me, anchor["spec"], me, anchor["spec"])
         if progress:
@@ -147,6 +149,8 @@ def play_submission(
         run = run_sets(lineup, sets, seed, workers, progress=progress)
         report = build_report(run)
         mine = next(b for b in report.bots if b.name == me)
+        places, by_position = summarize(run.results, lineup)
+        position_pairs += by_position
         versus.append(
             {
                 "anchor": anchor["name"],
@@ -156,6 +160,8 @@ def play_submission(
                 "mean_score": mine.mean_score,
                 "rsa": _interval(mine.rsa),
                 "first_place": _interval(mine.first),
+                "positions": places[me]["shares"],
+                "position_reward": places[me]["reward"],
                 "timing": _timing(run.timings[me]),
                 "wall_s": run.wall_seconds,
             }
@@ -181,6 +187,7 @@ def play_submission(
         "played_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "versus": versus,
         "pairs": pairs,
+        "position_pairs": position_pairs,
     }
 
 
@@ -210,10 +217,11 @@ def keep_unplayed(result: dict[str, Any], old: dict[str, Any] | None) -> list[st
         v["carried_from"] = old.get("played_at")
         result["versus"].append(v)
     me = SUB_PREFIX + result["bot"]
-    for pair in old.get("pairs", []):
-        other = pair["b"] if pair["a"] == me else pair["a"]
-        if other in {v["spec"] for v in kept}:
-            result["pairs"].append(pair)
+    for key in ("pairs", "position_pairs"):
+        for pair in old.get(key, []):
+            other = pair["b"] if pair["a"] == me else pair["a"]
+            if other in {v["spec"] for v in kept}:
+                result[key].append(pair)
     return [v["anchor"] for v in kept]
 
 

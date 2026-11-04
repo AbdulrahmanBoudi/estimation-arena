@@ -2,8 +2,9 @@
 
     uv run python -m arena.leaderboard
 
-One Bradley-Terry fit over every pairwise set result (the imported ladder plus every
-submission's runs), RandomBot fixed at 400, gives every bot one Elo on the same scale.
+Bots rank by final position in the Bola: King, Sub-King, Kooz, Sub-Kooz (arena.positions). One
+Bradley-Terry fit over every pair's set results by position reward, RandomBot fixed at 400, gives
+every bot one rating on one scale. The older score-based Elo is kept as ``score_elo``.
 Writes ``site/leaderboard.json`` and ``site/index.html``, a single self-contained page.
 """
 
@@ -19,7 +20,9 @@ from typing import Any
 from estimation.arena.ratings import ANCHOR, ANCHOR_RATING, DEFAULT_PRIOR, PairRecord, bradley_terry
 
 from .bots import ROOT, SUB_PREFIX, load_manifest
+from .anchor_positions import OUT as POSITIONS_FILE
 from .import_ladder import LADDER_FILE
+from .positions import NAMES as POSITION_NAMES
 from .run import ANCHORS_FILE, RESULTS_DIR
 
 SITE_DIR = ROOT / "site"
@@ -32,6 +35,10 @@ def _pairs(records: list[dict[str, Any]]) -> list[PairRecord]:
     ]
 
 
+def _mean_shares(rows: list[list[float]]) -> list[float] | None:
+    return [sum(r[p] for r in rows) / len(rows) for p in range(4)] if rows else None
+
+
 def build() -> dict[str, Any]:
     anchors: list[dict[str, str]] = json.loads(ANCHORS_FILE.read_text())
     ladder = json.loads(LADDER_FILE.read_text()) if LADDER_FILE.is_file() else {"pairs": []}
@@ -39,7 +46,16 @@ def build() -> dict[str, Any]:
     pairs = _pairs(ladder["pairs"])
     for r in results:
         pairs += _pairs(r["pairs"])
-    ratings = bradley_terry(pairs, ANCHOR, ANCHOR_RATING, DEFAULT_PRIOR) if pairs else {}
+    score_ratings = bradley_terry(pairs, ANCHOR, ANCHOR_RATING, DEFAULT_PRIOR) if pairs else {}
+    matches = json.loads(POSITIONS_FILE.read_text())["matches"] if POSITIONS_FILE.is_file() else []
+    by_position = [q for m in matches for q in _pairs(m["pairs"])]
+    for r in results:
+        by_position += _pairs(r.get("position_pairs", []))
+    ratings = bradley_terry(by_position, ANCHOR, ANCHOR_RATING, DEFAULT_PRIOR) if by_position else {}
+    anchor_places: dict[str, list[dict[str, Any]]] = {}
+    for m in matches:
+        for spec, place in m["summary"].items():
+            anchor_places.setdefault(spec, []).append(place)
 
     rows: list[dict[str, Any]] = []
     for r in results:
@@ -59,6 +75,8 @@ def build() -> dict[str, Any]:
                 "key": key,
                 "method": current.get("method", []),
                 "elo": ratings.get(key),
+                "score_elo": score_ratings.get(key),
+                "positions": _mean_shares([v["positions"] for v in r["versus"] if "positions" in v]),
                 "games": sum(v["games"] for v in r["versus"]),
                 "sets": r["sets"],
                 "seed": r["seed"],
@@ -73,6 +91,8 @@ def build() -> dict[str, Any]:
                         "rsa_low": v["rsa"]["low"],
                         "rsa_high": v["rsa"]["high"],
                         "first_place": v["first_place"]["mean"],
+                        "positions": v.get("positions"),
+                        "position_reward": v.get("position_reward", {}).get("mean"),
                     }
                     for v in r["versus"]
                 ],
@@ -89,6 +109,8 @@ def build() -> dict[str, Any]:
                 "key": a["spec"],
                 "method": a.get("method", []),
                 "elo": ratings.get(a["spec"]),
+                "score_elo": score_ratings.get(a["spec"]),
+                "positions": _mean_shares([q["shares"] for q in anchor_places.get(a["spec"], [])]),
                 "games": None,
                 "versus": [],
                 "anchor": True,
@@ -112,7 +134,7 @@ STYLE = """
 main{max-width:1040px;margin:0 auto}h1{font-size:24px;margin:0 0 4px}p.sub{color:var(--muted);margin:0 0 20px}
 table{width:100%;border-collapse:collapse}th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;white-space:nowrap}
 th{font-weight:600;color:var(--muted);font-size:13px}td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
-tr.anchor td{color:var(--muted);background:var(--tint)}tr:has(+ tr.howrow) td{border-bottom:none}tr.howrow td{white-space:normal;padding-top:0}.bar{display:inline-block;height:10px;background:var(--bar);border-radius:3px;vertical-align:middle;margin-right:8px}
+tr.anchor td{color:var(--muted);background:var(--tint)}tr:has(+ tr.howrow) td{border-bottom:none}tr.howrow td{white-space:normal;padding-top:0}.places{display:flex;gap:2px;width:210px;height:12px;vertical-align:middle}.places span{display:block;height:100%}.places span:first-child{border-radius:3px 0 0 3px}.places span:last-child{border-radius:0 3px 3px 0}.p0{background:#2a78d6}.p1{background:#8fbbef}.p2{background:#f0a8a0}.p3{background:#d03b3b}.key{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 4px 0 12px;vertical-align:-1px}.king{font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted)}
 .tag{font-size:12px;padding:1px 6px;border:1px solid var(--line);border-radius:10px;color:var(--muted)}.desc{color:var(--muted);font-size:13px;white-space:normal}
 .pos{color:var(--good)}.neg{color:var(--bad)}details{margin-top:24px}summary{cursor:pointer;color:var(--muted)}
 @media(max-width:700px){th.opt,td.opt{display:none}}
@@ -313,8 +335,6 @@ def how_it_plays(row: dict[str, Any], samples: dict[str, Any]) -> str:
 
 def render(board: dict[str, Any]) -> str:
     rows = board["rows"]
-    rated = [r["elo"] for r in rows if r["elo"] is not None]
-    top = max(rated) if rated else 1.0
     anchors = [r["name"] for r in rows if r["anchor"]]
     samples_file = SITE_DIR / "samples.json"
     samples = json.loads(samples_file.read_text()) if samples_file.is_file() else {}
@@ -324,8 +344,13 @@ def render(board: dict[str, Any]) -> str:
         e = html.escape
         rank += 1  # one global ranking: anchors and submissions alike
         elo = r["elo"]
-        bar = f'<span class="bar" style="width:{max(2, int(140 * (elo / top)))}px"></span>' if elo else ""
         elo_text = f"{elo:,.0f}" if elo is not None else "unrated"
+        places = r.get("positions")
+        place_bar = ""
+        if places:
+            title = " · ".join(f"{n} {x:.0%}" for n, x in zip(POSITION_NAMES, places))
+            parts = "".join(f'<span class="p{k}" style="width:{x * 100:.1f}%"></span>' for k, x in enumerate(places))
+            place_bar = f'<div class="places" title="{title}" role="img" aria-label="{title}">{parts}</div><span class="king">King {places[0]:.0%}</span>'
         if r["anchor"]:
             name = f'{e(r["name"])} <span class="tag">anchor</span>'
             meta = f'{e(r["author"])}<br><span class="desc">{e(r["description"])}</span>'
@@ -334,7 +359,7 @@ def render(board: dict[str, Any]) -> str:
             name = f'<strong>{e(r["name"])}</strong> <span class="tag">{e(r["kind"])}</span>'
             meta = f'{e(r["author"])}<br><span class="desc">{e(r["description"])}</span>'
             vs = " · ".join(
-                f'{e(v["anchor"])} <span class="{"pos" if v["rsa"] >= 0 else "neg"}">{v["rsa"]:+.0f}</span>'
+                f'{e(v["anchor"])} <span class="{"pos" if (v["position_reward"] or 0) >= 0 else "neg"}">{(v["position_reward"] or 0):+.2f}</span>'
                 for v in r["versus"]
             )
             detail = (
@@ -346,12 +371,12 @@ def render(board: dict[str, Any]) -> str:
             f'<tr class="{"anchor" if r["anchor"] else "sub"}">'
             f'<td class="num">{rank if elo is not None else ""}</td>'
             f"<td>{name}</td><td class=\"opt\">{meta}</td>"
-            f'<td class="num">{bar}{elo_text}</td><td class="opt">{detail}</td></tr>'
+            f'<td class="num">{elo_text}</td><td class="opt">{place_bar}</td><td class="opt">{detail}</td></tr>'
         )
         how = how_it_plays(r, samples)
         if how:
             cls = "anchor" if r["anchor"] else "sub"
-            lines.append(f'<tr class="{cls} howrow"><td></td><td colspan="4">{how}</td></tr>')
+            lines.append(f'<tr class="{cls} howrow"><td></td><td colspan="5">{how}</td></tr>')
     ladder = board["ladder"]
     built = board["built_at"].replace("T", " ")[:16] + " UTC"
     return f"""<!doctype html>
@@ -359,15 +384,16 @@ def render(board: dict[str, Any]) -> str:
 <title>Estimation Arena</title><style>{STYLE}</style></head>
 <body><main>
 <h1>Estimation Arena</h1>
-<p class="sub">{board["submissions"]} submissions and {len(anchors)} anchors, one Elo scale (Random = {board["anchor_rating"]:.0f}). Built {built}.</p>
+<p class="sub">{board["submissions"]} submissions and {len(anchors)} anchors, ranked by final position in the Bola (Random = {board["anchor_rating"]:.0f}). Built {built}.</p>
+<p class="desc"><span class="key p0"></span>King +1<span class="key p1"></span>Sub-King +1/3<span class="key p2"></span>Kooz −1/3<span class="key p3"></span>Sub-Kooz −1</p>
 <p class="desc">Open “how it plays” under any bot: its algorithm, then one real decision from the same deal (seat 0 vs three Heuristic bots).</p>
 <table>
-<thead><tr><th class="num">#</th><th>Bot</th><th class="opt">Author</th><th class="num">Elo</th><th class="opt">Score advantage vs anchors (RSA)</th></tr></thead>
+<thead><tr><th class="num">#</th><th>Bot</th><th class="opt">Author</th><th class="num">Rating</th><th class="opt">Final positions</th><th class="opt">Position reward vs anchors</th></tr></thead>
 <tbody>
 {chr(10).join(lines)}
 </tbody></table>
 <details><summary>How the numbers are made</summary>
-<p class="desc">A submission plays each anchor in duplicate sets: every deal is played four times with the seats rotated, so luck cancels. RSA is the mean score advantage per game over the anchor. Elo is one Bradley-Terry fit over every pairwise set result, including the engine ladder <code>{html.escape(str(ladder.get("source")))}</code> ({ladder.get("sets")} sets), which is what places the anchors. Over budget counts card decisions slower than 0.25 s.</p>
+<p class="desc">A submission plays each anchor in duplicate sets: every deal is played four times with the seats rotated, so luck cancels. A game pays by final position: King +1, Sub-King +1/3, Kooz −1/3, Sub-Kooz −1, tied seats sharing their positions. A set goes to the bot with the higher mean position reward. The rating is one Bradley-Terry fit over every pair's set results, anchors included. The bar shows each position's share, averaged over the bot's opponents. Over budget counts card decisions slower than 0.25 s.</p>
 </details>
 </main></body></html>
 """
