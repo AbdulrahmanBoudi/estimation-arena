@@ -1,6 +1,6 @@
 """Final positions in a Bola: King, Sub-King, Sub-Kooz, Kooz (last), the measure the leaderboard ranks by.
 
-A game's position reward is King +1, Sub-King +1/3, Sub-Kooz -1/3, Kooz -1. Tied seats share
+A game's position reward is King +1, Sub-King +0.2, Sub-Kooz -0.2, Kooz -1: the two ends count most. Tied seats share
 the positions they occupy, so the four rewards always sum to 0. A set goes to the bot with the
 higher mean position reward over its seats and rotations.
 """
@@ -14,7 +14,7 @@ from typing import Any
 from estimation.arena.duplicate import SetResult, slot_at
 
 NAMES = ("King", "Sub-King", "Sub-Kooz", "Kooz")
-REWARDS = (1.0, 1 / 3, -1 / 3, -1.0)
+REWARDS = (1.0, 0.2, -0.2, -1.0)
 
 
 def position_shares(scores: Sequence[int], seat: int) -> list[float]:

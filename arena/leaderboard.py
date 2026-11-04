@@ -385,7 +385,7 @@ def render(board: dict[str, Any]) -> str:
 <body><main>
 <h1>Estimation Arena</h1>
 <p class="sub">{board["submissions"]} submissions and {len(anchors)} anchors, ranked by final position in the Bola (Random = {board["anchor_rating"]:.0f}). Built {built}.</p>
-<p class="desc"><span class="key p0"></span>King +1<span class="key p1"></span>Sub-King +1/3<span class="key p2"></span>Sub-Kooz −1/3<span class="key p3"></span>Kooz −1</p>
+<p class="desc"><span class="key p0"></span>King +1<span class="key p1"></span>Sub-King +0.2<span class="key p2"></span>Sub-Kooz −0.2<span class="key p3"></span>Kooz −1</p>
 <p class="desc">Open “how it plays” under any bot: its algorithm, then one real decision from the same deal (seat 0 vs three Heuristic bots).</p>
 <table>
 <thead><tr><th class="num">#</th><th>Bot</th><th class="opt">Author</th><th class="num">Rating</th><th class="opt">Final positions</th><th class="opt">Position reward vs anchors</th></tr></thead>
@@ -393,7 +393,7 @@ def render(board: dict[str, Any]) -> str:
 {chr(10).join(lines)}
 </tbody></table>
 <details><summary>How the numbers are made</summary>
-<p class="desc">A submission plays each anchor in duplicate sets: every deal is played four times with the seats rotated, so luck cancels. A game pays by final position: King +1, Sub-King +1/3, Sub-Kooz −1/3, Kooz −1, tied seats sharing their positions. A set goes to the bot with the higher mean position reward. The rating is one Bradley-Terry fit over every pair's set results, anchors included. The bar shows each position's share, averaged over the bot's opponents. Over budget counts card decisions slower than 0.25 s.</p>
+<p class="desc">A submission plays each anchor in duplicate sets: every deal is played four times with the seats rotated, so luck cancels. A game pays by final position: King +1, Sub-King +0.2, Sub-Kooz −0.2, Kooz −1, tied seats sharing their positions. A set goes to the bot with the higher mean position reward. The rating is one Bradley-Terry fit over every pair's set results, anchors included. The bar shows each position's share, averaged over the bot's opponents. Over budget counts card decisions slower than 0.25 s.</p>
 </details>
 </main></body></html>
 """

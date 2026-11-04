@@ -5,8 +5,8 @@
 
 - Policy: one MLP over jaxenv.encode (one seat's raw view) for Dash Calls, bids, With, estimates
   and cards. No hand evaluation, imitation or search; it starts from nothing.
-- Reward: only at the end of the Bola, by final position, zero-sum: King +1, Sub-King +1/3,
-  Sub-Kooz -1/3, Kooz -1, tied seats sharing their positions (``position_rewards``). A game past
+- Reward: only at the end of the Bola, by final position, zero-sum: King +1, Sub-King +0.2,
+  Sub-Kooz -0.2, Kooz -1, tied seats sharing their positions (``position_rewards``). A game past
   int32's range is dropped, not scored.
 - Credit: TD(lambda) along each seat's own decisions (``td_lambda``), so a move is judged by how
   it changed the seat's expected final position, without waiting for the end of the game.
@@ -32,6 +32,8 @@ import jax  # noqa: E402
 import jax.numpy as jnp  # noqa: E402
 import numpy as np  # noqa: E402
 import optax  # noqa: E402
+
+from arena.positions import REWARDS  # noqa: E402
 
 from . import encode as E  # noqa: E402
 from . import game as G  # noqa: E402
@@ -84,17 +86,14 @@ def apply_critic(net, x, hidden_hands):
     return _out(net["value"], h)[..., 0]
 
 
-def positions(scores):
-    """[..., 4]: each seat's final position, 0 (King) to 3 (Kooz); tied seats get the mean of
-    the positions they share."""
+def position_rewards(scores):
+    """[..., 4]: King +1, Sub-King +0.2, Sub-Kooz -0.2, Kooz -1 (arena.positions.REWARDS). Tied
+    seats share the positions they occupy; the four always sum to 0."""
     above = (scores[..., None, :] > scores[..., :, None]).sum(-1)
     tied = (scores[..., None, :] == scores[..., :, None]).sum(-1)
-    return above + (tied - 1) / 2.0
-
-
-def position_rewards(scores):
-    """[..., 4]: King +1, Sub-King +1/3, Sub-Kooz -1/3, Kooz -1; the four always sum to 0."""
-    return 1.0 - 2.0 * positions(scores) / 3.0
+    p = jnp.arange(4)[:, None] if scores.ndim == 1 else jnp.arange(4)[None, :, None]
+    held = (above[..., None, :] <= p) & (p < (above + tied)[..., None, :])
+    return (jnp.asarray(REWARDS)[..., None] * held).sum(-2) / tied
 
 
 def round_rewards(r):
@@ -243,7 +242,7 @@ def make_rollout(batch: int, steps: int, lam: float):
             overflow=rate(tr["overflow"], tr["overflow"] | tr["finished"]),
             rounds_per_game=(tr["game_rounds"] * tr["finished"]).sum() / jnp.maximum(n_fin, 1),
             explained_var=1.0 - var(target - tr["value"]) / var(target),
-            # how well the critic predicts the final position in a game's last rollout; 0.556 = no idea
+            # how well the critic predicts the final position in a game's last rollout; 0.52 = no idea
             final_mse=((tr["value"] - final) ** 2 * has_final).sum() / jnp.maximum(has_final.sum(), 1),
         )
         data = dict(x=tr["x"], hidden=tr["hidden"], action=a, logp=tr["logp"], value=tr["value"], target=target,

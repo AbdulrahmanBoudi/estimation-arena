@@ -12,9 +12,9 @@ from jaxenv.selfplay import position_rewards, td_lambda  # noqa: E402
 @pytest.mark.parametrize(
     "scores, want",
     [
-        ((50, 10, 0, -5), (1, 1 / 3, -1 / 3, -1)),
-        ((-5, 0, 10, 50), (-1, -1 / 3, 1 / 3, 1)),
-        ((50, 50, 0, -5), (2 / 3, 2 / 3, -1 / 3, -1)),  # share King and Sub-King
+        ((50, 10, 0, -5), (1, 0.2, -0.2, -1)),
+        ((-5, 0, 10, 50), (-1, -0.2, 0.2, 1)),
+        ((50, 50, 0, -5), (0.6, 0.6, -0.2, -1)),  # share King and Sub-King
         ((50, 7, 7, -5), (1, 0, 0, -1)),
         ((7, 7, 7, -5), (1 / 3, 1 / 3, 1 / 3, -1)),
         ((7, 7, 7, 7), (0, 0, 0, 0)),
@@ -68,3 +68,9 @@ def test_an_overflowed_game_gives_no_reward_or_credit():
     assert has[1, 0].item() is False  # its final decision has no target at all
     assert has[0, 0].item() is True  # the earlier one bootstraps from it, with no reward
     assert abs(float(adv[0, 0]) - 0.3) < 1e-6
+
+
+def test_a_batch_gets_the_same_rewards_as_one_game():
+    batch = jnp.array([(50, 10, 0, -5), (7, 7, 7, -5)])
+    assert jnp.allclose(position_rewards(batch)[1], position_rewards(batch[1]), atol=1e-6)
+    assert jnp.allclose(position_rewards(batch)[0], position_rewards(batch[0]), atol=1e-6)
