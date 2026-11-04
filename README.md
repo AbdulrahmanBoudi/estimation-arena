@@ -12,6 +12,37 @@ flowchart LR
     H --> R["results/*.json"] --> L["Elo fit"] --> P["leaderboard page"]
 ```
 
+## Terms
+
+| Term | Meaning |
+|---|---|
+| **Anchor** | A fixed bot that every other bot is measured against, so ratings stay comparable. The page calls these benchmarks. |
+| **Bola** | One full game of Estimation, played over many rounds. |
+| **King, Sub-King, Sub-Kooz, Kooz** | Final places in a Bola, from first to last. |
+| **Set** | One deal played 4 times with the seats rotated, so lucky cards cancel out. |
+| **Elo** | A rating from who won each set. 200 points ahead means winning about 76% of sets. Random is fixed at 400. |
+| **Weighted rank, King only, score delta** | The three ways bots are ranked: by final place, by coming first, and by points won. See [docs/metrics.md](docs/metrics.md). |
+| **Harness** | The code that runs the games, talks to each bot and records the results. |
+| **Wire tier, python tier** | Two ways to enter a bot: a program in any language that exchanges JSON, or a Python function. |
+| **Ladder** | The nightly run that rates the bots and rebuilds the page. |
+| **Smoke test** | A quick 2-set run on a pull request, to check that a bot works. |
+| **Seed** | The number that fixes which deals are played. The same seed gives the same deals. |
+| **Rung** | A step in our climb past the anchors, in order: Heuristic, PIMC, RL v2, Hybrid. |
+| **Self-play** | Training a bot by having it play against itself. |
+
+The code and results use different names for some bots than the page does:
+
+| In the code | On the page | What it does |
+|---|---|---|
+| Random | Random | Plays any legal move |
+| Heuristic | Basic rules | Follows rules a person wrote |
+| PIMC | Look-ahead | Imagines the hidden hands and plays each card out |
+| Search bot | Look-ahead, tuned rules | Look-ahead that plays cards out with tuned rules |
+| RL v2 | Yosif's trained bot | Two trained models, one for bidding and one for cards |
+| Hybrid (B-Tig) | Yosif's trained bot + look-ahead | Those models, plus look-ahead |
+
+Every bot's code name is shown on the page too.
+
 ## One decision
 
 ```mermaid
@@ -87,7 +118,7 @@ The page ranks every bot three ways, explained in [docs/metrics.md](docs/metrics
 | Smoke + nightly ladder, CPU anchors | GitHub Actions | free (public repo) |
 | RL v2 + Hybrid anchors, training | home server, `runs/` unzipped | free |
 | Page | GitHub Pages | free |
-| Live table | home server, owner-only | free |
+| Live table and board | home server, invite only | free |
 | Promo video ([video/](video/)) | home server render | free |
 
 Secrets: `ENGINE_TOKEN` (read access to the engine repo), `LADDER_SEED`.
