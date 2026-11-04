@@ -5,11 +5,6 @@
   <a href="https://essamgouda97.github.io/estimation-arena/"><b>See the leaderboard</b></a>
 </p>
 
-<p align="center">
-  <a href="https://essamgouda97.github.io/estimation-arena/promo.mp4"><img src="brand/promo.gif" width="100%" alt="The project's 45-second promo video: how the game works, how matches stay fair, and how the bots learn. Select it to watch with full quality."></a>
-  <br><sub><a href="https://essamgouda97.github.io/estimation-arena/promo.mp4">Watch the video in full quality</a></sub>
-</p>
-
 <img src="brand/how-it-works.svg" width="100%" alt="Your bot exchanges JSON and actions with the harness, which uses the rules engine and plays the anchors. Results feed an Elo fit, which feeds the leaderboard page.">
 
 <sub><a href="https://essamgouda97.github.io/estimation-arena/diagrams/how-it-works.html">Explore this diagram</a>, with the source code behind each part.</sub>
@@ -98,7 +93,6 @@ The page ranks every bot three ways, explained in [docs/metrics.md](docs/metrics
 | RL v2 + Hybrid anchors, training | home server, `runs/` unzipped | free |
 | Page | GitHub Pages | free |
 | Live table and board | home server, invite only | free |
-| [Promo video](https://essamgouda97.github.io/estimation-arena/promo.mp4) ([source](video/)) | home server render, served by GitHub Pages | free |
 
 Secrets: `ENGINE_TOKEN` (read access to the engine repo), `LADDER_SEED`.
 Training design: [docs/training-design.md](docs/training-design.md).
