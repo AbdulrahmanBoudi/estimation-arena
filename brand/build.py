@@ -148,7 +148,7 @@ def banner() -> str:
         x = 880 + k * 88
         cards.append(f'<g class="deal" style="animation-delay:{0.25 * k:g}s">{card(x, 170, 6, pip)}</g>')
     dots = "".join(f"M{x} {y}h4v4h-4z" for y in range(14, h, 28) for x in range(14 + (y // 28 % 2) * 14, w, 28))
-    style = (".deal{animation:deal .7s steps(10) both}@keyframes deal{from{transform:translateX(420px);opacity:0}to{transform:none;opacity:1}}"
+    style = (".deal{animation:deal 9s steps(1) infinite}@keyframes deal{0%{transform:none}1%{transform:translateX(420px)}2%{transform:translateX(320px)}3%{transform:translateX(220px)}4%{transform:translateX(130px)}5%{transform:translateX(60px)}6%{transform:translateX(20px)}7%,100%{transform:none}}"
              ".shine{animation:shine 7s steps(46) infinite}@keyframes shine{0%{transform:translateX(0)}35%,100%{transform:translateX(1000px)}}")
     body = (f'<path fill="{RAISED}" d="{dots}"/>'
             f'<rect x="8" y="8" width="{w - 16}" height="{h - 16}" fill="none" stroke="{LINE}" stroke-width="4"/>'
@@ -233,17 +233,17 @@ def how_it_works() -> str:
         text("rules", 660, 86, 2, MUTED, "middle"),
         wire([(140, 280), (140, 225), (440, 225), (440, 160)]),
         text("fixed bots to measure against", 150, 200, 2, MUTED),
-        wire([(530, 160), (530, 280)]), wire([(620, 330), (650, 330)]), wire([(780, 330), (810, 330)]),
+        wire([(530, 160), (530, 280)]), wire([(620, 330), (650, 330)]), wire([(790, 330), (815, 330)]),
         node(*bot, "YOUR BOT", ["bots/NAME/"], klass="n"),
         node(390, 60, 210, 100, "HARNESS", ["arena/", "runs every game"], accent=True),
         node(*engine, "RULES ENGINE", ["estimation-engine"]),
         node(*ana, "ANCHORS", ["Random to Hybrid"]),
         node(430, 280, 190, 100, "RESULTS", ["results/*.json"]),
-        node(650, 280, 130, 100, "ELO FIT", ["all games"]),
-        node(810, 280, 160, 100, "PAGE", ["leaderboard"], accent=True),
+        node(650, 280, 140, 100, "ELO FIT", ["all games"]),
+        node(815, 280, 155, 100, "PAGE", ["leaderboard"], accent=True),
         packet([(250, 110), (390, 110)], .7, 0, 5), packet([(390, 110), (250, 110)], .7, .8, 5),
         packet([(600, 110), (720, 110)], .7, 1.6, 5), packet([(140, 280), (140, 225), (440, 225), (440, 160)], 1.1, 2.4, 5),
-        packet([(530, 160), (530, 280)], .7, 3.5, 5), packet([(620, 330), (650, 330), (780, 330), (810, 330)], .7, 4.2, 5),
+        packet([(530, 160), (530, 280)], .7, 3.5, 5), packet([(620, 330), (650, 330), (790, 330), (815, 330)], .7, 4.2, 5),
     ]
     return svg(w, h, "How it works", "Your bot exchanges JSON and actions with the harness. The harness uses the rules engine and plays the anchors. Results feed an Elo fit, which feeds the leaderboard page.", "", "".join(body))
 
@@ -299,7 +299,7 @@ def submit() -> str:
     w, h = 1000, 190
     nodes = [("PR", ["your pull", "request"]), ("SMOKE", ["2 sets vs", "Random and", "Heuristic"]), ("COMMENT", ["the result", "on your PR"]),
              ("MERGE", ["joins the", "ladder"]), ("NIGHTLY", ["rated on a", "secret seed"]), ("PAGE", ["leaderboard", "updates"])]
-    cw, gap, x0, y, nh = 140, 26, 18, 30, 130
+    cw, gap, x0, y, nh = 146, 20, 15, 30, 130
     body, styles = [], []
     for k, (title, lines) in enumerate(nodes):
         x = x0 + k * (cw + gap)
