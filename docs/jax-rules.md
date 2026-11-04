@@ -107,8 +107,19 @@ Throughput in that run: 0.8M decisions/s on all 6 CPU cores, 8.7M/s on the GTX 1
 
 ## Self-play
 
-`jaxenv.selfplay` trains one net for every decision from raw state (`jaxenv.encode`, 747
-inputs), with PPO on the GPU against itself and a pool of past versions. `jaxenv.check` also
-requires the GPU encoder to equal `jaxenv.encode_np`, the numpy version an arena bot plays
-through, at every step, so the net sees only what a seat may see. With a 2.4M-parameter net the
-whole loop runs at about 75,000 decisions/s: the net, not the rules, is the bottleneck.
+`jaxenv.selfplay` trains one policy for every decision from raw state (`jaxenv.encode`, 747
+inputs). `jaxenv.check` requires the GPU encoder to equal `jaxenv.encode_np`, the numpy version an
+arena bot plays through, at every step, so the policy sees only what a seat may see.
+
+| Piece | Choice |
+|---|---|
+| Algorithm | PPO, clipped at 0.2 |
+| Reward | At the Bola's end by position: King +1, Sub-King +1/3, Kooz -1/3, Sub-Kooz -1, ties shared |
+| Credit | TD(lambda = 0.95) along each seat's own decisions |
+| Critic | Training only: the same view plus the three hidden hands, so deal luck stays out of the advantage |
+| Extra head | Predicts the round's relative score, to teach the policy's shared layers |
+| Opponents | Half self-play; in the rest two seats play a past version |
+
+The 2.4M-parameter first version trained at about 75,000 decisions/s on a per-round reward and
+stalled (6-54 against Heuristic at iteration 400). The current 384x3 nets run near 150,000/s.
+Real strength is judged in the arena, by position against Heuristic, then PIMC and RL v2.
