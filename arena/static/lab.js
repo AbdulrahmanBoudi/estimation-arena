@@ -568,7 +568,7 @@ function drawChecks() {
   const maxIt = Math.max(...c.map((x) => x.iteration));
   $("check-legend").innerHTML = opponents.map((o, k) => `<span><i style="background:${OPPONENT_COLORS[k % OPPONENT_COLORS.length]}"></i>vs ${opponentName(o)}</span>`).join("") + `<span class="check-even">The dashed line is an even match. Thin upright lines show the likely range.</span>`;
   $("check-charts").innerHTML = CHECK_METRICS.map((m) => checkChart(m, c, opponents, maxIt)).join("");
-  $("checks").innerHTML = c.map((x) => `<div class="check"><span>Training step ${x.iteration.toLocaleString()} vs ${opponentName(x.opponent)}</span><div class="bar" role="img" aria-label="${x.shares.map((s, k) => `${POS_NAMES[k]} ${pct(s)}`).join(", ")}">${x.shares.map((s, k) => `<i style="width:${s * 100}%;background:${POS[k]}"></i>`).join("")}</div><span>${CHECK_METRICS[0].fmt(x.reward)}</span><span>King ${pct(x.king)}</span><span>${CHECK_METRICS[2].fmt(x.delta)}</span><span>${x.won}-${x.lost}</span></div>`).join("");
+  $("checks").innerHTML = `<div class="check check-head"><span>Match</span><span>Finishing places</span><span>Weighted rank</span><span>King only</span><span>Score delta</span><span>Sets won-lost on score</span></div>` + c.map((x) => `<div class="check"><span>Training step ${x.iteration.toLocaleString()} vs ${opponentName(x.opponent)}</span><div class="bar" role="img" aria-label="${x.shares.map((s, k) => `${POS_NAMES[k]} ${pct(s)}`).join(", ")}">${x.shares.map((s, k) => `<i style="width:${s * 100}%;background:${POS[k]}"></i>`).join("")}</div><span>${CHECK_METRICS[0].fmt(x.reward)}</span><span>${pct(x.king)}</span><span>${CHECK_METRICS[2].fmt(x.delta)}</span><span>${x.won}-${x.lost}</span></div>`).join("");
 }
 
 // ---- loading
