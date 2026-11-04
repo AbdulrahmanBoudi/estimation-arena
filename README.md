@@ -1,16 +1,11 @@
-# Estimation Arena
+<h1 align="center"><img src="brand/banner.svg" width="100%" alt="Estimation Arena"></h1>
 
-Write a bot for **Estimation**, the 4-player trick-taking card game. Get an Elo.
+<p align="center">
+  Write a bot for <b>Estimation</b>, the 4-player trick-taking card game. Get an Elo.<br>
+  <a href="https://essamgouda97.github.io/estimation-arena/"><b>See the leaderboard</b></a>
+</p>
 
-**Leaderboard:** https://essamgouda97.github.io/estimation-arena/
-
-```mermaid
-flowchart LR
-    B["your bot<br/>bots/NAME/"] <-->|"JSON in, action out"| H["harness<br/>arena/"]
-    H <--> E["rules engine<br/>estimation-engine"]
-    A["anchors<br/>Random → Hybrid"] <--> H
-    H --> R["results/*.json"] --> L["Elo fit"] --> P["leaderboard page"]
-```
+<img src="brand/how-it-works.svg" width="100%" alt="Your bot exchanges JSON and actions with the harness, which uses the rules engine and plays the anchors. Results feed an Elo fit, which feeds the leaderboard page.">
 
 ## Terms
 
@@ -45,32 +40,11 @@ Every bot's code name is shown on the page too.
 
 ## One decision
 
-```mermaid
-sequenceDiagram
-    participant H as harness
-    participant B as your bot (fresh process per game)
-    H->>B: {"type":"hello","seat_seed":…,"rules":…}
-    H->>B: {"type":"act","obs":{hand, calls, tricks, scores},"legal":[68,70,81]}
-    B->>H: 70
-    Note over H,B: illegal id or over 5 s = forfeit
-    H->>B: {"type":"bye"}
-```
-
-Action ids: `0-1` dash, `2-51` bids, `52` with, `53` pass, `54-67` estimates, `68-119` cards.
+<img src="brand/one-decision.svg" width="100%" alt="The harness says hello, sends an observation and the legal action ids, and the bot answers with one id. An illegal id or over 5 seconds is a forfeit. Action ids: 0-1 dash, 2-51 bids, 52 with, 53 pass, 54-67 estimates, 68-119 cards.">
 
 ## Two doors
 
-```mermaid
-flowchart LR
-    subgraph Compete
-        M["bots/NAME/manifest.json"] --> W["wire tier: any language"]
-        M --> Py["python tier: make(seed, rules)"]
-    end
-    subgraph Train
-        Env["arena/env.py<br/>PettingZoo AEC"] --> Pol["your policy"]
-    end
-    Pol -->|"wrap it"| M
-```
+<img src="brand/two-doors.svg" width="100%" alt="To compete, a manifest declares a wire bot in any language or a Python function. To train, use the PettingZoo environment in arena/env.py with your own policy, then wrap the policy in a manifest.">
 
 ## Quickstart
 
@@ -83,11 +57,7 @@ uv run python -m arena.leaderboard && open site/index.html
 
 ## Submit
 
-```mermaid
-flowchart LR
-    PR["pull request"] --> S["smoke: 2 sets<br/>vs Random, Heuristic"] --> C["result comment"]
-    C --> M["merge"] --> N["nightly ladder<br/>secret seed"] --> P["page updates"]
-```
+<img src="brand/submit.svg" width="100%" alt="Open a pull request. A smoke test plays 2 sets against Random and Heuristic and comments the result. After merging, the nightly ladder rates the bot on a secret seed and the page updates.">
 
 Examples: `bots/lowcard-wire` (stdlib, 40 lines), `bots/table-pressure` (rung 1, beats Heuristic).
 
