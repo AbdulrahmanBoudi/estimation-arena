@@ -13,14 +13,22 @@ function card(c, attrs = "") {
   return `<span class="card${red}" data-c="${c}" ${attrs}>${r}<b>${SUITS[Math.floor(c / 13)]}</b></span>`;
 }
 
-const S = { run: null, data: null, at: -1, snap: null, cache: new Map(), round: 0, step: 0, playing: false, auto: false };
+const S = { progress: 0, run: null, data: null, at: -1, snap: null, cache: new Map(), round: 0, step: 0, playing: false, auto: false };
 
 // ---- the reel: one column per saved version, stacked by final position
 function drawReel() {
   const vs = S.data.versions;
-  $("reel").innerHTML = vs.map((v, i) => `<div class="v${i === S.at ? " on" : ""}" data-i="${i}" title="Iteration ${v.iteration.toLocaleString()}: ${v.quick.map((x, k) => `${POS_NAMES[k]} ${pct(x)}`).join(", ")}">${v.quick.map((x, k) => `<i style="height:${x * 100}%;background:${POS[k]}"></i>`).join("")}</div>`).join("");
+  $("reel").innerHTML = `<div class="head" id="head"></div>` + vs.map((v, i) => `<div class="v${i === S.at ? " on" : ""}${S.playing && i < S.at ? " done" : ""}" data-i="${i}" title="Iteration ${v.iteration.toLocaleString()}: ${v.quick.map((x, k) => `${POS_NAMES[k]} ${pct(x)}`).join(", ")}">${v.quick.map((x, k) => `<i style="height:${x * 100}%;background:${POS[k]}"></i>`).join("")}</div>`).join("");
   const r = $("reel");
+  placeHead();
   r.setAttribute("aria-valuemin", 0); r.setAttribute("aria-valuemax", Math.max(vs.length - 1, 0)); r.setAttribute("aria-valuenow", S.at);
+}
+function placeHead() {
+  const head = $("head");
+  if (!head) return;
+  const n = S.data.versions.length;
+  head.style.display = S.playing ? "block" : "none";
+  head.style.left = `${((S.at + S.progress) / Math.max(n, 1)) * 100}%`;
 }
 function pickFromX(x) {
   const r = $("reel").getBoundingClientRect();
@@ -56,9 +64,14 @@ function drawProbes(p) {
   $("grid").querySelectorAll(".cell").forEach((cell) => {
     const x = p.opening[cell.dataset.a] ?? 0;
     cell.classList.toggle("off", !(cell.dataset.a in p.opening));
-    cell.querySelector("i").style.opacity = Math.pow(x / top, 0.6) * Math.min(1, 0.15 + x * 4);
+    const strength = Math.pow(x / top, 0.6) * Math.min(1, 0.15 + x * 4);
+    const inner = cell.querySelector("i");
+    inner.style.transitionDelay = `${(Math.floor((cell.dataset.a - 2) / 5) + (cell.dataset.a - 2) % 5) * 14}ms`;
+    inner.style.opacity = Math.min(1, strength * 1.4);
+    inner.style.transform = `scale(${Math.sqrt(strength)})`;
     cell.querySelector("span").textContent = x >= 0.1 ? pct(x) : "";
   });
+  placeRing(p);
   const pass = p.opening["53"] ?? 0;
   $("dash-fill").style.width = pct(p.dash_call); $("dash-val").textContent = pct(p.dash_call);
   $("pass-fill").style.width = pct(pass); $("pass-val").textContent = pct(pass);
@@ -72,7 +85,32 @@ function drawProbes(p) {
     const col = $("lead").querySelector(`[data-c="${c}"].lead-col`);
     col.querySelector(".lead-bar").style.height = `${Math.round(x * 56)}px`;
     col.querySelector("small").textContent = x >= 0.05 ? pct(x) : "";
+    col.classList.toggle("top", x === Math.max(...lead.map(([, y]) => y)));
   });
+}
+function topBid(p) {
+  let best = null;
+  for (const [a, x] of Object.entries(p.opening)) if (+a >= 2 && +a <= 51 && (best === null || x > p.opening[best])) best = a;
+  return best;
+}
+function placeRing(p) {
+  const grid = $("grid");
+  let ring = grid.querySelector(".ring"), trail = grid.querySelector(".trail");
+  if (!ring) {
+    ring = document.createElement("div"); ring.className = "ring"; grid.append(ring);
+    trail = document.createElementNS("http://www.w3.org/2000/svg", "svg"); trail.setAttribute("class", "trail"); grid.append(trail);
+  }
+  const box = grid.getBoundingClientRect();
+  const at = (a) => { const c = grid.querySelector(`.cell[data-a="${a}"]`); return c && c.getBoundingClientRect(); };
+  const best = at(topBid(p));
+  if (!best || !box.width) return;
+  ring.style.display = "block";
+  ring.style.left = `${best.left - box.left - 3}px`; ring.style.top = `${best.top - box.top - 3}px`;
+  ring.style.width = `${best.width + 6}px`; ring.style.height = `${best.height + 6}px`;
+  const seen = S.data.versions.slice(0, S.at + 1).map((v) => at(topBid(v.probes))).filter(Boolean);
+  const pts = seen.map((r) => [r.left - box.left + r.width / 2, r.top - box.top + r.height / 2]);
+  trail.setAttribute("viewBox", `0 0 ${box.width} ${box.height}`);
+  trail.innerHTML = `<path d="${pts.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)} ${y.toFixed(1)}`).join("")}"/>` + pts.map(([x, y]) => `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.5"/>`).join("");
 }
 
 // ---- a version
@@ -113,7 +151,7 @@ function go(i) {
   ok.className = `verified${v.verified ? "" : " bad"}`;
   ok.textContent = v.verified ? "Both engines agree on this game" : "The two engines disagreed on this game";
   drawMultiples();
-  fetchSnap(i).then((snap) => {
+  return fetchSnap(i).then((snap) => {
     if (S.at !== i) return;
     S.snap = snap;
     const rounds = snap.game.rounds;
@@ -133,25 +171,120 @@ function nearestRow(it) {
   return best;
 }
 
-let playTimer = null;
-function stopPlay() {
-  S.playing = false; clearTimeout(playTimer); $("play").textContent = "Play timelapse";
+// ---- the film: every version plays the same round, full screen
+const sleep = (ms) => new Promise((r) => setTimeout(r, STILL ? Math.min(ms, 60) : ms));
+let filmId = 0;
+const moved = [];
+function moveInto(node, target) { moved.push([node, node.parentNode, node.nextSibling]); target.append(node); }
+function openCinema() {
+  moveInto($("grid"), $("c-left")); moveInto($("think"), $("c-left"));
+  moveInto($("felt"), $("c-felt")); moveInto($("reel"), $("c-reel"));
+  $("cinema").hidden = false; document.body.style.overflow = "hidden";
+  $("c-pause").focus();
 }
-function startPlay() {
-  S.playing = true; $("play").textContent = "Pause";
-  if (S.at >= S.data.versions.length - 1) go(0);
-  $("reel").scrollIntoView({ block: "nearest", behavior: STILL ? "auto" : "smooth" });
-  const tick = () => {
-    if (!S.playing) return;
-    if (S.at >= S.data.versions.length - 1) return stopPlay();
-    go(S.at + 1);
-    playTimer = setTimeout(tick, pace);
+function closeCinema() {
+  filmId++; S.playing = false; S.paused = false; S.progress = 0;
+  while (moved.length) { const [n, parent, next] = moved.pop(); parent.insertBefore(n, next); }
+  $("cinema").hidden = true; document.body.style.overflow = "";
+  $("c-pause").textContent = "Pause"; $("play").textContent = "Play timelapse";
+  if (S.data?.versions.length) { placeRing(S.data.versions[S.at].probes); drawReel(); drawRoundChips(); }
+  $("play").focus();
+}
+const stopPlay = () => { if (!$("cinema").hidden) closeCinema(); };
+function rollCounter(to) {
+  const el = $("c-iter"), from = +el.dataset.v || 0;
+  el.dataset.v = to;
+  if (STILL) { el.textContent = to.toLocaleString(); return; }
+  const t0 = performance.now();
+  const frame = (t) => {
+    const k = Math.min(1, (t - t0) / 450);
+    el.textContent = Math.round(from + (to - from) * (1 - (1 - k) ** 3)).toLocaleString();
+    if (k < 1) requestAnimationFrame(frame);
   };
-  // the whole film takes at least 10 seconds, so a short run is still watchable
-  const pace = Math.max(STILL ? 1200 : 350, 10000 / Math.max(S.data.versions.length - 1, 1));
-  playTimer = setTimeout(tick, pace);
+  requestAnimationFrame(frame);
 }
-$("play").onclick = () => (S.playing ? stopPlay() : startPlay());
+function drawCinemaTop(v) {
+  rollCounter(v.iteration);
+  const row = nearestRow(v.iteration);
+  $("c-sub").textContent = row ? `iterations, ${millions(row.decisions)} decisions` : "iterations";
+  const bar = $("c-bar");
+  if (!bar.children.length) bar.innerHTML = POS.map((c) => `<i style="background:${c}"></i>`).join("");
+  [...bar.children].forEach((el, k) => { el.style.width = `${v.quick[k] * 100}%`; });
+  $("c-names").innerHTML = POS_NAMES.map((n, k) => `<span>${n} ${pct(v.quick[k])}</span>`).join("");
+}
+async function waitWhilePaused(id) { while (S.paused && id === filmId) await sleep(100); }
+async function film() {
+  const id = ++filmId;
+  S.playing = true; S.paused = false;
+  openCinema();
+  let i = S.at >= S.data.versions.length - 1 ? 0 : Math.max(S.at, 0);
+  $("c-iter").dataset.v = S.data.versions[i].iteration;
+  $("c-iter").textContent = S.data.versions[i].iteration.toLocaleString();
+  while (id === filmId) {
+    S.step = 0; S.progress = 0;
+    await go(i);
+    if (id !== filmId) return;
+    drawCinemaTop(S.data.versions[i]);
+    if (S.data.versions[i + 1]) fetchSnap(i + 1);
+    const round = S.snap.game.rounds[Math.min(S.round, S.snap.game.rounds.length - 1)];
+    const total = Math.max(2800, Math.min(7000, 80000 / S.data.versions.length));
+    const per = Math.max(35, Math.min(180, (total - 900) / Math.max(round.ev.length, 1)));
+    dealCards(Math.min(650, total * 0.15));
+    await sleep(Math.min(700, total * 0.17));
+    for (let k = 0; k < round.ev.length && id === filmId; k++) {
+      await waitWhilePaused(id);
+      if (id !== filmId) return;
+      S.step = k + 1;
+      S.progress = (k + 1) / round.ev.length;
+      placeHead();
+      drawTable(true, { flight: Math.min(260, per * 1.7), bubble: Math.max(380, per * 4) });
+      await sleep(per * (round.ev[k].w !== undefined ? 2.4 : 1));
+    }
+    if (id !== filmId) return;
+    floatScores(round);
+    await sleep(STILL ? 300 : 900);
+    await waitWhilePaused(id);
+    if (id !== filmId) return;
+    i += 1;
+    if (i >= S.data.versions.length) { i = 0; await sleep(STILL ? 300 : 1200); clearTrail(); if (id !== filmId) return; }
+  }
+}
+function clearTrail() { const t = $("grid").querySelector(".trail"); if (t) t.innerHTML = ""; }
+$("play").onclick = () => { if (S.data?.versions.length > 1) film(); };
+$("c-close").onclick = closeCinema;
+$("c-pause").onclick = () => { S.paused = !S.paused; $("c-pause").textContent = S.paused ? "Resume" : "Pause"; };
+addEventListener("keydown", (e) => {
+  if ($("cinema").hidden) return;
+  if (e.key === "Escape") closeCinema();
+  if (e.key === " " && e.target.tagName !== "BUTTON") { e.preventDefault(); $("c-pause").click(); }
+});
+function dealCards(ms) {
+  if (STILL) return;
+  const felt = $("felt").getBoundingClientRect();
+  const cx = felt.left + felt.width / 2, cy = felt.top + felt.height / 2;
+  const cards = [...$("felt").querySelectorAll(".seat .card")];
+  cards.forEach((el, i) => {
+    const r = el.getBoundingClientRect();
+    el.animate([
+      { transform: `translate(${cx - r.left - r.width / 2}px,${cy - r.top - r.height / 2}px) rotate(${(i * 37) % 60 - 30}deg) scale(.6)`, opacity: 0 },
+      { transform: "none", opacity: 1 },
+    ], { duration: ms * 0.6, delay: (i / cards.length) * ms * 0.5, easing: "cubic-bezier(.2,.8,.2,1)", fill: "backwards" });
+  });
+}
+function seatEl(k) { return $("felt").querySelector(`.seat.s${k}`); }
+function floatAt(k, text, cls) {
+  const felt = $("felt"), box = felt.getBoundingClientRect(), r = seatEl(k).querySelector("h4").getBoundingClientRect();
+  const el = document.createElement("div");
+  el.className = `float ${cls}`; el.textContent = text;
+  el.style.left = `${r.left - box.left + r.width / 2}px`; el.style.top = `${r.top - box.top}px`;
+  felt.append(el);
+  el.animate([{ transform: "translate(-50%,16px) scale(.6)", opacity: 0 }, { transform: "translate(-50%,-10px) scale(1.1)", opacity: 1, offset: 0.25 }, { transform: "translate(-50%,-28px) scale(1)", opacity: 0 }], { duration: STILL ? 1 : 1300, easing: "ease-out" }).onfinish = () => el.remove();
+}
+function floatScores(round) {
+  if (round.skipped) return;
+  const best = Math.max(...round.result);
+  round.result.forEach((x, k) => floatAt(k, `${x > 0 ? "+" : ""}${x}`, `${x < 0 ? "neg" : ""} ${x === best && x > 0 ? "big" : ""}`));
+}
 
 // ---- the table
 function stateAt(round, step) {
@@ -172,11 +305,17 @@ function stateAt(round, step) {
   if (step < round.ev.length) st.turn = round.ev[step].s;
   return st;
 }
-function drawTable(animate = true) {
+function drawTable(animate = true, opts = {}) {
   if (!S.snap) return;
+  const flight = opts.flight || 260;
+  $("felt").querySelectorAll(".flyer").forEach((el) => el.remove());
   const before = new Map();
   if (animate && !STILL) $("felt").querySelectorAll(".card").forEach((el) => before.set(el.dataset.c, el.getBoundingClientRect()));
-  const g = S.snap.game, round = g.rounds[S.round], st = stateAt(round, S.step);
+  const g = S.snap.game;
+  S.round = Math.min(S.round, g.rounds.length - 1);
+  S.step = Math.min(S.step, g.rounds[S.round].ev.length);
+  const round = g.rounds[S.round], st = stateAt(round, S.step);
+  const prior = S.step > 0 ? stateAt(round, S.step - 1) : null;
   const seat = (k) => {
     const model = g.net_seats.includes(k);
     const role = st.caller === k ? ", Caller" : "";
@@ -199,11 +338,36 @@ function drawTable(animate = true) {
       const dx = a.left - b.left, dy = a.top - b.top;
       if (Math.abs(dx) + Math.abs(dy) < 2) return;
       const base = getComputedStyle(el).transform;
-      el.animate([{ transform: `translate(${dx}px,${dy}px) ${base === "none" ? "" : base}` }, { transform: base }], { duration: 260, easing: "cubic-bezier(.2,.8,.2,1)" });
+      const spin = el.closest(".pit") ? `rotate(${(+el.dataset.c * 53) % 50 - 25}deg) scale(1.15)` : "";
+      el.animate([{ transform: `translate(${dx}px,${dy}px) ${spin} ${base === "none" ? "" : base}` }, { transform: base }], { duration: flight, easing: "cubic-bezier(.2,.8,.2,1)" });
     });
+    sweepTrick(before, prior, flight);
+    const e = round.ev[S.step - 1];
+    if (e && e.a < 68) popBubble(e.s, e.l, opts.bubble || 900);
   }
   $("move").textContent = `Move ${S.step} of ${round.ev.length}`;
   drawThink(round);
+}
+function sweepTrick(before, prior, flight) {
+  if (!prior || prior.lastWin === null || !prior.trick.length) return;
+  const felt = $("felt"), box = felt.getBoundingClientRect(), to = seatEl(prior.lastWin).getBoundingClientRect();
+  prior.trick.forEach(([, c], i) => {
+    const a = before.get(String(c));
+    if (!a) return;
+    const el = document.createElement("div");
+    el.innerHTML = card(c); const f = el.firstChild; f.classList.add("flyer");
+    f.style.left = `${a.left - box.left}px`; f.style.top = `${a.top - box.top}px`; felt.append(f);
+    const dx = to.left + to.width / 2 - a.left - a.width / 2, dy = to.top + to.height / 2 - a.top - a.height / 2;
+    f.animate([{ transform: "none", opacity: 1 }, { transform: `translate(${dx}px,${dy}px) rotate(${i * 12 - 18}deg) scale(.5)`, opacity: 0 }], { duration: flight * 1.5, easing: "cubic-bezier(.5,0,.8,.4)" }).onfinish = () => f.remove();
+  });
+}
+function popBubble(k, text, ms) {
+  const felt = $("felt"), box = felt.getBoundingClientRect(), r = seatEl(k).querySelector("h4").getBoundingClientRect();
+  const el = document.createElement("div");
+  el.className = "bubble"; el.textContent = text;
+  el.style.left = `${Math.min(box.width - 90, Math.max(40, r.left - box.left + r.width / 2))}px`; el.style.top = `${Math.max(4, r.top - box.top - 4)}px`;
+  felt.append(el);
+  el.animate([{ transform: "translate(-50%,8px) scale(.4)", opacity: 0 }, { transform: "translate(-50%,-4px) scale(1.08)", opacity: 1, offset: 0.2 }, { transform: "translate(-50%,-4px) scale(1)", opacity: 1, offset: 0.8 }, { transform: "translate(-50%,-14px)", opacity: 0 }], { duration: ms, easing: "ease-out" }).onfinish = () => el.remove();
 }
 function drawThink(round) {
   const e = round.ev[S.step];
