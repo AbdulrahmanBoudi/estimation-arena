@@ -98,7 +98,7 @@ async function loadDetail(key) {
   } catch {
     details[key] = { failed: true };
   }
-  if (openKey === key) renderRows(true);
+  if (openKey === key) renderRows(true, false);
 }
 
 function detailRow(key) {
@@ -142,7 +142,7 @@ function detailRow(key) {
       const links = el("p", "detail-links");
       if (trained.curves) {
         const a = el("a", "", "See its training curves");
-        a.href = "/tb/#timeseries&runFilter=" + encodeURIComponent(trained.curves);
+        a.href = "/tb/?runFilter=" + encodeURIComponent(trained.curves) + "#timeseries";
         links.appendChild(a);
       }
       if (trained.lab) {
@@ -161,10 +161,10 @@ function toggle(key) {
   if (openKey) {
     if (!details[key] || details[key].failed) loadDetail(key);
   }
-  renderRows(true);
+  renderRows(true, false);
 }
 
-function renderRows(force = false) {
+function renderRows(force = false, animate = true) {
   const body = $("rows"), field = metric();
   const signature = JSON.stringify([field, openKey, state.standings, state.playing.map((m) => m.key)]);
   if (!force && signature === drawn) return;
@@ -199,7 +199,7 @@ function renderRows(force = false) {
   }));
   if (focused) body.querySelector(`tr[data-key="${CSS.escape(focused)}"] .bot-name`)?.focus({ preventScroll: true });
   body.querySelectorAll(".steps").forEach((box, k) => { box.scrollLeft = scrolled[k] ?? 0; });
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (!animate || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   for (const tr of body.querySelectorAll("tr[data-key]")) {
     const was = before.get(tr.dataset.key);
     if (was === undefined) continue;
