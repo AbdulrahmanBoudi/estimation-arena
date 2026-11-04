@@ -80,6 +80,8 @@ Protocol: [docs/table.md](docs/table.md).
 
 ## Where it runs
 
+The page ranks every bot three ways, explained in [docs/metrics.md](docs/metrics.md). On the home server, `/board` follows matches set by set while they play.
+
 | Piece | Where | Cost |
 |---|---|---|
 | Smoke + nightly ladder, CPU anchors | GitHub Actions | free (public repo) |
