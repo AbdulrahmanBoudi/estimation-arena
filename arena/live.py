@@ -34,8 +34,10 @@ def public(spec: str) -> tuple[str, str]:
     if not spec.startswith(SUB_PREFIX):
         return spec, spec
     bot, *options = spec[len(SUB_PREFIX) :].split(":")
-    values = [Path(o.partition("=")[2]).stem for o in options]
-    return ":".join([SUB_PREFIX + bot, *values]), " ".join(values) or bot
+    if any("/" in o for o in options):
+        values = [Path(o.partition("=")[2]).stem for o in options]
+        return ":".join([SUB_PREFIX + bot, *values]), " ".join(values)
+    return spec, " ".join([bot, *options])
 
 
 class Match:

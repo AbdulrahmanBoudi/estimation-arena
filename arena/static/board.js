@@ -1,7 +1,7 @@
 const POLL_MS = 5000;
 const $ = (id) => document.getElementById(id);
 const metric = () => document.body.dataset.metric;
-let state = null, firstElo = {}, lastOk = null, failed = false, seenSets = {};
+let state = null, firstElo = {}, lastOk = null, failed = false, seenSets = {}, openKey = null, details = {}, drawn = "";
 
 function el(tag, cls, text) {
   const node = document.createElement(tag);
@@ -85,22 +85,107 @@ function eloCell(row, field) {
   td.appendChild(document.createTextNode(value == null ? "–" : Math.round(value)));
   const start = firstElo[row.key]?.[field];
   const moved = value != null && start != null ? Math.round(value - start) : 0;
-  td.appendChild(el("span", "move", moved ? `${signed(moved)} since opened` : ""));
+  td.appendChild(el("span", "elo-move", moved ? `${signed(moved)} since opened` : ""));
   return td;
 }
 
-function renderRows() {
+async function loadDetail(key) {
+  details[key] = { pending: true };
+  try {
+    const res = await fetch("/api/board/bot?key=" + encodeURIComponent(key), { cache: "no-store" });
+    if (!res.ok) throw new Error(res.status);
+    details[key] = await res.json();
+  } catch {
+    details[key] = { failed: true };
+  }
+  if (openKey === key) renderRows(true);
+}
+
+function detailRow(key) {
+  const tr = el("tr", "detail");
+  const td = el("td");
+  td.colSpan = 6;
+  tr.appendChild(td);
+  const shell = el("div", "detail-shell");
+  td.appendChild(shell);
+  const about = details[key];
+  if (!about || about.pending) {
+    shell.appendChild(el("p", "empty", "Loading"));
+  } else if (about.failed) {
+    shell.appendChild(el("p", "stopped", "Couldn't load this bot's explanation. Close it and open it again to retry."));
+  } else {
+    if (about.description) shell.appendChild(el("p", "detail-text", about.description));
+    if (about.method) {
+      shell.appendChild(el("h3", "", "How it decides"));
+      const steps = el("div", "steps");
+      steps.innerHTML = about.method;
+      shell.appendChild(steps);
+    }
+    shell.appendChild(el("h3", "", "One real decision"));
+    if (about.move) {
+      const move = el("div");
+      move.innerHTML = about.move;
+      shell.appendChild(move);
+    } else {
+      shell.appendChild(el("p", "empty", "No decision recorded for this bot yet."));
+    }
+    const trained = about.training;
+    shell.appendChild(el("h3", "", "How it was trained"));
+    shell.appendChild(el("p", "detail-text", trained.summary || "No training notes for this bot yet."));
+    for (const stage of trained.stages) {
+      shell.appendChild(el("h4", "", stage.title));
+      const steps = el("div", "steps");
+      steps.innerHTML = stage.svg;
+      shell.appendChild(steps);
+    }
+    if (trained.curves || trained.lab) {
+      const links = el("p", "detail-links");
+      if (trained.curves) {
+        const a = el("a", "", "See its training curves");
+        a.href = "/tb/#timeseries&runFilter=" + encodeURIComponent(trained.curves);
+        links.appendChild(a);
+      }
+      if (trained.lab) {
+        const a = el("a", "", "Watch it learn in the lab");
+        a.href = "/lab";
+        links.appendChild(a);
+      }
+      shell.appendChild(links);
+    }
+  }
+  return tr;
+}
+
+function toggle(key) {
+  openKey = openKey === key ? null : key;
+  if (openKey) {
+    if (!details[key] || details[key].failed) loadDetail(key);
+  }
+  renderRows(true);
+}
+
+function renderRows(force = false) {
   const body = $("rows"), field = metric();
-  const before = new Map([...body.children].map((tr) => [tr.dataset.key, tr.getBoundingClientRect().top]));
-  const previous = new Map([...body.children].map((tr) => [tr.dataset.key, tr.dataset.value]));
+  const signature = JSON.stringify([field, openKey, state.standings, state.playing.map((m) => m.key)]);
+  if (!force && signature === drawn) return;
+  drawn = signature;
+  const focused = document.activeElement?.closest?.("tr")?.dataset.key;
+  const scrolled = [...body.querySelectorAll(".steps")].map((box) => box.scrollLeft);
+  const shown = [...body.querySelectorAll("tr[data-key]")];
+  const before = new Map(shown.map((tr) => [tr.dataset.key, tr.getBoundingClientRect().top]));
+  const previous = new Map(shown.map((tr) => [tr.dataset.key, tr.dataset.value]));
   const playing = new Set(state.playing.map((m) => m.key).concat(state.playing.map((m) => m.opponentKey)));
   const rows = [...state.standings].sort((a, b) => (b[field] ?? -1e9) - (a[field] ?? -1e9));
-  body.replaceChildren(...rows.map((row, index) => {
+  body.replaceChildren(...rows.flatMap((row, index) => {
     const tr = el("tr");
     tr.dataset.key = row.key;
     tr.dataset.value = row[field];
     tr.appendChild(el("td", "num rank", row[field] == null ? "" : index + 1));
-    const name = el("td", "bot", row.name);
+    const name = el("td", "bot");
+    const open = el("button", "bot-name", row.name);
+    open.setAttribute("aria-expanded", openKey === row.key);
+    open.addEventListener("click", () => toggle(row.key));
+    name.appendChild(open);
     if (row.anchor) name.appendChild(el("span", "tag", "Anchor"));
     if (row.provisional) name.appendChild(el("span", "tag", `Provisional, ${row.games} games`));
     if (playing.has(row.key)) name.appendChild(el("span", "tag on", "Playing"));
@@ -110,16 +195,18 @@ function renderRows() {
     cell.appendChild(places(row.positions));
     tr.appendChild(cell);
     if (previous.has(row.key) && previous.get(row.key) !== tr.dataset.value) tr.classList.add("flash");
-    return tr;
+    return openKey === row.key ? [tr, detailRow(row.key)] : [tr];
   }));
+  if (focused) body.querySelector(`tr[data-key="${CSS.escape(focused)}"] .bot-name`)?.focus({ preventScroll: true });
+  body.querySelectorAll(".steps").forEach((box, k) => { box.scrollLeft = scrolled[k] ?? 0; });
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  for (const tr of body.children) {
+  for (const tr of body.querySelectorAll("tr[data-key]")) {
     const was = before.get(tr.dataset.key);
     if (was === undefined) continue;
     const shift = was - tr.getBoundingClientRect().top;
     if (shift) tr.animate([{ transform: `translateY(${shift}px)` }, { transform: "none" }], { duration: 500, easing: "ease-out" });
   }
-  setTimeout(() => [...body.children].forEach((tr) => tr.classList.remove("flash")), 1600);
+  setTimeout(() => body.querySelectorAll(".flash").forEach((tr) => tr.classList.remove("flash")), 1600);
 }
 
 function render() {
@@ -159,7 +246,7 @@ async function poll() {
 document.querySelectorAll("[data-rank]").forEach((button) => button.addEventListener("click", () => {
   document.body.dataset.metric = button.dataset.rank;
   document.querySelectorAll("[data-rank]").forEach((b) => b.setAttribute("aria-pressed", b === button));
-  if (state) renderRows();
+  if (state) renderRows(true);
 }));
 document.addEventListener("visibilitychange", () => { if (!document.hidden) showStatus(); });
 setInterval(showStatus, 1000);

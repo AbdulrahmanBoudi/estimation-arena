@@ -304,19 +304,38 @@ def _icon(kind: str, x: float, y: float, label: str) -> str:
             out.append(f'<rect class="i-mean{" i-best" if k == 2 else ""}" x="{cx - 34 + k * 18}" y="{y + 46 - h}" width="12" height="{h}" rx="2"/>')
         out.append(f'<path class="i-tick" d="M{cx + 2} {y + 1}l4 4l8 -8"/>')
         return "".join(out)
+    if kind == "play":  # four seats round a table
+        out = [f'<circle class="i-card" cx="{cx}" cy="{y + 26}" r="13"/>']
+        for dx, dy in ((0, -19), (19, 0), (0, 19), (-19, 0)):
+            out.append(f'<circle class="i-net" cx="{cx + dx}" cy="{y + 26 + dy}" r="5"/>')
+        return "".join(out)
+    if kind == "reward":  # the four places, the best one marked
+        out = []
+        for k, h in enumerate((40, 26, 16, 8)):
+            out.append(f'<rect class="{"i-mean i-best" if k == 0 else "i-mean"}" x="{cx - 34 + k * 18}" y="{y + 46 - h}" width="12" height="{h}" rx="2"/>')
+        return "".join(out)
+    if kind == "update":  # a net with an arrow into it
+        out = [f'<circle class="i-net" cx="{cx + 14 + 16 * (k % 2)}" cy="{y + 12 + 12 * k}" r="4"/>' for k in range(4)]
+        out.append(f'<path class="i-tick" d="M{cx - 34} {y + 28}h28m-7 -6l7 6l-7 6"/>')
+        return "".join(out)
     if kind == "data":  # stacked game records
         return "".join(f'<rect class="i-data" x="{cx - 28 + k * 6}" y="{y + 6 + k * 7}" width="44" height="22" rx="3"/>' for k in range(4))
     return ""
 
 
-def method_svg(steps: list[list[str]]) -> str:
+def method_svg(steps: list[list[str]], repeat: str = "") -> str:
     """The algorithm as a strip of steps, each a small picture of what it does and a short
-    label, left to right."""
+    label, left to right. ``repeat`` draws a loop from the last step back to the first."""
     if not steps:
         return ""
     bw, gap, h = 140, 22, 132
     width = len(steps) * bw + (len(steps) - 1) * gap
-    parts = [f'<svg class="flow" viewBox="0 0 {width} {h}" width="{width}" role="img">']
+    height = h + 34 if repeat else h
+    parts = [f'<svg class="flow" viewBox="0 0 {width} {height}" width="{width}" role="img">']
+    if repeat:
+        first, last = bw / 2, width - bw / 2
+        parts.append(f'<path class="loop" d="M{last} {h}v14a8 8 0 0 1 -8 8H{first + 8}a8 8 0 0 1 -8 -8v-10m-4 5l4 -6l4 6"/>')
+        parts.append(f'<text class="loop-text" x="{first + 14}" y="{h + 16}">{html.escape(repeat)}</text>')
     for i, (label, kind) in enumerate(steps):
         x = i * (bw + gap)
         parts.append(f'<rect class="step" x="{x + 1}" y="1" width="{bw - 2}" height="{h - 2}" rx="10"/>')

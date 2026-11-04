@@ -17,6 +17,7 @@ def test_public_hides_paths():
     assert live.public("sub:bitter-net:net=/data/secret/run2-final.npz") == ("sub:bitter-net:run2-final", "run2-final")
     assert live.public("sub:table-pressure") == ("sub:table-pressure", "table-pressure")
     assert live.public("hybrid") == ("hybrid", "hybrid")
+    assert live.public("sub:b:top_k=2") == ("sub:b:top_k=2", "b top_k=2")
 
 
 def test_writes_nothing_without_the_folder(tmp_path, monkeypatch):
@@ -83,3 +84,51 @@ def test_payload_hides_internals(tmp_path, monkeypatch):
     assert any(r["key"] == "sub:a:n" for r in data["standings"])
     text = json.dumps(data)
     assert "/x/" not in text and "pid" not in data["playing"][0]
+
+
+def test_explains_only_bots_on_the_board(tmp_path, monkeypatch):
+    monkeypatch.setattr(live, "LIVE", tmp_path)
+    monkeypatch.setattr(board, "LIVE", tmp_path)
+    monkeypatch.setattr(board, "RESULTS_ROOT", ROOT)
+    board._cache["signature"] = None
+    board.payload()
+    assert board.explain("../../etc/passwd") is None
+    hybrid = board.explain("hybrid")
+    assert "<svg" in hybrid["method"] and hybrid["move"]
+    samples = tmp_path / "samples"
+    samples.mkdir()
+    frame = {"trump": 1, "estimate": 2, "won": 0, "hand": [1, 2], "trick": [], "legal": [1, 2], "chosen": 2,
+             "scores": {"search": {"1": -3.0, "2": 4.0}}}
+    (samples / "x.json").write_text(json.dumps({"key": "hybrid", "frames": [frame]}))
+    assert "+4.0" in board.explain("hybrid")["move"]
+
+
+def test_board_shows_steps_for_a_bot_in_testing(tmp_path, monkeypatch):
+    monkeypatch.setattr(live, "LIVE", tmp_path)
+    monkeypatch.setattr(board, "LIVE", tmp_path)
+    monkeypatch.setattr(board, "RESULTS_ROOT", ROOT)
+    board._cache["signature"] = None
+    match = live.Match(("sub:table-pressure:pressure=1", "heuristic", "sub:table-pressure:pressure=1", "heuristic"), 3, 1, kind="entry")
+    match.update([_result(0, 100, 50)])
+    board.payload()
+    assert board.explain("sub:table-pressure:pressure=1")["description"]
+
+
+def test_every_bot_on_the_board_says_how_it_was_trained():
+    from arena.training import TRAINING, training_of
+
+    board_rows = leaderboard.build(ROOT)["rows"]
+    missing = [r["key"] for r in board_rows if training_of(r["key"]) is None]
+    assert not missing
+    assert training_of("sub:bitter-search:rollout=net") is TRAINING["bitter-search"]
+    assert "loop" in leaderboard.method_svg([["a", "play"], ["b", "update"]], "5 times")
+    assert "loop" not in leaderboard.method_svg([["a", "play"]])
+
+
+def test_tensorboard_forwarding_drops_identity(monkeypatch):
+    from arena import tensorboard
+    from starlette.requests import Request
+
+    scope = {"type": "http", "method": "GET", "path": "/tb/x", "query_string": b"", "path_params": {"path": "x"},
+             "headers": [(b"remote-user", b"egouda"), (b"cookie", b"secret"), (b"x-home-estimation-key", b"k"), (b"accept", b"*/*")]}
+    assert tensorboard._headers(Request(scope)) == {"accept": "*/*"}

@@ -26,7 +26,7 @@ from starlette.routing import Mount, Route, WebSocketRoute
 from starlette.staticfiles import StaticFiles
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
-from . import board, lab
+from . import board, lab, tensorboard
 from .bots import ROOT, SUB_PREFIX, list_submissions, load_manifest
 from .run import load_anchors
 from .table import Seat, Table
@@ -184,6 +184,9 @@ def app() -> Starlette:
         Route("/lab", lab_page),
         Route("/board", board_page),
         Route("/api/board", board.api),
+        Route("/api/board/bot", board.bot),
+        Route("/tb", tensorboard.root),
+        Route("/tb/{path:path}", tensorboard.forward, methods=["GET", "POST"]),
         Route("/api/lab/runs", lab.runs),
         Route("/api/lab/{run}/summary", lab.summary),
         Route("/api/lab/{run}/snap/{iteration:int}", lab.snapshot),
