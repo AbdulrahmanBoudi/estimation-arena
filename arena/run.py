@@ -236,6 +236,16 @@ def keep_unplayed(result: dict[str, Any], old: dict[str, Any] | None) -> list[st
     return [v["anchor"] for v in kept]
 
 
+def anchors_to_play(
+    anchors: list[dict[str, str]], old: dict[str, Any] | None, bot_hash: str, engine: str
+) -> list[dict[str, str]]:
+    """The anchors an unchanged bot has not met yet; every anchor if the bot or engine changed."""
+    if not old or old.get("bot_hash") != bot_hash or old.get("engine") != engine:
+        return anchors
+    played = {v["spec"] for v in old.get("versus", [])}
+    return [a for a in anchors if a["spec"] not in played]
+
+
 def _public(name: str) -> str:
     """Pair records name submissions ``sub:<name>`` and anchors by spec; keep both as is."""
     return name
@@ -253,6 +263,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--out", type=Path, help="result file (default results/<bot>.json)")
     parser.add_argument("--progress", action="store_true")
+    parser.add_argument("--only-new", action="store_true", help="skip games already played by this exact bot")
     args = parser.parse_args(argv)
     if args.sets < 1 or args.workers < 1:
         parser.error("--sets and --workers must be at least 1")
@@ -263,11 +274,16 @@ def main(argv: list[str] | None = None) -> int:
     anchors = load_anchors(args.anchors.split(",") if args.anchors else None)
     if not anchors:
         parser.error("no anchors available: check anchors.json")
+    out = args.out or RESULTS_DIR / f"{manifest.name}.json"
+    old = json.loads(out.read_text()) if out.is_file() else None
+    if args.only_new:
+        anchors = anchors_to_play(anchors, old, bot_hash(manifest), engine_version())
+        if not anchors:
+            print(f"{manifest.name}: unchanged, nothing new to play")
+            return 0
     result = play_submission(manifest, anchors, args.sets, args.seed, args.workers, args.progress)
     result["bot_hash"] = bot_hash(manifest)
-    out = args.out or RESULTS_DIR / f"{manifest.name}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
-    old = json.loads(out.read_text()) if out.is_file() else None
     kept = keep_unplayed(result, old)
     if kept:
         print(f"kept earlier games vs {', '.join(kept)} (bot and engine unchanged)")

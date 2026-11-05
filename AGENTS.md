@@ -13,13 +13,14 @@ leaderboard page. Never copy engine code or the engine's `runs/` data into this 
 
 ```bash
 uv sync                    # needs read access to the engine repo (git over HTTPS or SSH)
+uv run python -m arena.models fetch   # trained models from Hugging Face, pinned in models.lock.json
 uv sync --group rl         # optional: PettingZoo env for training (arena/env.py)
 uv run pytest -q           # must pass before any commit
 ```
 
 No access to the engine repo? Stop and ask the owner; do not vendor or reimplement the engine.
-Optional `runs/` folder (RL v2 and Hybrid anchors): unzip the owner's Drive archive at the repo
-root so `runs/m4-rules-v2/checkpoints/final.pt` exists. It is git-ignored; keep it that way.
+`runs/` and model files are git-ignored; keep them that way. After checking out a new commit
+on a deploy worktree, run the fetch again: it also refuses files that differ from the lock.
 
 ## Map
 
