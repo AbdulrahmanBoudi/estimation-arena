@@ -54,6 +54,7 @@ Every bot's code name is shown on the page too.
 
 ```bash
 uv sync                                   # needs read access to the engine repo
+uv run python -m arena.models fetch       # downloads the trained models from Hugging Face
 uv run pytest -q
 uv run python -m arena.run --bot table-pressure --sets 10 --workers 4
 uv run python -m arena.leaderboard && open site/index.html
@@ -97,6 +98,10 @@ The page ranks every bot three ways, explained in [docs/metrics.md](docs/metrics
 Secrets: `ENGINE_TOKEN` (read access to the engine repo), `LADDER_SEED`.
 Training design: [docs/training-design.md](docs/training-design.md).
 GPU rules for self-play at scale: [docs/jax-rules.md](docs/jax-rules.md).
+
+## Models
+
+Trained models live on Hugging Face. `models.lock.json` pins each one to an exact version and checksum, so every result traces back to the file that played. To change a model, run `scripts/publish-models.py` and commit the updated lock. The code here is [MIT licensed](LICENSE); each model states its own licence.
 
 ## Using a coding agent?
 

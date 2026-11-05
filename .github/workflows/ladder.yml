@@ -1,12 +1,9 @@
 name: ladder
 
-# The leaderboard run: every bot under bots/ plays the anchors in duplicate sets, the results
-# and the rebuilt site/ are committed; pages.yml runs when this workflow completes and
-# publishes site/ to GitHub Pages.
-#
-# On a GitHub-hosted runner only the four CPU anchors are available (the trained nets live in
-# the engine's runs/ zip, outside git). Point the job at a self-hosted runner that has runs/
-# unzipped to rate against RL v2 and the Hybrid too, as the README explains.
+# The leaderboard run: every new or changed bot plays the anchors it has not met, in duplicate
+# sets. Results and the rebuilt site/ are committed when they changed; pages.yml runs when this
+# workflow completes and publishes site/ to GitHub Pages. Model files come from Hugging Face
+# (models.lock.json). An anchor whose files are not there yet is left out.
 
 on:
   schedule:
@@ -19,6 +16,10 @@ on:
       bots:
         description: space-separated bot names (empty = all)
         default: ""
+      replay:
+        description: replay games these bots already played
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -29,7 +30,7 @@ concurrency:
 
 jobs:
   play:
-    runs-on: ubuntu-latest   # or: [self-hosted, estimation] for the home server with runs/
+    runs-on: ubuntu-latest
     timeout-minutes: 350
     steps:
       - uses: actions/checkout@v4
@@ -39,6 +40,7 @@ jobs:
       - name: Allow uv to clone the private engine repo
         run: git config --global url."https://x-access-token:${{ secrets.ENGINE_TOKEN }}@github.com/".insteadOf "https://github.com/"
       - run: uv sync --frozen
+      - run: uv run python -m arena.models fetch
       - name: Play every bot against the anchors
         env:
           # The leaderboard seed is a secret so nobody can tune to the exact deals it uses.
@@ -47,12 +49,18 @@ jobs:
           sets="${{ github.event.inputs.sets || '20' }}"
           bots="${{ github.event.inputs.bots }}"
           [ -n "$bots" ] || bots=$(ls bots)
+          only_new="--only-new"
+          [ "${{ github.event.inputs.replay }}" != "true" ] || only_new=""
           for bot in $bots; do
-            uv run python -m arena.run --bot "$bot" --sets "$sets" --seed "${LADDER_SEED:-0}" --workers 4 --progress
+            uv run python -m arena.run --bot "$bot" --sets "$sets" --seed "${LADDER_SEED:-0}" --workers 4 --progress $only_new
           done
-      - run: uv run python -m arena.leaderboard
       - name: Commit results and site
         run: |
+          if git diff --quiet -- results && [ -z "$(git ls-files --others --exclude-standard results)" ]; then
+            echo "no new games"
+            exit 0
+          fi
+          uv run python -m arena.leaderboard
           git config user.name "estimation-arena bot"
           git config user.email "actions@users.noreply.github.com"
           git add results site
