@@ -84,6 +84,10 @@ Protocol: [docs/table.md](docs/table.md).
 | Rating from final position: King, Sub-King, Sub-Kooz, Kooz | The Bola pays by position, and stacked doubles make raw scores explode |
 | Leaderboard seed is a secret | No tuning to the test deals |
 
+## Eval set
+
+[GoudaGame/estimation-eval](https://huggingface.co/datasets/GoudaGame/estimation-eval) has 1,200 games between bots on fixed practice deals, with reference scores to compare against. Official ratings use separate deals. Built by `scripts/build-eval-set.py`.
+
 ## Where it runs
 
 The page ranks every bot three ways, explained in [docs/metrics.md](docs/metrics.md). On the home server, `/board` follows matches set by set while they play.
