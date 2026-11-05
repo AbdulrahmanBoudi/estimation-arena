@@ -94,3 +94,7 @@ A bot that loads a model should name it under `needs` in its manifest.
 - Never print or commit tokens, `.env` files or secrets. CI secrets: `ENGINE_TOKEN`, `LADDER_SEED`.
 - Commit `results/*.json` and `site/` only from real runs; never hand-edit them.
 - Keep experiments reproducible: record the command, seed and sets next to the result.
+
+## Eval set
+
+`GoudaGame/estimation-eval` on Hugging Face holds fixed practice deals, bot-only games on them and reference scores. Build and publish it with `scripts/build-eval-set.py`. Its seed is public, so never use it for the ladder, and never add human games.
