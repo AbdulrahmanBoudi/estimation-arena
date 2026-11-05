@@ -11,7 +11,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
 from .guide import GUIDE, STYLE as GUIDE_STYLE
-from .leaderboard import SITE_DIR, _pick_frame, build, method_svg, move_html
+from .leaderboard import build, method_svg
 from .live import LIVE, public, read_matches
 from .plain import about_bot, plain_name
 from .training import training_of
@@ -67,18 +67,8 @@ def _manifest(key: str) -> dict[str, Any]:
     return {}
 
 
-def _sample(key: str) -> dict[str, Any]:
-    folder = LIVE / "samples"
-    for path in folder.glob("*.json") if folder.is_dir() else ():
-        data = json.loads(path.read_text())
-        if data.get("key") == key:
-            return data
-    file = SITE_DIR / "samples.json"
-    return json.loads(file.read_text()).get(key, {}) if file.is_file() else {}
-
-
 def explain(key: str) -> dict[str, Any] | None:
-    """How one bot on the board plays: its steps and one real decision, as HTML we generate."""
+    """How one bot on the board plays: its steps and training, as HTML we generate."""
     if not any(row["key"] == key for row in _cache["standings"]):
         return None
     if key.startswith(SUB_PREFIX):
@@ -87,13 +77,11 @@ def explain(key: str) -> dict[str, Any] | None:
         anchors = json.loads((_root() / "anchors.json").read_text())
         about = next((a for a in anchors if a["spec"] == key), {})
     plain = about_bot(key)
-    frame = _pick_frame(_sample(key).get("frames", []))
     trained = training_of(key) or {}
     return {
         "description": plain.get("about", about.get("description", "")),
         "code_name": next(row["code_name"] for row in _cache["standings"] if row["key"] == key),
         "method": method_svg(plain.get("method", about.get("method", []))),
-        "move": move_html(frame) if frame else "",
         "training": {
             "summary": trained.get("summary", ""),
             "stages": [{"title": s["title"], "svg": method_svg(s["steps"], s["repeat"])} for s in trained.get("stages", [])],

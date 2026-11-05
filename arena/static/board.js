@@ -122,14 +122,6 @@ function detailRow(key) {
       steps.innerHTML = about.method;
       shell.appendChild(steps);
     }
-    shell.appendChild(el("h3", "", "One real decision"));
-    if (about.move) {
-      const move = el("div");
-      move.innerHTML = about.move;
-      shell.appendChild(move);
-    } else {
-      shell.appendChild(el("p", "empty", "No decision recorded for this bot yet."));
-    }
     const trained = about.training;
     shell.appendChild(el("h3", "", "How it was trained"));
     shell.appendChild(el("p", "detail-text", trained.summary || "No training notes for this bot yet."));

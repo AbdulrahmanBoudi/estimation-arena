@@ -222,20 +222,11 @@ svg text{fill:var(--fg);font:12px system-ui,sans-serif}
 .i-mean{fill:var(--muted)}.i-best{fill:#f2c14e!important}.i-tick{fill:none;stroke:#1baf7a;stroke-width:2.5}.i-data{fill:var(--bg);stroke:#8e7cf0}
 .arrow{fill:none;stroke:var(--muted);stroke-width:1.5}
 .lbl2{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:12px 0 4px}
-.move{border:1px solid var(--line);border-radius:10px;padding:10px 12px;max-width:520px}
-.sit{margin:2px 0 6px;font-size:13px}.lbl{color:var(--muted);font-size:12px;margin-right:6px}.seat{color:var(--muted);font-size:11px;margin:0 3px 0 8px}
-.pc{display:inline-block;min-width:34px;padding:1px 5px;border:1px solid var(--line);border-radius:5px;background:var(--bg);font-weight:600;text-align:center;font-variant-numeric:tabular-nums}
-.pc.red{color:#c4243a}.pc.on{border:2px solid #eda100}.pc.dim{opacity:.5;font-weight:400}
-table.opts{width:auto;margin:4px 0 8px}table.opts td,table.opts th{border:none;padding:3px 10px 3px 0;font-size:13px;color:var(--fg)!important;background:none!important}
-.track{display:inline-block;width:90px;height:9px;border-radius:3px;background:var(--line);margin-right:6px;vertical-align:middle;overflow:hidden}
-.scroll{max-width:calc(100vw - 72px)}.move{max-width:min(520px,calc(100vw - 72px))}
-@media(max-width:700px){.bar{max-width:48px}th,td{padding:8px 6px}.track{width:54px}.sit{line-height:1.9}}
-.fill{display:block;height:100%}.f-net{background:#f2c14e}.f-search{background:#f3a6a8}.tick{color:#1baf7a;font-weight:600}
+.scroll{max-width:calc(100vw - 72px)}
+@media(max-width:700px){.bar{max-width:48px}th,td{padding:8px 6px}}
 """
 
 
-SUITS, RANKS = "♣♦♥♠", "23456789TJQKA"
-SEATS = {1: "left", 2: "across", 3: "right"}
 
 
 def _lines(label: str, width: int = 19) -> list[str]:
@@ -358,73 +349,11 @@ def method_svg(steps: list[list[str]], repeat: str = "") -> str:
     return "".join(parts)
 
 
-def _card(c: int, cls: str = "") -> str:
-    red = " red" if c // 13 in (1, 2) else ""
-    return f'<span class="pc{red} {cls}">{RANKS[c % 13].replace("T", "10")}{SUITS[c // 13]}</span>'
-
-
-def _pick_frame(frames: list[dict[str, Any]]) -> dict[str, Any] | None:
-    """The most telling decision: one the bot explained, where the search overruled the net if
-    any, with the most legal cards."""
-    if not frames:
-        return None
-
-    def telling(f: dict[str, Any]) -> tuple[bool, bool, int]:
-        net, search = f.get("scores", {}).get("net"), f.get("scores", {}).get("search")
-        overruled = bool(net and search) and max(net, key=net.get) != max(search, key=search.get)
-        return bool(f.get("scores")), overruled, len(f["legal"])  # search overruling the net first
-
-    return max(frames, key=telling)
-
-
-def move_html(frame: dict[str, Any]) -> str:
-    """One real decision: the situation, then one row per legal card with the net's
-    probability and the search's average score, the played card ticked."""
-    trump = "no trump" if frame["trump"] == 4 else f'trump {SUITS[frame["trump"]]}'
-    est = frame["estimate"]
-    goal = f'won {frame["won"]} of {est} tricks bid' if est is not None else f'won {frame["won"]}'
-    table = " ".join(f'<span class="seat">{SEATS.get(seat, seat)}</span>{_card(c)}' for seat, c in frame["trick"])
-    table = table or '<span class="desc">empty: it leads</span>'
-    legal, chosen = frame["legal"], frame["chosen"]
-    rest = [c for c in sorted(frame["hand"], key=lambda c: (c // 13, c % 13)) if c not in legal]
-    scores = {name: {int(k): v for k, v in vals.items()} for name, vals in frame.get("scores", {}).items()}
-    net, search = scores.get("net", {}), scores.get("search", {})
-    lo, hi = (min(search.values()), max(search.values())) if search else (0.0, 1.0)
-    head = "<tr><th>card</th>" + ("<th>model's preference</th>" if net else "") + ("<th>average on imagined hands</th>" if search else "") + "<th></th></tr>"
-    rows = []
-    order = sorted(legal, key=lambda c: (-search.get(c, -1e9), -net.get(c, 0.0), c))
-    for c in order:
-        cells = f"<td>{_card(c, 'on' if c == chosen else '')}</td>"
-        if net:
-            p = net.get(c, 0.0)
-            cells += f'<td><span class="track"><span class="fill f-net" style="width:{100 * p:.0f}%"></span></span>{100 * p:.0f}%</td>'
-        if search:
-            if c in search:
-                v = search[c]
-                w = 8 + 92 * (v - lo) / ((hi - lo) or 1)
-                cells += f'<td><span class="track"><span class="fill f-search" style="width:{w:.0f}%"></span></span>{v:+.1f}</td>'
-            else:
-                cells += '<td class="desc">not tried</td>'
-        cells += f'<td class="tick">{"✓ played" if c == chosen else ""}</td>'
-        rows.append(f"<tr>{cells}</tr>")
-    rest_html = " ".join(_card(c, "dim") for c in rest)
-    return (f'<div class="move"><div class="sit"><b>{trump}</b> · {goal}</div>'
-            f'<div class="sit"><span class="lbl">table</span> {table}</div>'
-            f'<table class="opts">{head}{"".join(rows)}</table>'
-            + (f'<div class="sit"><span class="lbl">rest of hand</span> {rest_html}</div>' if rest else "")
-            + "</div>")
-
-
-def how_it_plays(row: dict[str, Any], samples: dict[str, Any]) -> str:
-    frame = _pick_frame(samples.get(row["key"], {}).get("frames", []))
-    if not row.get("method") and frame is None:
+def how_it_plays(row: dict[str, Any]) -> str:
+    if not row.get("method"):
         return ""
-    move = ""
-    if frame is not None:
-        move = f'<div class="lbl2">one real decision</div>{move_html(frame)}'
     return (f'<details class="how"><summary>how it plays</summary>'
-            f'<div class="lbl2">how it decides</div><div class="scroll">{method_svg(row.get("method", []))}</div>'
-            f"{move}</details>")
+            f'<div class="scroll">{method_svg(row["method"])}</div></details>')
 
 
 def _banner() -> str:
@@ -438,8 +367,6 @@ def _favicon() -> str:
 def render(board: dict[str, Any]) -> str:
     rows = board["rows"]
     anchors = [r["name"] for r in rows if r["anchor"]]
-    samples_file = SITE_DIR / "samples.json"
-    samples = json.loads(samples_file.read_text()) if samples_file.is_file() else {}
     lines = []
     rank = 0
     for r in rows:
@@ -480,7 +407,7 @@ def render(board: dict[str, Any]) -> str:
             f'<td class="who-cell">{name}<br>{meta}</td>'
             f'{cells}<td class="opt">{place_bar}</td><td class="opt">{detail}</td></tr>'
         )
-        how = how_it_plays(r, samples)
+        how = how_it_plays(r)
         if how:
             cls = "anchor" if r["anchor"] else "sub"
             lines.append(f'<tr class="{cls} howrow"><td></td><td colspan="6">{how}</td></tr>')
@@ -495,7 +422,7 @@ def render(board: dict[str, Any]) -> str:
 <div class="metrics" role="group" aria-label="Rank by">{"".join(f'<button type="button" data-rank="{m}"{" aria-pressed=true" if m == "weighted" else " aria-pressed=false"}>{label}</button>' for m, _, label in METRICS)}</div>
 <p class="desc"><span class="key p0"></span>King +1<span class="key p1"></span>Sub-King +0.2<span class="key p2"></span>Sub-Kooz −0.2<span class="key p3"></span>Kooz −1</p>
 <p class="desc"><a href="#guide">What the numbers mean</a> · <a href="diagrams/how-it-works.html">How it works</a> · <a href="https://github.com/essamgouda97/estimation-arena">Code on GitHub</a></p>
-<p class="desc">Open “how it plays” under any bot to see how it decides, then one real decision from the same deal against three Basic rules bots.</p>
+<p class="desc">Open “how it plays” under any bot to see how it decides.</p>
 <table>
 <thead><tr><th class="num">#</th><th>Bot</th>{"".join(f'<th class="num m-{m}">{label}</th>' for m, _, label in METRICS)}<th class="opt">Finishing places</th><th class="opt">Against each benchmark</th></tr></thead>
 <tbody>
