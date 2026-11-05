@@ -90,8 +90,9 @@ The page ranks every bot three ways, explained in [docs/metrics.md](docs/metrics
 
 | Piece | Where | Cost |
 |---|---|---|
-| Smoke + nightly ladder, CPU anchors | GitHub Actions | free (public repo) |
-| RL v2 + Hybrid anchors, training | home server, `runs/` unzipped | free |
+| Smoke + nightly ladder, every anchor | GitHub Actions | free (public repo) |
+| Trained models | [Hugging Face](https://huggingface.co/GoudaGame) | free |
+| Training, long runs | home server | free |
 | Page | GitHub Pages | free |
 | Live table and board | home server, invite only | free |
 

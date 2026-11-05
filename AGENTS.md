@@ -7,7 +7,7 @@ Instructions for coding agents working in this repo. Humans: see README.md.
 A competition harness for bots that play Estimation. The rules engine is
 [estimation-engine](https://github.com/YosifElessawi/estimation-engine), a **private** repo
 installed by uv from git. This repo holds only the harness, submissions, results and the
-leaderboard page. Never copy engine code or the engine's `runs/` data into this repo.
+leaderboard page. Never copy engine code or the engine's `runs/` data into this repo; RL v2 is published on Hugging Face and pinned in `models.lock.json`.
 
 ## Setup
 
