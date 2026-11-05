@@ -1,6 +1,6 @@
 """Rung 3: learn to bid with reinforcement learning (PPO), card play held fixed.
 
-    .venv-gpu/bin/python -m train.rl_bid --out bots/rl-bid/bid.npz --logdir ~/workspace/estimation-data/tb
+    .venv-gpu/bin/python -m train.rl_bid --out bots/rl-bid/bid.npz --logdir runs/tb
 
 Runs in the GPU environment with the engine installed (train/README.md). One process plays
 thousands of rounds in lockstep: at every step it gathers each round's pending decision and

@@ -16,8 +16,8 @@ uv pip install --python .venv-gpu/bin/python torch==2.8.0 --index-url https://do
 uv pip install --python .venv-gpu/bin/python numpy tensorboard
 
 # record, train, rate
-uv run python -m train.record --teacher pimc:samples=100 --games 800 --workers 4 --out ~/workspace/estimation-data/rung2/pimc100
-.venv-gpu/bin/python -m train.imitate --data ~/workspace/estimation-data/rung2/pimc100 --out bots/pimc-clone/net.npz
+uv run python -m train.record --teacher pimc:samples=100 --games 800 --workers 4 --out runs/rung2/pimc100
+.venv-gpu/bin/python -m train.imitate --data runs/rung2/pimc100 --out bots/pimc-clone/net.npz
 uv run python -m arena.sweep --bot pimc-clone --vs pimc --sets 200 --seed 1000 --workers 5 --grid net=net.npz
 ```
 
@@ -25,10 +25,10 @@ uv run python -m arena.sweep --bot pimc-clone --vs pimc --sets 200 --seed 1000 -
 
 ```bash
 # on the server, once: TensorBoard on the server's localhost only
-nohup .venv-gpu/bin/tensorboard --logdir ~/workspace/estimation-data/tb --host 127.0.0.1 --port 6006 &
-# train with --logdir ~/workspace/estimation-data/tb
+nohup .venv-gpu/bin/tensorboard --logdir runs/tb --host 127.0.0.1 --port 6006 &
+# train with --logdir runs/tb
 # on the Mac: tunnel, then open http://localhost:6006
-ssh -N -L 6006:127.0.0.1:6006 home-server
+ssh -N -L 6006:127.0.0.1:6006 your-server
 ```
 
 `val/regret` plots the student against the random and Heuristic baselines on the same games.
@@ -36,9 +36,9 @@ ssh -N -L 6006:127.0.0.1:6006 home-server
 ## Pictures board
 
 ```bash
-PYTHONPATH=. uv run python experiments/trace_game.py --rounds 3 --out ~/workspace/estimation-data/rung2/trace.json
-.venv-gpu/bin/python experiments/board.py --data ~/workspace/estimation-data/rung2 \
-  --trace ~/workspace/estimation-data/rung2/trace.json --tb ~/workspace/estimation-data/tb
+PYTHONPATH=. uv run python experiments/trace_game.py --rounds 3 --out runs/rung2/trace.json
+.venv-gpu/bin/python experiments/board.py --data runs/rung2 \
+  --trace runs/rung2/trace.json --tb runs/tb
 ```
 
 TensorBoard, Images tab, run `board`: methods, data, results, and a game replay on the step slider.
@@ -61,8 +61,8 @@ flowchart LR
 ```
 
 ```bash
-.venv-gpu/bin/python -m train.rl_cards --out cards.npz --iterations 300 --logdir ~/workspace/estimation-data/tb
-.venv-gpu/bin/python -m train.rl_bid --cardnet cards.npz --out bid.npz --logdir ~/workspace/estimation-data/tb
+.venv-gpu/bin/python -m train.rl_cards --out cards.npz --iterations 300 --logdir runs/tb
+.venv-gpu/bin/python -m train.rl_bid --cardnet cards.npz --out bid.npz --logdir runs/tb
 ```
 
 One process plays rounds in lockstep and batches every net call on the GPU; Python game

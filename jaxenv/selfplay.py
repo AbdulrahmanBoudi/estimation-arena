@@ -1,7 +1,6 @@
 """Bitter-lesson self-play: one policy for every decision, trained to win the Bola, on the GPU.
 
-    .venv-jax/bin/python -m jaxenv.selfplay --out ~/workspace/estimation-data/bitter/run2 \\
-        --logdir ~/workspace/estimation-data/tb
+    .venv-jax/bin/python -m jaxenv.selfplay --out runs/run2 --logdir runs/tb
 
 - Policy: one MLP over jaxenv.encode (one seat's raw view) for Dash Calls, bids, With, estimates
   and cards. No hand evaluation, imitation or search; it starts from nothing.
@@ -15,6 +14,8 @@
 - Auxiliary head on the policy: predicts the round's relative score, which teaches the shared
   layers about tricks and contracts. It affects neither the reward nor the moves' scores.
 - Opponents: half the games are self-play; in the rest two opposite seats play a past version.
+- --benchmark: RL v2's weights. It then plays the other seats in --benchmark-share of the
+  iterations, and the log reports the King rate against it.
 - Evaluation: King rate and mean position reward of greedy seats against a random player and
   the starting policy (25% and 0 are an even share). Real strength is measured by the arena (bots/bitter-net).
 """

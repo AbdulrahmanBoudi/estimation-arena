@@ -19,5 +19,5 @@ that. Result files keep every game's raw scores (`versus[].scores`), so a new me
 ## Trying a different objective
 
 ```bash
-.venv-jax/bin/python -m jaxenv.selfplay --objective king --out ~/workspace/estimation-data/bitter/run3
+.venv-jax/bin/python -m jaxenv.selfplay --objective king --out runs/run3
 ```
