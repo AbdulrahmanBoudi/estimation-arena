@@ -139,7 +139,6 @@ def build(root: Path = ROOT, live: list[dict[str, Any]] | None = None) -> dict[s
                 "positions": _mean_shares([v["positions"] for v in r["versus"] if "positions" in v]),
                 "games": sum(v["games"] for v in r["versus"]),
                 "sets": r["sets"],
-                "seed": r["seed"],
                 "played_at": r["played_at"],
                 "engine": r.get("engine", ""),
                 "p95_ms": max((t["p95_s"] for t in timings), default=0.0) * 1000,
@@ -196,7 +195,7 @@ def build(root: Path = ROOT, live: list[dict[str, Any]] | None = None) -> dict[s
         "built_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "anchor": ANCHOR,
         "anchor_rating": ANCHOR_RATING,
-        "ladder": {k: ladder.get(k) for k in ("source", "sets", "seed", "imported_at")},
+        "ladder": {k: ladder.get(k) for k in ("source", "sets", "imported_at")},
         "submissions": len(results),
         "rows": rows,
     }

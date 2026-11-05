@@ -264,6 +264,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, help="result file (default results/<bot>.json)")
     parser.add_argument("--progress", action="store_true")
     parser.add_argument("--only-new", action="store_true", help="skip games already played by this exact bot")
+    parser.add_argument("--hide-seed", action="store_true", help="leave the seed out of the result and the output")
     args = parser.parse_args(argv)
     if args.sets < 1 or args.workers < 1:
         parser.error("--sets and --workers must be at least 1")
@@ -283,12 +284,15 @@ def main(argv: list[str] | None = None) -> int:
             return 0
     result = play_submission(manifest, anchors, args.sets, args.seed, args.workers, args.progress)
     result["bot_hash"] = bot_hash(manifest)
+    if args.hide_seed:
+        result["seed"] = None
     out.parent.mkdir(parents=True, exist_ok=True)
     kept = keep_unplayed(result, old)
     if kept:
         print(f"kept earlier games vs {', '.join(kept)} (bot and engine unchanged)")
     out.write_text(json.dumps(result, indent=1) + "\n")
-    print(f"{manifest.name}: {args.sets} sets vs {len(anchors)} anchors, seed {args.seed}")
+    seed_note = "" if args.hide_seed else f", seed {args.seed}"
+    print(f"{manifest.name}: {args.sets} sets vs {len(anchors)} anchors{seed_note}")
     for v in result["versus"]:
         rsa = v["rsa"]
         print(
