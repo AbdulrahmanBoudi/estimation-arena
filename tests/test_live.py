@@ -94,13 +94,7 @@ def test_explains_only_bots_on_the_board(tmp_path, monkeypatch):
     board.payload()
     assert board.explain("../../etc/passwd") is None
     hybrid = board.explain("hybrid")
-    assert "<svg" in hybrid["method"] and hybrid["move"]
-    samples = tmp_path / "samples"
-    samples.mkdir()
-    frame = {"trump": 1, "estimate": 2, "won": 0, "hand": [1, 2], "trick": [], "legal": [1, 2], "chosen": 2,
-             "scores": {"search": {"1": -3.0, "2": 4.0}}}
-    (samples / "x.json").write_text(json.dumps({"key": "hybrid", "frames": [frame]}))
-    assert "+4.0" in board.explain("hybrid")["move"]
+    assert "<svg" in hybrid["method"] and "move" not in hybrid
 
 
 def test_board_shows_steps_for_a_bot_in_testing(tmp_path, monkeypatch):

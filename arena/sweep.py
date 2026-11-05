@@ -24,16 +24,6 @@ from .positions import summarize
 from .run import run_sets
 
 
-def _keep_sample(spec: str) -> None:
-    """Give the live board one real decision to show. A failure here never stops the match."""
-    from .samples import save_live
-
-    try:
-        save_live(spec)
-    except Exception as error:  # the bot may not be explainable; its match still counts
-        print(f"no sample for the live board: {error}", file=sys.stderr)
-
-
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m arena.sweep", description=__doc__.split("\n")[0])
     parser.add_argument("--bot", required=True)
@@ -55,8 +45,6 @@ def main(argv: list[str] | None = None) -> int:
     combos = list(itertools.product(*values))
     for combo in combos:
         spec = SUB_PREFIX + args.bot + "".join(f":{k}={v}" for k, v in zip(keys, combo))
-        if len(combos) == 1:
-            _keep_sample(spec)
         run = run_sets((spec, args.vs, spec, args.vs), args.sets, args.seed, args.workers, kind="entry" if len(combos) == 1 else "tuning")
         report = build_report(run)
         places, _ = summarize(run.results, (spec, args.vs, spec, args.vs))
