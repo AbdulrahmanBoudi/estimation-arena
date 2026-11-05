@@ -44,6 +44,7 @@ jobs:
       - name: Play every bot against the anchors
         env:
           # The leaderboard seed is a secret so nobody can tune to the exact deals it uses.
+          # --hide-seed keeps it out of the public results and the page.
           LADDER_SEED: ${{ secrets.LADDER_SEED }}
         run: |
           sets="${{ github.event.inputs.sets || '20' }}"
@@ -52,7 +53,7 @@ jobs:
           only_new="--only-new"
           [ "${{ github.event.inputs.replay }}" != "true" ] || only_new=""
           for bot in $bots; do
-            uv run python -m arena.run --bot "$bot" --sets "$sets" --seed "${LADDER_SEED:-0}" --workers 4 --progress $only_new
+            uv run python -m arena.run --bot "$bot" --sets "$sets" --seed "${LADDER_SEED:-0}" --workers 4 --progress --hide-seed $only_new
           done
       - name: Commit results and site
         run: |
