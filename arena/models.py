@@ -16,12 +16,20 @@ import argparse
 import hashlib
 import json
 import os
+import socket
 import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 LOCK_FILE = ROOT / "models.lock.json"
 HUB = "https://huggingface.co"
+
+
+def prefer_ipv4() -> None:
+    """Try IPv4 addresses first. The home server's firewall drops IPv6 by design, and a dropped
+    connection makes a client wait out its whole timeout before it tries the next address."""
+    real = socket.getaddrinfo
+    socket.getaddrinfo = lambda *a, **k: sorted(real(*a, **k), key=lambda info: info[0] != socket.AF_INET)
 
 
 def sha256(path: Path) -> str:
@@ -74,6 +82,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m arena.models", description=__doc__.split("\n")[0])
     parser.add_argument("command", choices=["fetch"])
     parser.parse_args(argv)
+    prefer_ipv4()
     fetched = fetch()
     print(f"{len(load_lock())} models ready, {len(fetched)} downloaded")
     return 0

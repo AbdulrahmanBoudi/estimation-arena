@@ -11,13 +11,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from arena.models import LOCK_FILE, sha256  # noqa: E402
+from arena.models import LOCK_FILE, prefer_ipv4, sha256  # noqa: E402
 
 PUBLISH = {
     "estimation-self-taught": ("net.npz", ["bots/bitter-net/net.npz", "bots/bitter-search/net.npz"]),
@@ -28,6 +29,8 @@ PUBLISH = {
 
 
 def main() -> int:
+    prefer_ipv4()
+    os.environ.setdefault("HF_HUB_DISABLE_XET", "1")  # its uploader picks its own addresses
     from huggingface_hub import HfApi
 
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])

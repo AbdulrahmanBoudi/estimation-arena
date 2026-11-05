@@ -18,5 +18,6 @@
       "play its top card, no search",
       "pick"
     ]
-  ]
+  ],
+  "needs": "bots/net-pimc/net.npz"
 }

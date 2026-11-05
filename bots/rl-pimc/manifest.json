@@ -26,5 +26,6 @@
       "play the best average score",
       "pick"
     ]
-  ]
+  ],
+  "needs": "bots/rl-cards/net.npz"
 }
