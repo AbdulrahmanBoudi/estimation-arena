@@ -1,7 +1,6 @@
 """Bitter-lesson self-play: one policy for every decision, trained to win the Bola, on the GPU.
 
-    .venv-jax/bin/python -m jaxenv.selfplay --out ~/workspace/estimation-data/bitter/run2 \\
-        --logdir ~/workspace/estimation-data/tb
+    .venv-jax/bin/python -m jaxenv.selfplay --out runs/run2 --logdir runs/tb
 
 - Policy: one MLP over jaxenv.encode (one seat's raw view) for Dash Calls, bids, With, estimates
   and cards. No hand evaluation, imitation or search; it starts from nothing.
@@ -15,6 +14,8 @@
 - Auxiliary head on the policy: predicts the round's relative score, which teaches the shared
   layers about tricks and contracts. It affects neither the reward nor the moves' scores.
 - Opponents: half the games are self-play; in the rest two opposite seats play a past version.
+- --benchmark: RL v2's weights. It then plays the other seats in --benchmark-share of the
+  iterations, and the log reports the King rate against it.
 - Evaluation: King rate and mean position reward of greedy seats against a random player and
   the starting policy (25% and 0 are an even share). Real strength is measured by the arena (bots/bitter-net).
 """
@@ -38,6 +39,7 @@ from arena.positions import REWARDS  # noqa: E402
 from . import encode as E  # noqa: E402
 from . import game as G  # noqa: E402
 from . import rules as R  # noqa: E402
+from . import rlv2 as V  # noqa: E402
 
 POOL_DEALS = 8  # deals per game per rollout
 HIDDEN = 156  # the three other hands, relative to the acting seat
@@ -163,12 +165,16 @@ def hidden_of(rounds, seat):
     return jnp.concatenate(parts, -1)
 
 
-def choose(policy, opp, g, learner, key, greedy=False):
+def choose(policy, opp, g, learner, key, greedy=False, benchmark=None):
+    """``benchmark``: RL v2's nets (jaxenv.rlv2), which then play the other seats instead of ``opp``."""
     seat = g.round.cur
     x = jax.vmap(E.encode)(g.round, seat)
     mask = jax.vmap(G.game_legal)(g)
     logits, _ = apply_policy(policy, x)
-    opp_logits, _ = apply_policy(opp, x)
+    if benchmark is None:
+        opp_logits, _ = apply_policy(opp, x)
+    else:
+        opp_logits = jax.nn.one_hot(jax.vmap(lambda one: V.act(benchmark, one))(g), R.NUM_ACTIONS) * 1e6
     mine = jnp.take_along_axis(learner, seat[:, None], 1)[:, 0]
     logits = jnp.where(mask, jnp.where(mine[:, None], logits, opp_logits), -1e9)
     action = jnp.argmax(logits, 1) if greedy else jax.random.categorical(key, logits)
@@ -189,7 +195,7 @@ def _advance(g, used, base, pool, action):
     return _where_games(stop, fresh, after), used + stop, r, ended, after
 
 
-def make_rollout(batch: int, steps: int, lam: float, objective: str = "weighted"):
+def make_rollout(batch: int, steps: int, lam: float, objective: str = "weighted", benchmark=None):
     base = jnp.arange(batch) * POOL_DEALS
 
     def rollout(nets, opp, g, key):
@@ -204,7 +210,7 @@ def make_rollout(batch: int, steps: int, lam: float, objective: str = "weighted"
             seat = g.round.cur
             phase = g.round.phase
             pre_super = g.round.caller < 0
-            action, logp, x, mine, n_legal = choose(nets["policy"], opp, g, learner, k)
+            action, logp, x, mine, n_legal = choose(nets["policy"], opp, g, learner, k, benchmark=benchmark)
             hidden = hidden_of(g.round, seat)
             value = apply_critic(nets["critic"], x, hidden)
             g, used, r, ended, after = _advance(g, used, base, pool, action)
@@ -309,7 +315,7 @@ def make_update(tx_policy, tx_critic, clip: float, aux_weight: float):
     return step
 
 
-def make_eval(batch: int, steps: int):
+def make_eval(batch: int, steps: int, benchmark=None):
     """Greedy ``policy`` in two opposite seats vs ``opp``: (King rate, mean reward, games)."""
     base = jnp.arange(batch) * POOL_DEALS
 
@@ -322,7 +328,7 @@ def make_eval(batch: int, steps: int):
 
         def one(carry, k):
             g, used, firsts, total, games = carry
-            action, *_ = choose(policy, opp, g, learner, k, greedy=True)
+            action, *_ = choose(policy, opp, g, learner, k, greedy=True, benchmark=benchmark)
             g, used, _, _, after = _advance(g, used, base, pool, action)
             done = after.over & ~after.overflow
             top = after.scores == after.scores.max(1, keepdims=True)
@@ -371,6 +377,8 @@ def main(argv=None) -> int:
     p.add_argument("--eval-every", type=int, default=25)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--logdir", type=Path)
+    p.add_argument("--benchmark", type=Path, help="RL v2 weights: train against it and report the score vs it")
+    p.add_argument("--benchmark-share", type=float, default=0.5, help="share of iterations played against it")
     a = p.parse_args(argv)
     a.out = a.out.expanduser()
     a.out.mkdir(parents=True, exist_ok=True)
@@ -387,6 +395,9 @@ def main(argv=None) -> int:
     rollout = make_rollout(a.batch, a.steps, a.lam, a.objective)
     update = make_update(tx_policy, tx_critic, a.clip, a.aux)
     evaluate = make_eval(512, 4000)
+    benchmark = V.load(a.benchmark.expanduser()) if a.benchmark else None
+    rollout_benchmark = make_rollout(a.batch, a.steps, a.lam, a.objective, benchmark) if benchmark else None
+    evaluate_benchmark = make_eval(512, 4000, benchmark) if benchmark else None
     key, k = jax.random.split(key)
     g = jax.vmap(G.new_game)(G.deal_pool(k, a.batch))
     writer = None
@@ -401,7 +412,8 @@ def main(argv=None) -> int:
     for it in range(1, a.iterations + 1):
         key, k_opp, k_roll, k_perm, k_eval = jax.random.split(key, 5)
         opp = pool[int(jax.random.randint(k_opp, (), 0, len(pool)))]
-        g, flat, stats = rollout(nets, opp, g, k_roll)
+        versus = benchmark and float(jax.random.uniform(jax.random.fold_in(k_opp, 1))) < a.benchmark_share
+        g, flat, stats = (rollout_benchmark if versus else rollout)(nets, opp, g, k_roll)
         n = a.batch * a.steps
         frac = (it - 1) / max(a.iterations - 1, 1)
         ent = a.entropy + (a.entropy_end - a.entropy) * frac
@@ -421,6 +433,10 @@ def main(argv=None) -> int:
             king_s, pos_s, _ = evaluate(nets["policy"], first_policy, jax.random.fold_in(k_eval, 1))
             row |= {"king_vs_random": float(king_r), "pos_vs_random": float(pos_r), "king_vs_start": float(king_s),
                     "pos_vs_start": float(pos_s), "eval_games": int(games)}
+            if benchmark:
+                king_b, pos_b, _ = evaluate_benchmark(nets["policy"], uniform, jax.random.fold_in(k_eval, 2))
+                row |= {"king_vs_benchmark": float(king_b), "pos_vs_benchmark": float(pos_b)}
+                print(f"iter {it:>5}: King/position vs RL v2 {row['king_vs_benchmark']:5.1%} {row['pos_vs_benchmark']:+.2f}", flush=True)
             print(f"iter {it:>5}: King/position vs random {row['king_vs_random']:5.1%} {row['pos_vs_random']:+.2f} "
                   f"vs start {row['king_vs_start']:5.1%} {row['pos_vs_start']:+.2f} ({row['eval_games']} games) | "
                   f"entropy {row['entropy']:.2f} final_mse {row['final_mse']:.3f} ev {row['explained_var']:+.2f} kl {row['kl']:.4f} | "

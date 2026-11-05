@@ -1,7 +1,7 @@
 """Record teacher-labelled card decisions for imitation learning (rung 2).
 
     uv run python -m train.record --teacher pimc:samples=100 --games 800 --workers 4 \\
-        --out ~/workspace/estimation-data/rung2/pimc100
+        --out runs/rung2/pimc100
 
 At every card decision with more than one legal card, the teacher (a PIMC bot) searches and
 scores every legal card: the mean, over its sampled deals, of the seat's own round score minus

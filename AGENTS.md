@@ -4,23 +4,42 @@ Instructions for coding agents working in this repo. Humans: see README.md.
 
 ## What this is
 
-A competition harness for bots that play Estimation. The rules engine is
+A competition for bots that play Estimation. The rules engine is
 [estimation-engine](https://github.com/YosifElessawi/estimation-engine), a **private** repo
-installed by uv from git. This repo holds only the harness, submissions, results and the
-leaderboard page. Never copy engine code or the engine's `runs/` data into this repo.
+installed by uv from git. This repo holds the harness, the bots, their results, GPU self-play
+and the leaderboard page. Trained models live on Hugging Face, pinned in `models.lock.json`.
 
 ## Setup
 
 ```bash
-uv sync                    # needs read access to the engine repo (git over HTTPS or SSH)
-uv run python -m arena.models fetch   # trained models from Hugging Face, pinned in models.lock.json
-uv sync --group rl         # optional: PettingZoo env for training (arena/env.py)
-uv run pytest -q           # must pass before any commit
+uv sync --group rl                       # needs read access to the engine repo
+uv run python -m arena.models fetch      # the trained models, checked against the lock
+uv run pytest -q                         # must pass before any commit
 ```
 
-No access to the engine repo? Stop and ask the owner; do not vendor or reimplement the engine.
-`runs/` and model files are git-ignored; keep them that way. After checking out a new commit
-on a deploy worktree, run the fetch again: it also refuses files that differ from the lock.
+The current standings are at https://essamgouda97.github.io/estimation-arena/ and in
+`site/leaderboard.json`.
+
+For GPU training, a second environment:
+
+```bash
+UV_PROJECT_ENVIRONMENT=.venv-jax uv sync --group jax
+```
+
+No access to the engine repo? Stop and ask the owner; do not vendor the engine.
+`runs/` and model files are git-ignored; keep them that way. Run the fetch again after a
+checkout that changes `models.lock.json`.
+
+## Train a bot
+
+```bash
+.venv-jax/bin/python -m jaxenv.selfplay --out runs/my-run --benchmark runs/m4-rules-v2/rlv2.npz
+```
+
+It trains from nothing on self-play, past versions and RL v2, and writes `runs/my-run/net.npz`.
+`--objective` picks the reward: `weighted`, `king` or `delta`, the three scores on the
+leaderboard (`docs/metrics.md`). The log reports the King rate against RL v2; 25% is an even
+share. To enter a net, copy `bots/bitter-net` to `bots/<name>/` with your `net.npz` beside it.
 
 ## Map
 
@@ -32,7 +51,9 @@ on a deploy worktree, run the fetch again: it also refuses files that differ fro
 | `arena/sweep.py` | Tunes a python bot's options vs one opponent |
 | `arena/env.py` | PettingZoo AEC environment for RL training |
 | `arena/leaderboard.py` | Elo fit, renders `site/` |
+| `arena/models.py` | Downloads the models in `models.lock.json`, refuses a wrong checksum |
 | `anchors.json` | Frozen engine bots everyone is rated against |
+| `jaxenv/` | The rules, RL v2 and self-play training on the GPU; `docs/jax-rules.md` |
 | `docs/training-design.md` | How self-play is made GPU-bound |
 | `train/` | Imitation (`record`, `imitate`) and self-play RL (`rl_cards`, `rl_bid`); see its README |
 | `experiments/` | Write-ups per rung, the TensorBoard board, diagnostic bots that are never rated |
@@ -45,7 +66,12 @@ on a deploy worktree, run the fetch again: it also refuses files that differ fro
    seed with at least 1,000 sets before believing it. Trust a difference only when the 95%
    intervals do not overlap.
 3. Rate with `arena.run`. Never tune against the leaderboard seed (`LADDER_SEED` secret).
-4. Open a pull request. The `smoke` workflow plays it and comments.
+4. Model files don't go in Git. Upload yours to a public Hugging Face repo and add its repo,
+   commit, file and sha256 to `models.lock.json`.
+5. Open a pull request. The `smoke` workflow plays it and comments; after merging, the ladder
+   rates it against every benchmark.
+
+A bot that loads a model should name it under `needs` in its manifest.
 
 ## Rules of the game you must not break
 
@@ -58,11 +84,10 @@ on a deploy worktree, run the fetch again: it also refuses files that differ fro
 
 ## Compute
 
-- Heavy runs (sweeps over 100 sets, ratings vs RL v2 or Hybrid, any training) go on the owner's
-  home server (`ssh home-server`, checkout `~/workspace/estimation-arena`), niced. The Mac stays
-  a light checkout.
-- GPU is a GTX 1070 (Pascal). PyTorch 2.9+ cannot use it: use PyTorch 2.8.0 with CUDA 12.6
-  wheels or `jax[cuda12]`, in a separate environment from the engine's.
+- Sweeps over 100 sets and ratings against RL v2 or Hybrid take a while on a laptop; use a
+  bigger machine for them if you have one. Training wants a GPU.
+- JAX works on old cards. On a GTX 1070, use `jax[cuda12]` as pinned here; PyTorch 2.9 and later
+  no longer support it.
 
 ## Hygiene
 

@@ -1,6 +1,6 @@
 """Train a card-play net to imitate a teacher's recorded decisions (rung 2).
 
-    python -m train.imitate --data ~/workspace/estimation-data/rung2/pimc100 --out bots/pimc-clone/net.npz
+    python -m train.imitate --data runs/rung2/pimc100 --out bots/pimc-clone/net.npz
 
 Needs only NumPy and PyTorch, so it runs in its own environment (see train/README.md): on the
 GTX 1070 that is PyTorch 2.8 with CUDA 12.6, which the engine's environment cannot install.

@@ -1,0 +1,44 @@
+{
+ "bots/bitter-net/net.npz": {
+  "repo": "GoudaGame/estimation-self-taught",
+  "revision": "269b6f90503eec88885d7f0e555d58cfb362e2a0",
+  "file": "net.npz",
+  "sha256": "3797358d96b83b67dd8370c047c3004ad4e333587bbef66ac65b14d1b25081dc"
+ },
+ "bots/bitter-search/net.npz": {
+  "repo": "GoudaGame/estimation-self-taught",
+  "revision": "269b6f90503eec88885d7f0e555d58cfb362e2a0",
+  "file": "net.npz",
+  "sha256": "3797358d96b83b67dd8370c047c3004ad4e333587bbef66ac65b14d1b25081dc"
+ },
+ "bots/net-pimc/net.npz": {
+  "repo": "GoudaGame/estimation-copycat",
+  "revision": "0902ebe311867eee693e6efd91a65c284c0753e6",
+  "file": "net.npz",
+  "sha256": "0788f0390a43b97d7b65d54e6757cc9835efded59fa7746c09658930afe837c5"
+ },
+ "bots/rl-cards/net.npz": {
+  "repo": "GoudaGame/estimation-copycat-practice",
+  "revision": "3f42ca9b2ce57785e8f2144330661d17ad0db216",
+  "file": "net.npz",
+  "sha256": "e5b2bf2f901842295e78f0e5132b3aa1cb36d6725c057d62bdcb55d3379f493f"
+ },
+ "bots/rl-hybrid/net.npz": {
+  "repo": "GoudaGame/estimation-copycat-practice",
+  "revision": "3f42ca9b2ce57785e8f2144330661d17ad0db216",
+  "file": "net.npz",
+  "sha256": "e5b2bf2f901842295e78f0e5132b3aa1cb36d6725c057d62bdcb55d3379f493f"
+ },
+ "runs/m4-rules-v2/checkpoints/final.pt": {
+  "repo": "GoudaGame/estimation-rl-v2",
+  "revision": "c8be2f53401cf381104eeca15d387d994d58fcee",
+  "file": "final.pt",
+  "sha256": "9d5b47ba20071a14f4e5898a555e5af11d1955e985a165d990e5064ade3c51a2"
+ },
+ "runs/m4-rules-v2/rlv2.npz": {
+  "repo": "GoudaGame/estimation-rl-v2",
+  "revision": "ec86e4049d7bf2ddf0dc5dd3daf3e5af1696c7bf",
+  "file": "rlv2.npz",
+  "sha256": "6199e30472a0cb574d05dd1a053785e0ab3e7ca225bcb255b5433a179c97119c"
+ }
+}

@@ -53,7 +53,7 @@ Every bot's code name is shown on the page too.
 ## Quickstart
 
 ```bash
-uv sync                                   # needs read access to the engine repo
+uv sync --group rl                        # needs read access to the engine repo
 uv run python -m arena.models fetch       # downloads the trained models from Hugging Face
 uv run pytest -q
 uv run python -m arena.run --bot table-pressure --sets 10 --workers 4
@@ -90,8 +90,9 @@ The page ranks every bot three ways, explained in [docs/metrics.md](docs/metrics
 
 | Piece | Where | Cost |
 |---|---|---|
-| Smoke + nightly ladder, CPU anchors | GitHub Actions | free (public repo) |
-| RL v2 + Hybrid anchors, training | home server, `runs/` unzipped | free |
+| Smoke + nightly ladder, every anchor | GitHub Actions | free (public repo) |
+| Trained models | [Hugging Face](https://huggingface.co/GoudaGame) | free |
+| Training, long runs | home server | free |
 | Page | GitHub Pages | free |
 | Live table and board | home server, invite only | free |
 
@@ -105,11 +106,12 @@ Trained models live on Hugging Face. `models.lock.json` pins each one to an exac
 
 ## Using a coding agent?
 
-Paste this:
+You need read access to the rules engine. Then paste this:
 
 ```text
-Read AGENTS.md in this repo and follow it. Set up the environment, run the tests, then
-build a bot in bots/<my-name>/ that beats the current top submission against Heuristic.
-Tune with arena.sweep on the tuning seed, confirm on a fresh seed with 1,000 sets,
-rate with arena.run, and open a pull request with the numbers.
+Clone https://github.com/essamgouda97/estimation-arena, read AGENTS.md and follow it. Set up
+the environment and the models, run the tests and show me the standings. Then train or build
+a bot in bots/<my-name>/ that beats the top of the leaderboard. Confirm it on a fresh seed
+with at least 150 sets against Hybrid, rate it with arena.run, and open a pull request with
+the numbers.
 ```

@@ -19,7 +19,7 @@ flowchart LR
 | Throughput | `jaxenv/bench.py` | |
 
 ```bash
-UV_PROJECT_ENVIRONMENT=.venv-jax uv sync --group jax     # on the home server
+UV_PROJECT_ENVIRONMENT=.venv-jax uv sync --group jax
 .venv-jax/bin/python -m jaxenv.check --rounds 100000 --games 1000
 .venv-jax/bin/python -m jaxenv.bench
 ```
@@ -126,11 +126,11 @@ Real strength is judged in the arena, by position against Heuristic, then PIMC a
 
 ## Watching a run
 
-`https://estimation.home.egouda.xyz/lab` shows a run as it trains. `jaxenv.lab_capture` films each
+The live site's `/lab` shows a run as it trains. `jaxenv.lab_capture` films each
 saved version: the same fixed hand and lead asked of every version, one game against Heuristic on
 fixed deals, replayed through the JAX rules as a live check, and six quick games. The page's reel
 scrubs or plays through versions, so you can watch its opinion form.
 
 ```bash
-JAX_PLATFORMS=cpu .venv-jax/bin/python -m jaxenv.lab_capture ~/workspace/estimation-data/bitter/run2
+JAX_PLATFORMS=cpu .venv-jax/bin/python -m jaxenv.lab_capture runs/run2
 ```

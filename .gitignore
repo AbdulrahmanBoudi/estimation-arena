@@ -9,3 +9,5 @@ runs/
 smoke/
 data/
 .venv-gpu/
+# Trained models come from Hugging Face: python -m arena.models fetch (models.lock.json).
+bots/*/*.npz

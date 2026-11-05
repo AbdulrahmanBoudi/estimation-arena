@@ -1,6 +1,6 @@
 """Film a training run: at each saved model version, record what it thinks and how it plays.
 
-    JAX_PLATFORMS=cpu .venv-jax/bin/python -m jaxenv.lab_capture ~/workspace/estimation-data/bitter/run2
+    JAX_PLATFORMS=cpu .venv-jax/bin/python -m jaxenv.lab_capture runs/bitter/run2
 
 For every new ``net.npz`` (at least ``--every`` iterations apart) it writes ``lab/snap-NNNNN.json``:
 - probes: the same fixed positions asked of every version, so its opinion can be compared directly;

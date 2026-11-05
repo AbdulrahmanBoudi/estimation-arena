@@ -1,6 +1,6 @@
 """Rung 3: improve card play with reinforcement learning (PPO), starting from imitation.
 
-    .venv-gpu/bin/python -m train.rl_cards --out bots/rl-cards/net.npz --logdir ~/workspace/estimation-data/tb
+    .venv-gpu/bin/python -m train.rl_cards --out bots/rl-cards/net.npz --logdir runs/tb
 
 The diagnosis (experiments/rung3.md): giving our bot RL v2's bidding barely closed the gap to
 RL v2, so the gap is card play. This trainer fine-tunes the imitation card net by self-play.

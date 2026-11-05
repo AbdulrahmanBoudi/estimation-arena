@@ -20,8 +20,7 @@ uv run python -m arena.serve --port 8790     # http://127.0.0.1:8790/
 | bot | runs on the server | picked in the lobby from `/api/bots` |
 | watcher | anyone with the table link | `/t/<table>`, sees no hands |
 
-Hosted owner-only at `https://estimation.home.egouda.xyz/` (home-server repo,
-`docs/estimation-table.md`).
+Hosted privately behind a sign-in gateway.
 
 ## WebSocket protocol (`/ws/<table>`)
 
@@ -53,5 +52,5 @@ async def play(url, token):
                 await ws.send(json.dumps({"type": "act", "action": me["legal"][0]["id"]}))
 ```
 
-Behind the home server, add the gateway's session cookie to the connection (browser seats get
+Behind a gateway, add the gateway's session cookie to the connection (browser seats get
 it automatically).
