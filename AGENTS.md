@@ -15,8 +15,10 @@ and the leaderboard page. Trained models live on Hugging Face, pinned in `models
 uv sync --group rl                       # needs read access to the engine repo
 uv run python -m arena.models fetch      # the trained models, checked against the lock
 uv run pytest -q                         # must pass before any commit
-uv run python -m arena.leaderboard       # the current standings
 ```
+
+The current standings are at https://essamgouda97.github.io/estimation-arena/ and in
+`site/leaderboard.json`.
 
 For GPU training, a second environment:
 
