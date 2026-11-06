@@ -18,7 +18,7 @@ from collections.abc import Sequence
 from concurrent.futures import ProcessPoolExecutor
 from datetime import UTC, datetime
 from functools import partial
-from importlib.metadata import PackageNotFoundError, version
+from importlib.metadata import PackageNotFoundError, distribution
 from pathlib import Path
 from typing import Any
 
@@ -129,10 +129,15 @@ def _timing(timing: Timing) -> dict[str, float | int]:
 
 
 def engine_version() -> str:
+    """The engine's version and commit: the version stays the same across commits, and a result
+    played on a different commit must be replayed."""
     try:
-        return version("estimation-engine")
+        engine = distribution("estimation-engine")
     except PackageNotFoundError:
         return "unknown"
+    source = json.loads(engine.read_text("direct_url.json") or "{}")
+    commit = source.get("vcs_info", {}).get("commit_id", "")
+    return f"{engine.version}+{commit[:8]}" if commit else engine.version
 
 
 def play_submission(

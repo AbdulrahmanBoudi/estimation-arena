@@ -1,9 +1,11 @@
 name: ladder
 
 # The leaderboard run: every new or changed bot plays the anchors it has not met, in duplicate
-# sets. Results and the rebuilt site/ are committed when they changed; pages.yml runs when this
-# workflow completes and publishes site/ to GitHub Pages. Model files come from Hugging Face
-# (models.lock.json). An anchor whose files are not there yet is left out.
+# sets. A bot on an older engine commit plays them all again. Each bot's result and the rebuilt
+# site/ are committed as it finishes, so a run that times out carries on from there the next
+# night; pages.yml runs when this workflow completes and publishes site/ to GitHub Pages. Model
+# files come from Hugging Face (models.lock.json). An anchor whose files are not there yet is
+# left out.
 
 on:
   schedule:
@@ -32,6 +34,8 @@ jobs:
   play:
     runs-on: ubuntu-latest
     timeout-minutes: 350
+    env:
+      UV_NO_SYNC: "1"   # keep the environment installed below, even as saving moves to newer main
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
@@ -47,23 +51,19 @@ jobs:
           # --hide-seed keeps it out of the public results and the page.
           LADDER_SEED: ${{ secrets.LADDER_SEED }}
         run: |
+          git config user.name "estimation-arena bot"
+          git config user.email "actions@users.noreply.github.com"
           sets="${{ github.event.inputs.sets || '20' }}"
           bots="${{ github.event.inputs.bots }}"
           [ -n "$bots" ] || bots=$(ls bots)
           only_new="--only-new"
           [ "${{ github.event.inputs.replay }}" != "true" ] || only_new=""
+          failed=""
           for bot in $bots; do
-            uv run python -m arena.run --bot "$bot" --sets "$sets" --seed "${LADDER_SEED:-0}" --workers 4 --progress --hide-seed $only_new
+            if uv run python -m arena.run --bot "$bot" --sets "$sets" --seed "${LADDER_SEED:-0}" --workers 4 --progress --hide-seed $only_new; then
+              scripts/ladder-save.sh "$bot"
+            else
+              failed="$failed $bot"
+            fi
           done
-      - name: Commit results and site
-        run: |
-          if git diff --quiet -- results && [ -z "$(git ls-files --others --exclude-standard results)" ]; then
-            echo "no new games"
-            exit 0
-          fi
-          uv run python -m arena.leaderboard
-          git config user.name "estimation-arena bot"
-          git config user.email "actions@users.noreply.github.com"
-          git add results site
-          git diff --cached --quiet || git commit -m "ladder: $(date -u +%F) run"
-          git push
+          [ -z "$failed" ] || { echo "failed:$failed"; exit 1; }
