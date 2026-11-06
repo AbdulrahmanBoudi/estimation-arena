@@ -69,7 +69,8 @@ share. To enter a net, copy `bots/bitter-net` to `bots/<name>/` with your `net.n
 4. Model files don't go in Git. Upload yours to a public Hugging Face repo and add its repo,
    commit, file and sha256 to `models.lock.json`.
 5. Open a pull request. The `smoke` workflow plays it and comments; after merging, the ladder
-   rates it against every benchmark.
+   rates it against every benchmark. A pull request from a fork waits for the owner, who reads
+   the code and starts the run (see `.github/workflows/smoke.yml`).
 
 A bot that loads a model should name it under `needs` in its manifest.
 

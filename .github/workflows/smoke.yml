@@ -3,53 +3,122 @@ name: smoke
 # A pull request that adds or changes a bot gets a short duplicate run against the two cheap
 # anchors. It proves the bot speaks the protocol, stays within budget and never plays an
 # illegal action. The full ladder runs separately (ladder.yml).
+#
+# GitHub gives a fork's pull request no secrets, and the engine needs ENGINE_TOKEN, so a fork's
+# run is skipped until the owner has read the code and starts this workflow by hand:
+#   gh workflow run smoke.yml -f pr=<number> -f sha=<full head commit>
+# It refuses any commit but the pull request's current head. The install runs with the token, so
+# read pyproject.toml and uv.lock too; the token is removed before the tests and games run.
 
 on:
   pull_request:
-    paths: ["bots/**", "arena/**", "tests/**", "anchors.json", "models.lock.json", "pyproject.toml", "uv.lock"]
+    paths: ["bots/**", "arena/**", "tests/**", "anchors.json", "models.lock.json", "pyproject.toml", "uv.lock", ".github/workflows/smoke.yml"]
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: pull request number
+        required: true
+        type: number
+      sha:
+        description: full head commit you reviewed
+        required: true
+        type: string
 
-permissions:
-  contents: read
-  pull-requests: write   # for the summary comment
+permissions: {}
 
 jobs:
   smoke:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: read
+    env:
+      UV_NO_SYNC: "1"   # after the install, nothing may need to reach the private engine repo
     steps:
+      - name: Refuse anything but the commit that was reviewed
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ inputs.pr }}
+          SHA: ${{ inputs.sha }}
+        run: |
+          head=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR" --jq .head.sha)
+          [ "$head" = "$SHA" ] || { echo "pull request $PR is at $head, not $SHA"; exit 1; }
       - uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.sha || github.ref }}
           fetch-depth: 0
+          persist-credentials: false
+      - name: Merge main, as a pull request's own run does
+        if: github.event_name == 'workflow_dispatch'
+        run: git -c user.name=smoke -c user.email=smoke@localhost merge --no-edit origin/main
       - uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.12"
       - name: Allow uv to clone the private engine repo
-        run: git config --global url."https://x-access-token:${{ secrets.ENGINE_TOKEN }}@github.com/".insteadOf "https://github.com/"
+        env:
+          ENGINE_TOKEN: ${{ secrets.ENGINE_TOKEN }}
+        run: git config --global url."https://x-access-token:$ENGINE_TOKEN@github.com/".insteadOf "https://github.com/"
       - run: uv sync --frozen --group rl
+      - name: Remove the engine credentials
+        env:
+          ENGINE_TOKEN: ${{ secrets.ENGINE_TOKEN }}
+        run: git config --global --remove-section url."https://x-access-token:$ENGINE_TOKEN@github.com/"
       - run: uv run python -m arena.models fetch
       - run: uv run pytest -q
       - name: Find the bots this pull request touches
         id: bots
+        env:
+          BASE: ${{ github.base_ref || 'main' }}
         run: |
-          changed=$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD -- bots | cut -d/ -f2 | sort -u | tr '\n' ' ')
+          changed=$(git diff --name-only "origin/$BASE"...HEAD -- bots | cut -d/ -f2 | sort -u | tr '\n' ' ')
           if [ -z "$changed" ]; then changed=$(ls bots | tr '\n' ' '); fi
           echo "names=$changed" >> "$GITHUB_OUTPUT"
       - name: Smoke-run each bot (2 sets vs Random and Heuristic)
+        env:
+          NAMES: ${{ steps.bots.outputs.names }}
         run: |
           mkdir -p smoke
-          for bot in ${{ steps.bots.outputs.names }}; do
+          for bot in $NAMES; do
             uv run python -m arena.run --bot "$bot" --sets 2 --seed 1 --workers 2 \
               --anchors Random,Heuristic --out "smoke/$bot.json" | tee -a smoke/summary.txt
           done
       - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-results
+          path: smoke/
+          if-no-files-found: ignore
+
+  # Separate from the job above so that no code from the pull request runs with write access.
+  report:
+    needs: smoke
+    if: always() && needs.smoke.result != 'skipped'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      statuses: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR: ${{ inputs.pr || github.event.pull_request.number }}
+      SHA: ${{ inputs.sha }}
+      RESULT: ${{ needs.smoke.result }}
+    steps:
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
         with:
           name: smoke-results
           path: smoke/
       - name: Post the summary on the pull request
-        if: always()
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           [ -f smoke/summary.txt ] || exit 0
           { echo '```'; cat smoke/summary.txt; echo '```'; } > body.md
-          gh pr comment ${{ github.event.pull_request.number }} --body-file body.md
+          gh pr comment "$PR" -R "$GITHUB_REPOSITORY" --body-file body.md
+      - name: Show a by-hand run's result on the pull request
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          [ "$RESULT" = success ] && state=success || state=failure
+          gh api "repos/$GITHUB_REPOSITORY/statuses/$SHA" -f state="$state" -f context=smoke \
+            -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >/dev/null
