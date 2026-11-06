@@ -13,6 +13,7 @@ from pathlib import Path
 import numpy as np
 
 import estimation.bots  # noqa: F401  (import order: the encoder imports the bots package)
+from arena.nets import fit_inputs
 from estimation.bots.heuristic import HeuristicBot, HeuristicConfig
 from estimation.engine import Observation, Phase, RulesConfig, play_action
 from estimation.engine.actions import PLAY_BASE
@@ -29,6 +30,7 @@ def load_net(path: str) -> tuple[list[tuple[np.ndarray, np.ndarray]], str]:
     while f"w{k}" in data:
         layers.append((data[f"w{k}"].astype(np.float32), data[f"b{k}"].astype(np.float32)))
         k += 1
+    layers[0] = (fit_inputs(layers[0][0]), layers[0][1])  # nets from encoder v2 still load
     return layers, str(data["meta"])
 
 

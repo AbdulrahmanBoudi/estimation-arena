@@ -23,6 +23,7 @@ from pathlib import Path
 import numpy as np
 
 import estimation.bots  # noqa: F401  (import order: the encoder imports the bots package)
+from arena.nets import fit_inputs
 from estimation.bots import PIMCBot, PIMCConfig
 from estimation.bots.heuristic import HeuristicConfig
 from estimation.bots.pimc import best_index
@@ -39,6 +40,7 @@ def load_net(path: str) -> list[tuple[np.ndarray, np.ndarray]]:
     while f"w{k}" in data:
         layers.append((data[f"w{k}"].astype(np.float32), data[f"b{k}"].astype(np.float32)))
         k += 1
+    layers[0] = (fit_inputs(layers[0][0]), layers[0][1])  # nets from encoder v2 still load
     return layers
 
 
