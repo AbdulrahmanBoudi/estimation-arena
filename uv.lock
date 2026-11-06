@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.12"
 resolution-markers = [
     "python_full_version >= '3.14'",
@@ -198,7 +198,7 @@ table = [{ name = "websockets", specifier = ">=13" }]
 [[package]]
 name = "estimation-engine"
 version = "0.1.0"
-source = { git = "https://github.com/YosifElessawi/estimation-engine#e777d267f63840af012828ab7aa42bce78678a79" }
+source = { git = "https://github.com/YosifElessawi/estimation-engine#2dbf68df5aad42291225bba73e0abf626d6fc35c" }
 dependencies = [
     { name = "fastapi" },
     { name = "numpy" },
