@@ -1,0 +1,16 @@
+{
+  "name": "hybrid-v4",
+  "author": "Yosif Elessawi",
+  "kind": "python",
+  "entry": "bot.py:make",
+  "description": "Yosif's Hybrid v4: nets trained by self-play and by copying a deeper search, with a search that imagines hidden hands from where its guess net thinks each card is.",
+  "timeout_s": 5,
+  "needs": "runs/expert/round-1/hybrid.pt",
+  "method": [
+    ["the bid net picks the bid", "bid"],
+    ["the card net keeps its top 2 cards", "net"],
+    ["imagine hidden hands from the guess net, keep those that fit the bids x32", "deal"],
+    ["each kept card: the card net plays all 4 seats to the end", "rollout"],
+    ["play the best average score", "pick"]
+  ]
+}

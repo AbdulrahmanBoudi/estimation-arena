@@ -29,6 +29,12 @@
   "file": "net.npz",
   "sha256": "e5b2bf2f901842295e78f0e5132b3aa1cb36d6725c057d62bdcb55d3379f493f"
  },
+ "runs/expert/round-1/hybrid.pt": {
+  "repo": "yosifelessawi/estimation-hybrid-v4",
+  "revision": "e548c3c2a24cdb65caa1c673185fc28efbef4f3f",
+  "file": "hybrid.pt",
+  "sha256": "b7171823f75e01d4f325ecfddd2b296986aa3797ebc3ccfb48340a2109a20b6b"
+ },
  "runs/m4-rules-v2/checkpoints/final.pt": {
   "repo": "GoudaGame/estimation-rl-v2",
   "revision": "c8be2f53401cf381104eeca15d387d994d58fcee",
