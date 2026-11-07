@@ -1,0 +1,41 @@
+{
+ "a": "bitter-search",
+ "b": "hybrid-v4",
+ "hash_a": "5c0604a1e4e0f545",
+ "hash_b": "f2f793ae33514ed4",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T04:35:10+00:00",
+   "wall_s": 830.4847091489999
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:bitter-search",
+   "b": "sub:hybrid-v4",
+   "a_wins": 1,
+   "draws": 0,
+   "b_wins": 19
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:bitter-search",
+   "b": "sub:hybrid-v4",
+   "a_wins": 1,
+   "draws": 2,
+   "b_wins": 17
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:bitter-search",
+   "b": "sub:hybrid-v4",
+   "a_wins": 0,
+   "draws": 4,
+   "b_wins": 16
+  }
+ ]
+}
