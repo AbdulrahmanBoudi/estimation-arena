@@ -4,9 +4,12 @@ import pytest
 
 pytest.importorskip("optax")
 
+import jax  # noqa: E402
 import jax.numpy as jnp  # noqa: E402
+import numpy as np  # noqa: E402
 
-from jaxenv.selfplay import position_rewards, td_lambda  # noqa: E402
+from jaxenv import encode as E  # noqa: E402
+from jaxenv.selfplay import HIDDEN, apply_policy, init_nets, make_rollout, oracle_chance, position_rewards, save_npz, td_lambda  # noqa: E402
 
 
 @pytest.mark.parametrize(
@@ -97,3 +100,45 @@ def test_training_runs_with_each_objective(tmp_path, objective):
             "--minibatch", "64", "--hidden", "16", "--depth", "1"]  # fmt: skip
     assert main(args) in (0, None)
     assert (tmp_path / "log.jsonl").read_text().strip()
+
+
+def _oracle_net():
+    net = init_nets(jax.random.key(0), 16, 2, oracle=True)["policy"]
+    return {**net, "oracle": jnp.ones((HIDDEN, 16))}
+
+
+def test_the_chance_of_seeing_a_hidden_card_fades_to_nothing():
+    assert oracle_chance(0.0, 0.5) == 1.0
+    assert oracle_chance(0.25, 0.5) == 0.5
+    assert oracle_chance(0.5, 0.5) == 0.0
+    assert oracle_chance(1.0, 0.5) == 0.0
+    assert oracle_chance(0.0, 0.0) == 0.0  # off by default
+
+
+def test_hidden_cards_only_change_the_policy_when_it_may_see_them():
+    net = _oracle_net()
+    x = jnp.zeros((1, E.SIZE))
+    fair, _ = apply_policy(net, x)
+    blind, _ = apply_policy(net, x, jnp.zeros((1, HIDDEN), bool))
+    peeking, _ = apply_policy(net, x, jnp.ones((1, HIDDEN), bool))
+    assert jnp.allclose(fair, blind)
+    assert not jnp.allclose(fair, peeking)
+
+
+def test_a_saved_net_has_no_way_to_see_hidden_cards(tmp_path):
+    save_npz(_oracle_net(), tmp_path / "net.npz", {})
+    saved = np.load(tmp_path / "net.npz")
+    assert all(saved[k].shape[0] != HIDDEN for k in saved.files if k != "meta")
+    assert saved["w0"].shape == (E.SIZE, 16)
+
+
+def test_a_rollout_shows_cards_only_at_the_set_chance():
+    from jaxenv import game as G
+
+    nets = init_nets(jax.random.key(0), 16, 2, oracle=True)
+    games = jax.vmap(G.new_game)(G.deal_pool(jax.random.key(1), 4))
+    rollout = make_rollout(4, 8, 0.95)
+    _, flat, _ = rollout(nets, nets["policy"], games, jax.random.key(2), 0.0)
+    assert not flat["seen"].any()
+    _, flat, _ = rollout(nets, nets["policy"], games, jax.random.key(2), 1.0)
+    assert jnp.array_equal(flat["seen"], flat["hidden"].astype(bool))

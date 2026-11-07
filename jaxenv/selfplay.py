@@ -11,6 +11,10 @@
   it changed the seat's expected final position, without waiting for the end of the game.
 - Critic, training only: the same view plus the three hidden hands, so deal luck stays out of
   the advantage. It is thrown away afterwards; the policy never sees hidden cards.
+- Fading cards, with --oracle-fade (Suphx's oracle guiding): the policy also sees each hidden card
+  with a chance that falls from 1 to 0 over that share of training, and it plays fair from then
+  on. These inputs have their own weights, which are never saved, so a saved net can't use them.
+  Evaluations and opponents never get them.
 - Auxiliary head on the policy: predicts the round's relative score, which teaches the shared
   layers about tricks and contracts. It affects neither the reward nor the moves' scores.
 - Opponents: half the games are self-play; in the rest two opposite seats play a past version.
@@ -59,18 +63,21 @@ def _head(key, hidden, out, scale):
     return {"w": _orth(scale)(key, (hidden, out)), "b": jnp.zeros(out)}
 
 
-def init_nets(key, hidden: int, depth: int):
+def init_nets(key, hidden: int, depth: int, oracle: bool = False):
     k1, k2, k3, k4, k5 = jax.random.split(key, 5)
+    extra = {"oracle": jnp.zeros((HIDDEN, hidden))} if oracle else {}
     return {
         "policy": {"body": _mlp(k1, E.SIZE, hidden, depth), "policy": _head(k2, hidden, R.NUM_ACTIONS, 0.01),
-                   "aux": _head(k3, hidden, 1, 1.0)},
+                   "aux": _head(k3, hidden, 1, 1.0), **extra},
         "critic": {"body": _mlp(k4, E.SIZE + HIDDEN, hidden, depth), "value": _head(k5, hidden, 1, 1.0)},
     }  # fmt: skip
 
 
-def _body(layers, x):
+def _body(layers, x, extra=0.0):
+    """``extra`` joins the first layer: the fading hidden cards, while they last."""
     for layer in layers:
-        x = jax.nn.relu(x @ layer["w"] + layer["b"])
+        x = jax.nn.relu(x @ layer["w"] + layer["b"] + extra)
+        extra = 0.0
     return x
 
 
@@ -78,8 +85,10 @@ def _out(head, x):
     return x @ head["w"] + head["b"]
 
 
-def apply_policy(net, x):
-    h = _body(net["body"], x)
+def apply_policy(net, x, seen=None):
+    """``seen``: the hidden cards this decision may look at. Without it, the policy plays fair."""
+    extra = seen.astype(x.dtype) @ net["oracle"] if seen is not None and "oracle" in net else 0.0
+    h = _body(net["body"], x, extra)
     return _out(net["policy"], h), _out(net["aux"], h)[..., 0]
 
 
@@ -165,12 +174,13 @@ def hidden_of(rounds, seat):
     return jnp.concatenate(parts, -1)
 
 
-def choose(policy, opp, g, learner, key, greedy=False, benchmark=None):
-    """``benchmark``: RL v2's nets (jaxenv.rlv2), which then play the other seats instead of ``opp``."""
+def choose(policy, opp, g, learner, key, greedy=False, benchmark=None, seen=None):
+    """``benchmark``: RL v2's nets (jaxenv.rlv2), which then play the other seats instead of ``opp``.
+    ``seen`` goes to ``policy`` only: opponents always play fair."""
     seat = g.round.cur
     x = jax.vmap(E.encode)(g.round, seat)
     mask = jax.vmap(G.game_legal)(g)
-    logits, _ = apply_policy(policy, x)
+    logits, _ = apply_policy(policy, x, seen)
     if benchmark is None:
         opp_logits, _ = apply_policy(opp, x)
     else:
@@ -198,7 +208,7 @@ def _advance(g, used, base, pool, action):
 def make_rollout(batch: int, steps: int, lam: float, objective: str = "weighted", benchmark=None):
     base = jnp.arange(batch) * POOL_DEALS
 
-    def rollout(nets, opp, g, key):
+    def rollout(nets, opp, g, key, oracle=0.0):
         k_pool, k_seats, k_mix, k_steps = jax.random.split(key, 4)
         pool = G.deal_pool(k_pool, batch * POOL_DEALS)
         pairs = jax.random.bernoulli(k_seats, 0.5, (batch,))
@@ -210,14 +220,15 @@ def make_rollout(batch: int, steps: int, lam: float, objective: str = "weighted"
             seat = g.round.cur
             phase = g.round.phase
             pre_super = g.round.caller < 0
-            action, logp, x, mine, n_legal = choose(nets["policy"], opp, g, learner, k, benchmark=benchmark)
             hidden = hidden_of(g.round, seat)
+            seen = hidden & jax.random.bernoulli(jax.random.fold_in(k, 1), oracle, hidden.shape)
+            action, logp, x, mine, n_legal = choose(nets["policy"], opp, g, learner, k, benchmark=benchmark, seen=seen)
             value = apply_critic(nets["critic"], x, hidden)
             g, used, r, ended, after = _advance(g, used, base, pool, action)
             played = ended & ~r.skipped
             made = jnp.take_along_axis(r.est == r.won, jnp.maximum(r.caller, 0)[:, None], 1)[:, 0]
             return (g, used), dict(
-                x=x.astype(jnp.float16), hidden=hidden, action=action, logp=logp, value=value, seat=seat,
+                x=x.astype(jnp.float16), hidden=hidden, seen=seen, action=action, logp=logp, value=value, seat=seat,
                 train=mine & (n_legal > 1), ended=ended, round_rew=round_rewards(r),
                 finished=after.over & ~after.overflow, overflow=after.overflow,
                 reward=objective_rewards(after.scores, objective), phase=phase, pre_super=pre_super,
@@ -268,7 +279,7 @@ def make_rollout(batch: int, steps: int, lam: float, objective: str = "weighted"
             # how well the critic predicts the final position in a game's last rollout; 0.52 = no idea
             final_mse=((tr["value"] - final) ** 2 * has_final).sum() / jnp.maximum(has_final.sum(), 1),
         )
-        data = dict(x=tr["x"], hidden=tr["hidden"], action=a, logp=tr["logp"], value=tr["value"], target=target,
+        data = dict(x=tr["x"], hidden=tr["hidden"], seen=tr["seen"], action=a, logp=tr["logp"], value=tr["value"], target=target,
                     valid=valid, aux_target=aux_target, aux_ok=aux_ok & tr["train"])  # fmt: skip
         flat = jax.tree.map(lambda v: v.reshape(batch * steps, *v.shape[2:]), data)
         adv = adv.reshape(batch * steps)
@@ -284,7 +295,7 @@ def make_rollout(batch: int, steps: int, lam: float, objective: str = "weighted"
 def make_update(tx_policy, tx_critic, clip: float, aux_weight: float):
     def policy_loss(net, mb, ent):
         x = mb["x"].astype(jnp.float32)
-        logits, aux = apply_policy(net, x)
+        logits, aux = apply_policy(net, x, mb["seen"])
         legal = x[:, -R.NUM_ACTIONS :] > 0.5
         logp_all = jax.nn.log_softmax(jnp.where(legal, logits, -1e9))
         logp = jnp.take_along_axis(logp_all, mb["action"][:, None], 1)[:, 0]
@@ -344,6 +355,11 @@ def make_eval(batch: int, steps: int, benchmark=None):
     return run
 
 
+def oracle_chance(frac: float, fade: float) -> float:
+    """The chance that a hidden card is visible, ``frac`` of the way through training."""
+    return max(0.0, 1.0 - frac / fade) if fade > 0 else 0.0
+
+
 def save_npz(policy, path: Path, meta: dict) -> None:
     arrays = {}
     for k, layer in enumerate(policy["body"]):
@@ -376,6 +392,7 @@ def main(argv=None) -> int:
     p.add_argument("--pool", type=int, default=16)
     p.add_argument("--eval-every", type=int, default=25)
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--oracle-fade", type=float, default=0.0, help="share of training over which the hidden cards fade out")
     p.add_argument("--logdir", type=Path)
     p.add_argument("--benchmark", type=Path, help="RL v2 weights: train against it and report the score vs it")
     p.add_argument("--benchmark-share", type=float, default=0.5, help="share of iterations played against it")
@@ -385,7 +402,7 @@ def main(argv=None) -> int:
     print("device:", jax.devices()[0], "| view:", E.SIZE, "| critic adds:", HIDDEN, flush=True)
     key = jax.random.key(a.seed)
     key, k_net = jax.random.split(key)
-    nets = init_nets(k_net, a.hidden, a.depth)
+    nets = init_nets(k_net, a.hidden, a.depth, oracle=a.oracle_fade > 0)
     uniform = jax.tree.map(jnp.zeros_like, nets["policy"])  # all-zero logits: uniform over legal
     tx_policy = optax.chain(optax.clip_by_global_norm(1.0), optax.adam(a.lr))
     tx_critic = optax.chain(optax.clip_by_global_norm(1.0), optax.adam(a.lr))
@@ -413,9 +430,10 @@ def main(argv=None) -> int:
         key, k_opp, k_roll, k_perm, k_eval = jax.random.split(key, 5)
         opp = pool[int(jax.random.randint(k_opp, (), 0, len(pool)))]
         versus = benchmark and float(jax.random.uniform(jax.random.fold_in(k_opp, 1))) < a.benchmark_share
-        g, flat, stats = (rollout_benchmark if versus else rollout)(nets, opp, g, k_roll)
-        n = a.batch * a.steps
         frac = (it - 1) / max(a.iterations - 1, 1)
+        oracle = oracle_chance(frac, a.oracle_fade)
+        g, flat, stats = (rollout_benchmark if versus else rollout)(nets, opp, g, k_roll, oracle)
+        n = a.batch * a.steps
         ent = a.entropy + (a.entropy_end - a.entropy) * frac
         for epoch in range(a.epochs):
             order = jnp.argsort(jax.random.uniform(jax.random.fold_in(k_perm, epoch), (n,)))
@@ -425,7 +443,7 @@ def main(argv=None) -> int:
         decisions += n
         if it % a.snapshot_every == 0:
             pool = (pool + [jax.device_get(nets["policy"])])[-a.pool :]
-        row = {"iteration": it, "valid": float(flat["valid"].mean()), **{k: float(v) for k, v in info.items()},
+        row = {"iteration": it, "oracle": oracle, "valid": float(flat["valid"].mean()), **{k: float(v) for k, v in info.items()},
                **{k: float(v) for k, v in stats.items()}, "decisions": decisions,
                "per_s": decisions / (time.perf_counter() - t0)}  # fmt: skip
         if it % a.eval_every == 0 or it == 1:
