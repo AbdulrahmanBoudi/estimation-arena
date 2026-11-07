@@ -179,3 +179,48 @@ def test_page_files_stay_out_of_shared_caches():
     response = asyncio.run(PrivateStatic(directory=STATIC).get_response("lab.css", scope))
     assert response.headers["Cache-Control"] == "private, no-cache"
 
+
+def _experiment(folder, bot):
+    pair = {"a": f"sub:{bot}", "b": "random", "a_wins": 3, "draws": 0, "b_wins": 1}
+    (folder / "results").mkdir(parents=True, exist_ok=True)
+    (folder / "results" / f"{bot}.json").write_text(json.dumps(
+        {"bot": bot, "manifest": {"name": bot}, "sets": 4, "played_at": "t", "versus": [],
+         "pairs": [pair], "position_pairs": [pair], "king_pairs": [pair]}
+    ))  # fmt: skip
+
+
+def test_an_unmerged_bot_from_the_server_is_provisional(tmp_path):
+    _experiment(tmp_path, "my-experiment")
+    rows = {r["key"]: r for r in leaderboard.build(ROOT, None, tmp_path)["rows"]}
+    assert rows["sub:my-experiment"]["provisional"] is True
+    assert rows["sub:lowcard-wire"]["provisional"] is False
+
+
+def test_official_results_beat_the_servers_copy(tmp_path):
+    _experiment(tmp_path, "lowcard-wire")
+    official = {r["key"]: r for r in leaderboard.build(ROOT)["rows"]}["sub:lowcard-wire"]
+    both = {r["key"]: r for r in leaderboard.build(ROOT, None, tmp_path)["rows"]}["sub:lowcard-wire"]
+    assert (both["elo"], both["provisional"]) == (official["elo"], False)
+
+
+def test_without_experiments_it_matches_the_public_page():
+    rows = leaderboard.build(ROOT)["rows"]
+    assert [r["key"] for r in rows] == [r["key"] for r in leaderboard.build(ROOT, None, ROOT)["rows"]]
+    assert not any(r.get("provisional") for r in rows)
+
+
+def test_experiments_do_not_move_official_ratings(tmp_path):
+    _experiment(tmp_path, "my-experiment")
+    fields = ("key", "elo", "king_elo", "score_elo")
+    official = {r["key"]: [r[f] for f in fields] for r in leaderboard.build(ROOT)["rows"]}
+    live_match = [_entry("sub:n:fresh", "heuristic", 50, 10)]
+    both = {r["key"]: [r[f] for f in fields] for r in leaderboard.build(ROOT, live_match, tmp_path)["rows"]}
+    assert {key: both[key] for key in official} == official
+    assert "sub:my-experiment" in both and "sub:n:fresh" in both
+
+
+def test_every_bot_panel_opens(monkeypatch):
+    monkeypatch.setattr(board, "RESULTS_ROOT", ROOT)
+    monkeypatch.setattr(board, "_cache", {"signature": None, "standings": []})
+    for row in board.payload()["standings"]:
+        assert board.explain(row["key"]), row["key"]
