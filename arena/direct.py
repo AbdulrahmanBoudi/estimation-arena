@@ -8,6 +8,7 @@ needs no engine; arena.duels plays them.
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Iterable, Sequence
 from math import comb
 from pathlib import Path
@@ -21,6 +22,13 @@ def match_file(root: Path, a: str, b: str) -> Path:
     """One file per pair of bots, whichever way round they are named."""
     first, second = sorted((a, b))
     return root / DIRECT_DIR / f"{first}.vs.{second}.json"
+
+
+def game_file(a: str, b: str) -> str:
+    """The watchable game's file for two bots' code names, whichever way round."""
+    slug = lambda name: re.sub(r"[^a-z0-9-]+", "-", name.lower()).strip("-")  # noqa: E731
+    first, second = sorted((slug(a), slug(b)))
+    return f"{first}.vs.{second}.json"
 
 
 def load_matches(root: Path) -> list[dict[str, Any]]:

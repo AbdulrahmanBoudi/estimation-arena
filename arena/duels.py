@@ -19,7 +19,7 @@ from typing import Any
 from .bots import ROOT, SUB_PREFIX, load_manifest
 from .direct import current, is_clear, load_matches, match_file, record
 from .leaderboard import build
-from .positions import summarize
+from .positions import encode_scores, summarize
 from .run import RESULTS_DIR, bot_hash, engine_version, run_sets
 
 BATCH_SETS = 20
@@ -69,6 +69,7 @@ def play(a: str, b: str, seed: int, workers: int = 4, sets: int = BATCH_SETS, ro
     match["pairs"] += by_position["delta"]
     match["position_pairs"] += by_position["weighted"]
     match["king_pairs"] += by_position["king"]
+    match["scores"] = ",".join(filter(None, (match.get("scores"), encode_scores(run.results))))
     match["batches"].append({"sets": sets, "played_at": datetime.now(UTC).isoformat(timespec="seconds"), "wall_s": run.wall_seconds})
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(match, indent=1) + "\n")
