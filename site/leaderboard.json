@@ -191,6 +191,15 @@
   },
   {
    "a": "sub:cautious-heuristic",
+   "b": "sub:highcard-wire",
+   "a_wins": 20,
+   "draws": 0,
+   "b_wins": 0,
+   "sets": 20,
+   "clear": true
+  },
+  {
+   "a": "sub:cautious-heuristic",
    "b": "sub:hybrid-v4",
    "a_wins": 0,
    "draws": 0,
@@ -584,11 +593,11 @@
   "sub:table-pressure",
   "heuristic",
   "sub:cautious-heuristic",
-  "sub:highcard-wire",
   "sub:lowcard-wire",
+  "sub:highcard-wire",
   "random"
  ],
- "built_at": "2026-11-07T08:49:10+00:00",
+ "built_at": "2026-11-07T08:49:17+00:00",
  "anchor": "random",
  "anchor_rating": 400.0,
  "ladder": {
@@ -627,9 +636,9 @@
      "pick"
     ]
    ],
-   "elo": 2106.1246042092876,
-   "king_elo": 1877.7959563061188,
-   "score_elo": 4757.338056238878,
+   "elo": 2126.5959009778853,
+   "king_elo": 1893.9659726960308,
+   "score_elo": 4761.606163335885,
    "positions": [
     0.4604166666666667,
     0.36562500000000003,
@@ -766,9 +775,9 @@
      "pick"
     ]
    ],
-   "elo": 1837.2864246173986,
-   "king_elo": 1635.4586834696627,
-   "score_elo": 4417.283222437645,
+   "elo": 1857.7577539504168,
+   "king_elo": 1651.6288412434606,
+   "score_elo": 4421.563815629141,
    "positions": [
     0.4088541666666667,
     0.3619791666666667,
@@ -905,9 +914,9 @@
      "pick"
     ]
    ],
-   "elo": 1773.884296074098,
-   "king_elo": 1604.679022596154,
-   "score_elo": 4369.771992613516,
+   "elo": 1794.3556529101122,
+   "king_elo": 1620.8491597935067,
+   "score_elo": 4374.057418121465,
    "positions": [
     0.39479166666666665,
     0.33229166666666665,
@@ -1036,9 +1045,9 @@
      "pick"
     ]
    ],
-   "elo": 1758.3115562387165,
-   "king_elo": 1527.1720579413216,
-   "score_elo": 4324.498895354187,
+   "elo": 1778.7829211615515,
+   "king_elo": 1543.3417849316531,
+   "score_elo": 4328.790494109041,
    "positions": [
     0.3807291666666666,
     0.3520833333333333,
@@ -1175,9 +1184,9 @@
      "pick"
     ]
    ],
-   "elo": 1756.3825560570085,
-   "king_elo": 1555.0561159325725,
-   "score_elo": 4316.43288777437,
+   "elo": 1776.8539219954646,
+   "king_elo": 1571.2260842854455,
+   "score_elo": 4320.725788676977,
    "positions": [
     0.3822916666666667,
     0.37343750000000003,
@@ -1313,9 +1322,9 @@
      "pick"
     ]
    ],
-   "elo": 1727.8490935396208,
-   "king_elo": 1578.6307086242805,
-   "score_elo": 4412.905912786229,
+   "elo": 1748.3204741072666,
+   "king_elo": 1594.8007866440403,
+   "score_elo": 4417.086893492762,
    "positions": [
     0.426875,
     0.353125,
@@ -1348,9 +1357,9 @@
      "pick"
     ]
    ],
-   "elo": 1610.9060561942279,
-   "king_elo": 1423.0494514347756,
-   "score_elo": 4194.046893553813,
+   "elo": 1631.377336199931,
+   "king_elo": 1439.2154004100978,
+   "score_elo": 4198.370950834613,
    "positions": [
     0.35572916666666665,
     0.3223958333333333,
@@ -1482,9 +1491,9 @@
      "pick"
     ]
    ],
-   "elo": 1583.8410329070289,
-   "king_elo": 1440.1937479715446,
-   "score_elo": 4164.382344021542,
+   "elo": 1604.3121487927717,
+   "king_elo": 1456.3608709925056,
+   "score_elo": 4168.489451337937,
    "positions": [
     0.36,
     0.33187500000000003,
@@ -1525,9 +1534,9 @@
      "pick"
     ]
    ],
-   "elo": 1443.381459273164,
-   "king_elo": 1336.4830984925743,
-   "score_elo": 3977.7738597078824,
+   "elo": 1463.846235312867,
+   "king_elo": 1352.6344448026466,
+   "score_elo": 3982.267778378828,
    "positions": [
     0.30416666666666664,
     0.32864583333333336,
@@ -1659,9 +1668,9 @@
      "pick"
     ]
    ],
-   "elo": 1380.8179139461963,
-   "king_elo": 1307.3558869944302,
-   "score_elo": 3958.373499813801,
+   "elo": 1401.2695979283621,
+   "king_elo": 1323.4962357168374,
+   "score_elo": 3962.394691865772,
    "positions": [
     0.31375000000000003,
     0.32875,
@@ -1697,9 +1706,9 @@
      "pick"
     ]
    ],
-   "elo": 1370.7714953588406,
-   "king_elo": 1302.441974414235,
-   "score_elo": 3921.26965552092,
+   "elo": 1391.2196411697296,
+   "king_elo": 1318.5799728832603,
+   "score_elo": 3925.4429288712095,
    "positions": [
     0.286875,
     0.3125,
@@ -1732,9 +1741,9 @@
      "pick"
     ]
    ],
-   "elo": 1280.6330101029562,
-   "king_elo": 1238.319301697923,
-   "score_elo": 3816.169567633993,
+   "elo": 1301.0120533854224,
+   "king_elo": 1254.4065458303967,
+   "score_elo": 3821.0552568593835,
    "positions": [
     0.25729166666666664,
     0.265625,
@@ -1867,9 +1876,9 @@
      "pick"
     ]
    ],
-   "elo": 1050.4887483409175,
-   "king_elo": 982.3972836794367,
-   "score_elo": 3425.0490421402474,
+   "elo": 1069.4758055469565,
+   "king_elo": 996.9070158780439,
+   "score_elo": 3432.0521537727204,
    "positions": [
     0.15,
     0.19843750000000002,
@@ -2001,9 +2010,9 @@
      "pick"
     ]
    ],
-   "elo": 965.1882701410983,
-   "king_elo": 944.8140392502789,
-   "score_elo": 3095.7720835240925,
+   "elo": 982.4957317611987,
+   "king_elo": 958.6774919140763,
+   "score_elo": 3095.772274652793,
    "positions": [
     0.1125,
     0.17250000000000001,
@@ -2040,9 +2049,9 @@
      "pick"
     ]
    ],
-   "elo": 913.2761561563693,
-   "king_elo": 903.3941183425226,
-   "score_elo": 3246.0554472314466,
+   "elo": 959.9952344512171,
+   "king_elo": 939.2527446846345,
+   "score_elo": 3274.491161458818,
    "positions": [
     0.134375,
     0.17708333333333334,
@@ -2151,137 +2160,6 @@
    "code_name": "cautious-heuristic"
   },
   {
-   "name": "Always highest card",
-   "author": "Essam",
-   "kind": "wire",
-   "description": "A simple example bot. It never bids and always plays its highest card.",
-   "key": "sub:highcard-wire",
-   "provisional": false,
-   "method": [
-    [
-     "never bid; call the minimum",
-     "bid"
-    ],
-    [
-     "list the legal cards",
-     "rule"
-    ],
-    [
-     "play the highest",
-     "pick"
-    ]
-   ],
-   "elo": 718.9881254476859,
-   "king_elo": 680.4854721694887,
-   "score_elo": 2934.5612632657194,
-   "positions": [
-    0.078125,
-    0.06979166666666665,
-    0.4354166666666666,
-    0.4166666666666667
-   ],
-   "games": 960,
-   "sets": 20,
-   "played_at": "2026-11-06T23:25:50+00:00",
-   "engine": "0.1.0+2dbf68df",
-   "p95_ms": 0.39559598218722175,
-   "over_budget": 0.0,
-   "versus": [
-    {
-     "anchor": "Random",
-     "rsa": 45824973.63333333,
-     "rsa_low": -1350417.1135668084,
-     "rsa_high": 93000364.38023347,
-     "first_place": 0.425,
-     "positions": [
-      0.425,
-      0.38125,
-      0.19375,
-      0.0
-     ],
-     "position_reward": 0.4625,
-     "delta": 68737460.45
-    },
-    {
-     "anchor": "Heuristic",
-     "rsa": -513.1916666666667,
-     "rsa_low": -557.6235406939994,
-     "rsa_high": -468.75979263933397,
-     "first_place": 0.0,
-     "positions": [
-      0.0,
-      0.025,
-      0.475,
-      0.5
-     ],
-     "position_reward": -0.59,
-     "delta": -769.7875
-    },
-    {
-     "anchor": "PIMC",
-     "rsa": -737.325,
-     "rsa_low": -768.9812336824821,
-     "rsa_high": -705.668766317518,
-     "first_place": 0.0,
-     "positions": [
-      0.0,
-      0.0,
-      0.5,
-      0.5
-     ],
-     "position_reward": -0.6,
-     "delta": -1105.9875
-    },
-    {
-     "anchor": "Search bot",
-     "rsa": -716.15,
-     "rsa_low": -732.2816979458113,
-     "rsa_high": -700.0183020541887,
-     "first_place": 0.0,
-     "positions": [
-      0.0,
-      0.0,
-      0.5,
-      0.5
-     ],
-     "position_reward": -0.6,
-     "delta": -1074.225
-    },
-    {
-     "anchor": "RL v2",
-     "rsa": -981.1583333333332,
-     "rsa_low": -1321.2254527120501,
-     "rsa_high": -641.0912139546163,
-     "first_place": 0.0375,
-     "positions": [
-      0.0375,
-      0.0125,
-      0.45,
-      0.5
-     ],
-     "position_reward": -0.55,
-     "delta": -1471.7375
-    },
-    {
-     "anchor": "Hybrid (B-Tig)",
-     "rsa": -1020.3458333333334,
-     "rsa_low": -1221.1034531003518,
-     "rsa_high": -819.5882135663151,
-     "first_place": 0.00625,
-     "positions": [
-      0.00625,
-      0.0,
-      0.49375,
-      0.5
-     ],
-     "position_reward": -0.5925,
-     "delta": -1530.51875
-    }
-   ],
-   "anchor": false,
-   "code_name": "highcard-wire"
-  },
-  {
    "name": "Always lowest card",
    "author": "Essam",
    "kind": "wire",
@@ -2302,9 +2180,9 @@
      "pick"
     ]
    ],
-   "elo": 718.9881254476859,
-   "king_elo": 673.2812810841694,
-   "score_elo": 2902.714421290123,
+   "elo": 733.4293313288254,
+   "king_elo": 684.4915012118151,
+   "score_elo": 2904.241722464529,
    "positions": [
     0.07604166666666666,
     0.07604166666666667,
@@ -2411,6 +2289,137 @@
    ],
    "anchor": false,
    "code_name": "lowcard-wire"
+  },
+  {
+   "name": "Always highest card",
+   "author": "Essam",
+   "kind": "wire",
+   "description": "A simple example bot. It never bids and always plays its highest card.",
+   "key": "sub:highcard-wire",
+   "provisional": false,
+   "method": [
+    [
+     "never bid; call the minimum",
+     "bid"
+    ],
+    [
+     "list the legal cards",
+     "rule"
+    ],
+    [
+     "play the highest",
+     "pick"
+    ]
+   ],
+   "elo": 680.1126231205744,
+   "king_elo": 648.5094496189922,
+   "score_elo": 2885.9109004143907,
+   "positions": [
+    0.078125,
+    0.06979166666666665,
+    0.4354166666666666,
+    0.4166666666666667
+   ],
+   "games": 960,
+   "sets": 20,
+   "played_at": "2026-11-06T23:25:50+00:00",
+   "engine": "0.1.0+2dbf68df",
+   "p95_ms": 0.39559598218722175,
+   "over_budget": 0.0,
+   "versus": [
+    {
+     "anchor": "Random",
+     "rsa": 45824973.63333333,
+     "rsa_low": -1350417.1135668084,
+     "rsa_high": 93000364.38023347,
+     "first_place": 0.425,
+     "positions": [
+      0.425,
+      0.38125,
+      0.19375,
+      0.0
+     ],
+     "position_reward": 0.4625,
+     "delta": 68737460.45
+    },
+    {
+     "anchor": "Heuristic",
+     "rsa": -513.1916666666667,
+     "rsa_low": -557.6235406939994,
+     "rsa_high": -468.75979263933397,
+     "first_place": 0.0,
+     "positions": [
+      0.0,
+      0.025,
+      0.475,
+      0.5
+     ],
+     "position_reward": -0.59,
+     "delta": -769.7875
+    },
+    {
+     "anchor": "PIMC",
+     "rsa": -737.325,
+     "rsa_low": -768.9812336824821,
+     "rsa_high": -705.668766317518,
+     "first_place": 0.0,
+     "positions": [
+      0.0,
+      0.0,
+      0.5,
+      0.5
+     ],
+     "position_reward": -0.6,
+     "delta": -1105.9875
+    },
+    {
+     "anchor": "Search bot",
+     "rsa": -716.15,
+     "rsa_low": -732.2816979458113,
+     "rsa_high": -700.0183020541887,
+     "first_place": 0.0,
+     "positions": [
+      0.0,
+      0.0,
+      0.5,
+      0.5
+     ],
+     "position_reward": -0.6,
+     "delta": -1074.225
+    },
+    {
+     "anchor": "RL v2",
+     "rsa": -981.1583333333332,
+     "rsa_low": -1321.2254527120501,
+     "rsa_high": -641.0912139546163,
+     "first_place": 0.0375,
+     "positions": [
+      0.0375,
+      0.0125,
+      0.45,
+      0.5
+     ],
+     "position_reward": -0.55,
+     "delta": -1471.7375
+    },
+    {
+     "anchor": "Hybrid (B-Tig)",
+     "rsa": -1020.3458333333334,
+     "rsa_low": -1221.1034531003518,
+     "rsa_high": -819.5882135663151,
+     "first_place": 0.00625,
+     "positions": [
+      0.00625,
+      0.0,
+      0.49375,
+      0.5
+     ],
+     "position_reward": -0.5925,
+     "delta": -1530.51875
+    }
+   ],
+   "anchor": false,
+   "code_name": "highcard-wire"
   },
   {
    "name": "Random",
