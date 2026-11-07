@@ -1,0 +1,41 @@
+{
+ "a": "bitter-net",
+ "b": "table-pressure",
+ "hash_a": "0ee768fef2f2037b",
+ "hash_b": "79315fa420fa9ec0",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T07:46:17+00:00",
+   "wall_s": 1.8348952970009123
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:bitter-net",
+   "b": "sub:table-pressure",
+   "a_wins": 20,
+   "draws": 0,
+   "b_wins": 0
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:bitter-net",
+   "b": "sub:table-pressure",
+   "a_wins": 19,
+   "draws": 1,
+   "b_wins": 0
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:bitter-net",
+   "b": "sub:table-pressure",
+   "a_wins": 17,
+   "draws": 3,
+   "b_wins": 0
+  }
+ ]
+}
