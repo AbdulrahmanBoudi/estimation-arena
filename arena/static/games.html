@@ -17,11 +17,11 @@ button:hover{background:var(--raised)}button[aria-pressed=true]{background:var(-
 .bots li{border-bottom:1px solid var(--line)}.bots a{display:grid;grid-template-columns:2.5em 1fr auto;gap:10px;padding:11px 4px;text-decoration:none}.bots a:hover{background:var(--raised)}
 .bots .rank,.bots .elo{color:var(--muted)}.tag{font-size:13px;color:var(--muted);border:1px solid var(--line);border-radius:10px;padding:0 7px;margin-left:8px;white-space:nowrap}
 .filters{display:flex;gap:6px;flex-wrap:wrap}
-.match{border-top:1px solid var(--line);padding:12px 0}.match-main{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(90px,1fr) 8.5em auto;gap:6px 16px;align-items:center}
+.match{border-top:1px solid var(--line);padding:12px 0}.match-main{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(90px,1fr) 5em 11em;gap:6px 16px;align-items:center}
 .opp{font-weight:600}.record{text-align:right}.close{color:var(--muted)}.won{color:var(--gold);font-weight:600}.lost{color:var(--bad);font-weight:600}
 .bar{display:flex;height:9px;gap:1px;border-radius:3px;overflow:hidden;background:var(--raised)}.bar i{display:block}.bar .w{background:var(--gold)}.bar .d{background:var(--muted)}.bar .l{background:var(--bad)}
-.actions{display:flex;gap:6px;justify-content:flex-end}.actions a{display:inline-block;padding:6px 12px;border-radius:6px;background:var(--ivory);color:var(--ink);text-decoration:none;font-weight:600;min-height:36px}
-.sets{margin:10px 0 2px;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:4px 18px}.set{display:flex;gap:10px;padding:3px 0;font-size:14px;align-items:baseline}.set b{width:1.5em}.set span{color:var(--muted)}.set .up{color:var(--gold)}.set .down{color:var(--bad)}
+.actions{display:flex;gap:6px;justify-content:flex-end;align-items:center}.actions a{display:inline-block;padding:6px 12px;border-radius:6px;background:var(--ivory);color:var(--ink);text-decoration:none;font-weight:600;min-height:36px}
+.sets .note{grid-column:1/-1;margin:0}.sets{margin:10px 0 2px;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:4px 18px}.set{display:flex;gap:10px;padding:3px 0;font-size:14px;align-items:baseline}.set b{width:1.5em}.set span{color:var(--muted)}.set .up{color:var(--gold)}.set .down{color:var(--bad)}
 
 .table{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr);grid-template-areas:". top ." "left mid right" ". bottom .";gap:12px;margin:18px 0}
 .seat{background:var(--raised);border-radius:8px;padding:10px;min-width:0;border-left:4px solid var(--seat)}.seat.turn{outline:2px solid var(--ivory)}
@@ -44,6 +44,7 @@ button:hover{background:var(--raised)}button[aria-pressed=true]{background:var(-
 "use strict";
 const SUITS = ["♣", "♦", "♥", "♠", "NT"], RANKS = "23456789TJQKA";
 const app = document.getElementById("app");
+const BOARD = location.pathname === "/games/" ? "/board" : "../";  // the app's board, or the public page
 let data = null, game = null, timer = null, view = {};
 const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; };
 const rank = (c) => RANKS[c % 13].replace("T", "10");
@@ -79,7 +80,7 @@ function home() {
     a.append(el("span", "rank", k + 1), name, el("span", "elo", Math.round(b.elo)));
     li.append(a); list.append(li);
   });
-  app.replaceChildren(crumbs(["Standings", "../"]), el("h1", "", "Games"), el("p", "note", "Pick a bot to see who it played, how each match went, and to watch a game with every card showing."), list);
+  app.replaceChildren(crumbs(["Standings", BOARD]), el("h1", "", "Games"), el("p", "note", "Pick a bot to see who it played, how each match went, and to watch a game with every card showing."), list);
 }
 
 function sidesFor(m, key) {
@@ -108,7 +109,7 @@ function strategy(key) {
   const all = data.matchups.filter((m) => m.a === key || m.b === key);
   const order = new Map(data.bots.map((b, k) => [b.key, k]));
   const place = data.runoff.indexOf(key);
-  const head = [crumbs(["All bots", "#"], ["Standings", "../"]), el("h1", "", bot.name)];
+  const head = [crumbs(["All bots", "#"], ["Standings", BOARD]), el("h1", "", bot.name)];
   if (bot.elo !== null) head.push(el("p", "muted", `Rated ${Math.round(bot.elo)}` + (place >= 0 ? `. Runoff place ${place + 1} of ${data.runoff.length}.` : ".")));
   if (bot.description) head.push(el("p", "note", bot.description));
   const filter = view.filter ?? "all";
@@ -137,7 +138,7 @@ function strategy(key) {
     else actions.append(el("span", "muted", "Game coming"));
     main.append(label, bar, rec, actions); box.append(main); list.append(box);
   }
-  app.replaceChildren(...head, el("h2", "", "Matches"), el("p", "note", "Sets won, drawn and lost in the rated games. Each number under Sets is one game's margin, with deal luck cancelled across the set's four games. Rated games only keep scores, because showing their cards would reveal the ladder's secret deals. Watch plays the same two bots on public deals, and that game isn't rated."), filters, rows.length ? list : el("p", "note", "No matches yet."));
+  app.replaceChildren(...head, el("h2", "", "Matches"), el("p", "note", "Records are rated sets won, drawn and lost. Sets lists each one, with the bot's margin in its four games. Rated cards stay hidden so the secret deals stay secret, so Watch shows the same two bots on public deals, in a game that isn't rated."), filters, rows.length ? list : el("p", "note", "No matches yet."));
   scrollTo(0, 0);
 }
 
@@ -210,8 +211,8 @@ function renderGame() {
 
   const back = view.bot ? ["Back to " + nameOf(view.bot), "#bot=" + encodeURIComponent(view.bot)] : ["All bots", "#"];
   const head = el("h1", "", `${nameOf(a)} vs ${nameOf(b)}`);
-  const finish = game.final ? [0, 1, 2, 3].map((k) => game.final[k]).join(", ") : "";
-  app.replaceChildren(crumbs(back), head, el("p", "note", `Public deals, not a rated game. Every card is shown, though each bot only saw its own hand. Final scores by seat: ${finish}.`), rounds, table, controls, el("h2", "", "Scores"), score, el("h2", "", "Calls this round"), calls);
+  const finish = game.final ? `${nameOf(a)} ${game.final[0]} and ${game.final[2]}, ${nameOf(b)} ${game.final[1]} and ${game.final[3]}` : "";
+  app.replaceChildren(crumbs(back), head, el("p", "note", `Public deals, not a rated game. Every card is shown here, but each bot only saw its own hand. Final scores: ${finish}.`), rounds, table, controls, el("h2", "", "Scores"), score, el("h2", "", "Calls this round"), calls);
 }
 
 function stop() { clearInterval(timer); timer = null; }
