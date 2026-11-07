@@ -1,0 +1,41 @@
+{
+ "a": "hybrid-v4",
+ "b": "rl-hybrid",
+ "hash_a": "f2f793ae33514ed4",
+ "hash_b": "fcd28852962a533c",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T05:06:19+00:00",
+   "wall_s": 859.3354046089999
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:hybrid-v4",
+   "b": "sub:rl-hybrid",
+   "a_wins": 19,
+   "draws": 0,
+   "b_wins": 1
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:hybrid-v4",
+   "b": "sub:rl-hybrid",
+   "a_wins": 18,
+   "draws": 1,
+   "b_wins": 1
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:hybrid-v4",
+   "b": "sub:rl-hybrid",
+   "a_wins": 15,
+   "draws": 5,
+   "b_wins": 0
+  }
+ ]
+}
