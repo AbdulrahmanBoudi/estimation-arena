@@ -7,7 +7,7 @@
     "bot.py"
   ],
   "description": "Experiment: Codex chooses every move through its CLI, with no tools and only this seat's view. Lives in experiments/bots, so it is never rated.",
-  "timeout_s": 200,
+  "timeout_s": 400,
   "method": [
     [
       "describe this seat's view in words",
