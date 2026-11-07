@@ -1,0 +1,41 @@
+{
+ "a": "lowcard-wire",
+ "b": "pimc-clone",
+ "hash_a": "7d23b34157753183",
+ "hash_b": "7deed9c28c53df0b",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T08:48:53+00:00",
+   "wall_s": 6.894948352997744
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:lowcard-wire",
+   "b": "sub:pimc-clone",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 20
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:lowcard-wire",
+   "b": "sub:pimc-clone",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 20
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:lowcard-wire",
+   "b": "sub:pimc-clone",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 20
+  }
+ ]
+}

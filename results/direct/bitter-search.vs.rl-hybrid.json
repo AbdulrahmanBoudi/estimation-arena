@@ -9,6 +9,11 @@
    "sets": 20,
    "played_at": "2026-11-07T05:49:48+00:00",
    "wall_s": 486.6811302209999
+  },
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T09:51:38+00:00",
+   "wall_s": 793.391521256
   }
  ],
  "pairs": [
@@ -18,6 +23,13 @@
    "a_wins": 10,
    "draws": 0,
    "b_wins": 10
+  },
+  {
+   "a": "sub:bitter-search",
+   "b": "sub:rl-hybrid",
+   "a_wins": 8,
+   "draws": 0,
+   "b_wins": 12
   }
  ],
  "position_pairs": [
@@ -27,6 +39,13 @@
    "a_wins": 11,
    "draws": 0,
    "b_wins": 9
+  },
+  {
+   "a": "sub:bitter-search",
+   "b": "sub:rl-hybrid",
+   "a_wins": 10,
+   "draws": 2,
+   "b_wins": 8
   }
  ],
  "king_pairs": [
@@ -36,6 +55,13 @@
    "a_wins": 4,
    "draws": 9,
    "b_wins": 7
+  },
+  {
+   "a": "sub:bitter-search",
+   "b": "sub:rl-hybrid",
+   "a_wins": 7,
+   "draws": 9,
+   "b_wins": 4
   }
  ]
 }

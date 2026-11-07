@@ -1,0 +1,41 @@
+{
+ "a": "lowcard-wire",
+ "b": "table-pressure",
+ "hash_a": "7d23b34157753183",
+ "hash_b": "79315fa420fa9ec0",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T08:49:08+00:00",
+   "wall_s": 3.798579673999484
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:lowcard-wire",
+   "b": "sub:table-pressure",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 20
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:lowcard-wire",
+   "b": "sub:table-pressure",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 20
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:lowcard-wire",
+   "b": "sub:table-pressure",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 20
+  }
+ ]
+}

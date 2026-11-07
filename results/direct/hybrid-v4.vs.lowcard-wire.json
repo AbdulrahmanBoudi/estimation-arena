@@ -1,0 +1,41 @@
+{
+ "a": "hybrid-v4",
+ "b": "lowcard-wire",
+ "hash_a": "f2f793ae33514ed4",
+ "hash_b": "7d23b34157753183",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T07:38:44+00:00",
+   "wall_s": 1098.4492977129994
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:hybrid-v4",
+   "b": "sub:lowcard-wire",
+   "a_wins": 20,
+   "draws": 0,
+   "b_wins": 0
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:hybrid-v4",
+   "b": "sub:lowcard-wire",
+   "a_wins": 20,
+   "draws": 0,
+   "b_wins": 0
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:hybrid-v4",
+   "b": "sub:lowcard-wire",
+   "a_wins": 20,
+   "draws": 0,
+   "b_wins": 0
+  }
+ ]
+}

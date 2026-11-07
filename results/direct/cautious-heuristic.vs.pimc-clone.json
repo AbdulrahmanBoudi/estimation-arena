@@ -1,0 +1,41 @@
+{
+ "a": "cautious-heuristic",
+ "b": "pimc-clone",
+ "hash_a": "126e32edb235a338",
+ "hash_b": "7deed9c28c53df0b",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T08:44:52+00:00",
+   "wall_s": 1.8548920959983661
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:cautious-heuristic",
+   "b": "sub:pimc-clone",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 20
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:cautious-heuristic",
+   "b": "sub:pimc-clone",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 20
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:cautious-heuristic",
+   "b": "sub:pimc-clone",
+   "a_wins": 0,
+   "draws": 4,
+   "b_wins": 16
+  }
+ ]
+}

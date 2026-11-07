@@ -1,0 +1,41 @@
+{
+ "a": "pimc-clone",
+ "b": "table-pressure",
+ "hash_a": "7deed9c28c53df0b",
+ "hash_b": "79315fa420fa9ec0",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T08:40:39+00:00",
+   "wall_s": 2.1748596300003555
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:pimc-clone",
+   "b": "sub:table-pressure",
+   "a_wins": 20,
+   "draws": 0,
+   "b_wins": 0
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:pimc-clone",
+   "b": "sub:table-pressure",
+   "a_wins": 20,
+   "draws": 0,
+   "b_wins": 0
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:pimc-clone",
+   "b": "sub:table-pressure",
+   "a_wins": 19,
+   "draws": 1,
+   "b_wins": 0
+  }
+ ]
+}

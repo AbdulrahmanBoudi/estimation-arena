@@ -1,0 +1,41 @@
+{
+ "a": "highcard-wire",
+ "b": "table-pressure",
+ "hash_a": "ac81254bcf20c320",
+ "hash_b": "79315fa420fa9ec0",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T08:49:00+00:00",
+   "wall_s": 3.814030958998046
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:highcard-wire",
+   "b": "sub:table-pressure",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 20
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:highcard-wire",
+   "b": "sub:table-pressure",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 20
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:highcard-wire",
+   "b": "sub:table-pressure",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 20
+  }
+ ]
+}

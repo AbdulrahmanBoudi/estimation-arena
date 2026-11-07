@@ -1,0 +1,41 @@
+{
+ "a": "pimc-clone",
+ "b": "rl-hybrid",
+ "hash_a": "7deed9c28c53df0b",
+ "hash_b": "fcd28852962a533c",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T07:50:35+00:00",
+   "wall_s": 254.54301087400017
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:pimc-clone",
+   "b": "sub:rl-hybrid",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 20
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:pimc-clone",
+   "b": "sub:rl-hybrid",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 20
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:pimc-clone",
+   "b": "sub:rl-hybrid",
+   "a_wins": 0,
+   "draws": 1,
+   "b_wins": 19
+  }
+ ]
+}

@@ -1,0 +1,41 @@
+{
+ "a": "highcard-wire",
+ "b": "net-pimc",
+ "hash_a": "ac81254bcf20c320",
+ "hash_b": "6152cc0e6df496d1",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T08:44:47+00:00",
+   "wall_s": 231.06026902699887
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:highcard-wire",
+   "b": "sub:net-pimc",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 20
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:highcard-wire",
+   "b": "sub:net-pimc",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 20
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:highcard-wire",
+   "b": "sub:net-pimc",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 20
+  }
+ ]
+}

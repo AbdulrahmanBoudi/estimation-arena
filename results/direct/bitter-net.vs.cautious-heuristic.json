@@ -1,0 +1,41 @@
+{
+ "a": "bitter-net",
+ "b": "cautious-heuristic",
+ "hash_a": "0ee768fef2f2037b",
+ "hash_b": "126e32edb235a338",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T08:03:46+00:00",
+   "wall_s": 2.0385770879984193
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:bitter-net",
+   "b": "sub:cautious-heuristic",
+   "a_wins": 20,
+   "draws": 0,
+   "b_wins": 0
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:bitter-net",
+   "b": "sub:cautious-heuristic",
+   "a_wins": 20,
+   "draws": 0,
+   "b_wins": 0
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:bitter-net",
+   "b": "sub:cautious-heuristic",
+   "a_wins": 16,
+   "draws": 4,
+   "b_wins": 0
+  }
+ ]
+}

@@ -1,0 +1,41 @@
+{
+ "a": "cautious-heuristic",
+ "b": "highcard-wire",
+ "hash_a": "126e32edb235a338",
+ "hash_b": "ac81254bcf20c320",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T08:49:16+00:00",
+   "wall_s": 3.850980557999719
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:cautious-heuristic",
+   "b": "sub:highcard-wire",
+   "a_wins": 20,
+   "draws": 0,
+   "b_wins": 0
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:cautious-heuristic",
+   "b": "sub:highcard-wire",
+   "a_wins": 20,
+   "draws": 0,
+   "b_wins": 0
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:cautious-heuristic",
+   "b": "sub:highcard-wire",
+   "a_wins": 20,
+   "draws": 0,
+   "b_wins": 0
+  }
+ ]
+}

@@ -1,0 +1,41 @@
+{
+ "a": "pimc-clone",
+ "b": "rl-cards",
+ "hash_a": "7deed9c28c53df0b",
+ "hash_b": "143bc51f972907a2",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T08:08:18+00:00",
+   "wall_s": 4.212907969000298
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:pimc-clone",
+   "b": "sub:rl-cards",
+   "a_wins": 2,
+   "draws": 0,
+   "b_wins": 18
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:pimc-clone",
+   "b": "sub:rl-cards",
+   "a_wins": 2,
+   "draws": 3,
+   "b_wins": 15
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:pimc-clone",
+   "b": "sub:rl-cards",
+   "a_wins": 2,
+   "draws": 10,
+   "b_wins": 8
+  }
+ ]
+}
