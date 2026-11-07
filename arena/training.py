@@ -68,6 +68,10 @@ _BITTER = {
 }
 
 TRAINING: dict[str, dict[str, Any]] = {
+    "llm-claude-api": {
+        "summary": "Nothing here is trained on this game. It is Anthropic's general model, given the rules in words at every move.",
+        "stages": [],
+    },
     "hybrid-v4": {
         "summary": "Three models, for bids, cards and guessing who holds each hidden card. No human games were used.",
         "stages": [

@@ -93,3 +93,7 @@ A hand-started `replay=true` run plays every named bot again even if nothing cha
 | `arena/training.py has no entry` | The live board needs to say how the bot was trained | Add an entry, even if it was not trained |
 | `too big for Git` | A model file sits in the bot's folder | Move it to Hugging Face and add it to the lock |
 | `failed:` at the end of a ladder run | Those bots crashed, and the others were saved | Read that bot's lines in the run log. It stays out of date, so it runs again the next night |
+
+## Early results
+
+`results/early/*.json` holds finished results for bots the ladder can't play, such as LLM players that need a paid key and live in `experiments/bots`. They show on both boards marked as early results, with no rank number. They can't move an official rating, and the ladder never replays them or gives them direct games. Play them with `arena.run` on a practice seed, never the ladder's, and commit the result by hand.

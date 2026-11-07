@@ -507,6 +507,8 @@ def render(board: dict[str, Any]) -> str:
             detail = ""
         else:
             name = f'<strong><a href="games/#bot={quote(r["key"])}">{e(r["name"])}</a></strong>'
+            if early:
+                name += f' <span class="tag">early result, {r["games"]:,} games</span>'
             meta = f'<span class="desc who">{e(r["description"])} By {e(r["author"])}. Code name: {e(r["code_name"])}.</span>'
             vs = " · ".join(
                 f'{e(benchmark_name(v["anchor"]))} <span class="m-weighted {"pos" if (v["position_reward"] or 0) >= 0 else "neg"}">{(v["position_reward"] or 0):+.2f}</span>'
@@ -519,8 +521,8 @@ def render(board: dict[str, Any]) -> str:
                 f'last played {e(r["played_at"][:10])}</span>'
             )
         lines.append(
-            f'<tr class="{"anchor" if r["anchor"] else "sub"} bot" {sort_keys}>'
-            f'<td class="num rank">{rank if elo is not None else ""}</td>'
+            f'<tr class="{"anchor" if r["anchor"] else "sub"} bot{" early" if early else ""}" {sort_keys}>'
+            f'<td class="num rank">{rank if elo is not None and not early else ""}</td>'
             f'<td class="who-cell">{name}<br>{meta}</td>'
             f'{cells}<td class="opt">{place_bar}</td><td class="opt">{detail}</td></tr>'
         )

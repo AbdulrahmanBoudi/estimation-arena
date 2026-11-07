@@ -169,11 +169,12 @@ function renderRows(force = false, animate = true) {
   const previous = new Map(shown.map((tr) => [tr.dataset.key, tr.dataset.value]));
   const playing = new Set(state.playing.map((m) => m.key).concat(state.playing.map((m) => m.opponentKey)));
   const rows = [...state.standings].sort((a, b) => (b[field] ?? -1e9) - (a[field] ?? -1e9));
-  body.replaceChildren(...rows.flatMap((row, index) => {
+  let place = 0;
+  body.replaceChildren(...rows.flatMap((row) => {
     const tr = el("tr");
     tr.dataset.key = row.key;
     tr.dataset.value = row[field];
-    tr.appendChild(el("td", "num rank", row[field] == null ? "" : index + 1));
+    tr.appendChild(el("td", "num rank", row[field] == null || row.provisional ? "" : ++place));
     const name = el("td", "bot");
     const open = el("button", "bot-name", row.name);
     open.setAttribute("aria-expanded", openKey === row.key);

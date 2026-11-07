@@ -143,3 +143,46 @@ def test_the_app_notices_a_new_watchable_game(tmp_path):
     before = board._signature(tmp_path)
     (tmp_path / "site" / "games" / "a.vs.b.json").write_text("{}")
     assert board._signature(tmp_path) != before
+
+
+def _early_board(tmp_path):
+    import shutil
+
+    for name in ("anchors.json", "ladder"):
+        source = ROOT / name
+        shutil.copytree(source, tmp_path / name) if source.is_dir() else shutil.copy(source, tmp_path / name)
+    shutil.copytree(ROOT / "results", tmp_path / "results")
+    pair = {"a": "sub:llm-claude-api", "b": "heuristic", "a_wins": 1, "draws": 0, "b_wins": 0}
+    entry = {"anchor": "Heuristic", "spec": "heuristic", "sets": 1, "games": 4, "mean_score": 1.0, "positions": [0.5, 0.25, 0.15, 0.1],
+             "rsa": {"mean": 1.0, "low": 0.0, "high": 2.0, "sets": 1}, "first_place": {"mean": 0.5, "low": 0.0, "high": 1.0, "sets": 1},
+             "position_reward": {"mean": 0.3}, "delta": {"mean": 10.0}, "timing": {"count": 1, "p95_s": 1.0, "over_budget": 0}}  # fmt: skip
+    early = {"bot": "llm-claude-api", "bot_hash": "h", "engine": "e", "sets": 1, "played_at": "2026-11-07T00:00:00+00:00",
+             "manifest": {"name": "llm-claude-api", "author": "Essam", "kind": "wire"}, "versus": [entry],
+             "pairs": [pair], "position_pairs": [pair], "king_pairs": [pair]}  # fmt: skip
+    (tmp_path / "results" / "early").mkdir()
+    (tmp_path / "results" / "early" / "llm-claude-api.json").write_text(json.dumps(early))
+    return leaderboard.build(tmp_path)
+
+
+def test_an_early_result_shows_without_moving_official_ratings(tmp_path):
+    board = _early_board(tmp_path)
+    plain = leaderboard.build(ROOT, official_only=True)
+    fields = ("key", "elo", "king_elo", "score_elo")
+    shown = {r["key"]: r for r in board["rows"]}
+    assert all([shown[o["key"]][f] for f in fields] == [o[f] for f in fields] for o in plain["rows"])
+    assert shown["sub:llm-claude-api"]["provisional"] is True
+    assert shown["sub:llm-claude-api"]["elo"] is not None
+    assert board["runoff"] == plain["runoff"]
+
+
+def test_an_early_bot_is_on_the_page_without_a_rank_and_has_a_browser_page(tmp_path):
+    board = _early_board(tmp_path)
+    page = leaderboard.render(board)
+    assert "early result, 4 games" in page and 'bot early"' in page
+    assert any(m["a"] == "sub:llm-claude-api" and m["b"] == "heuristic" for m in board["matchups"])
+    assert next(r for r in board["rows"] if r["key"] == "sub:llm-claude-api")["name"] == "Claude Opus 5.5"
+
+
+def test_the_ladder_never_plays_an_early_bot(tmp_path):
+    _early_board(tmp_path)
+    assert not any("llm-claude-api" in pair for pair in duels.due(tmp_path))

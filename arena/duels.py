@@ -37,7 +37,7 @@ def pair_seed(seed: int, a: str, b: str, batch: int) -> int:
 def due(root: Path = ROOT) -> list[tuple[str, str]]:
     """Pairs with no current match, then close pairs among the top bots; best bots first."""
     results = [json.loads(p.read_text()) for p in sorted((root / RESULTS_DIR.relative_to(ROOT)).glob("*.json"))]
-    order = [r["key"][len(SUB_PREFIX) :] for r in build(root)["rows"] if not r["anchor"]]
+    order = [r["key"][len(SUB_PREFIX) :] for r in build(root)["rows"] if not r["anchor"] and not r.get("provisional")]
     rank = {name: k for k, name in enumerate(order)}
     done = {tuple(sorted((m["a"], m["b"]))): m for m in current(load_matches(root), results)}
     unplayed, close = [], []
