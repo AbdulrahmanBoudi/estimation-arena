@@ -32,6 +32,7 @@ from .plain import about_bot, benchmark_name, plain_name
 from .run import ANCHORS_FILE, RESULTS_DIR
 
 SITE_DIR = ROOT / "site"
+EARLY_DIR = "early"
 
 
 METRICS = (("weighted", "elo", "Weighted rank"), ("king", "king_elo", "King only"), ("delta", "score_elo", "Score delta"))
@@ -42,9 +43,10 @@ document.querySelectorAll('[data-rank]').forEach(function (button) {
     document.body.dataset.metric = m;
     document.querySelectorAll('[data-rank]').forEach(function (b) { b.setAttribute('aria-pressed', b === button); });
     var rows = Array.from(body.querySelectorAll('tr.bot')).sort(function (a, b) { return b.dataset[m] - a.dataset[m]; });
-    rows.forEach(function (row, k) {
+    var place = 0;
+    rows.forEach(function (row) {
       var how = row.nextElementSibling && row.nextElementSibling.classList.contains('howrow') ? row.nextElementSibling : null;
-      row.querySelector('.rank').textContent = row.dataset[m] > -1e8 ? k + 1 : '';
+      row.querySelector('.rank').textContent = row.dataset[m] > -1e8 && !row.classList.contains('early') ? ++place : '';
       body.appendChild(row);
       if (how) body.appendChild(how);
     });
@@ -89,15 +91,26 @@ def _overlay_row(key: str, played: list[dict[str, Any]], ratings: tuple[dict, di
     }
 
 
-def build(root: Path = ROOT, live: list[dict[str, Any]] | None = None, experiments: Path | None = None) -> dict[str, Any]:
+def build(
+    root: Path = ROOT,
+    live: list[dict[str, Any]] | None = None,
+    experiments: Path | None = None,
+    official_only: bool = False,
+) -> dict[str, Any]:
     """Standings from the finished results under ``root``, plus any ``live`` matches
     (arena.live.read_matches), which count for pairings no finished result covers, plus results
-    under ``experiments`` for bots ``root`` has not rated. Those two are marked provisional."""
+    under ``experiments`` for bots ``root`` has not rated, plus ``results/early``, committed results
+    of bots the ladder can't play. Those three are marked provisional and can't move an official
+    rating. ``official_only`` leaves the early results out."""
     anchors: list[dict[str, str]] = json.loads((root / ANCHORS_FILE.relative_to(ROOT)).read_text())
     ladder_file, positions_file = root / LADDER_FILE.relative_to(ROOT), root / POSITIONS_FILE.relative_to(ROOT)
     ladder = json.loads(ladder_file.read_text()) if ladder_file.is_file() else {"pairs": []}
     results = [json.loads(p.read_text()) for p in sorted((root / RESULTS_DIR.relative_to(ROOT)).glob("*.json"))]
     official = {r["bot"] for r in results}
+    early_dir = root / RESULTS_DIR.relative_to(ROOT) / EARLY_DIR
+    early = [] if official_only else [json.loads(p.read_text()) for p in sorted(early_dir.glob("*.json"))]
+    results += [{**r, "provisional": True} for r in early if r["bot"] not in official]
+    official |= {r["bot"] for r in early}
     if experiments and experiments.resolve() != root.resolve():
         for path in sorted((experiments / RESULTS_DIR.relative_to(ROOT)).glob("*.json")):
             result = json.loads(path.read_text())
@@ -203,9 +216,9 @@ def build(root: Path = ROOT, live: list[dict[str, Any]] | None = None, experimen
         about = about_bot(row["key"])
         row["description"] = about.get("about", row["description"])
         row["method"] = about.get("method", row["method"])
-    if live or experiments:
-        # Experiments must not move official ratings, so these match the public page exactly.
-        official_rows = {row["key"]: row for row in build(root)["rows"]}
+    if live or experiments or early:
+        # Provisional bots must not move official ratings, so every board keeps the ladder's numbers.
+        official_rows = {row["key"]: row for row in build(root, official_only=True)["rows"]}
         for row in rows:
             if row["key"] in official_rows:
                 for field in ("elo", "king_elo", "score_elo"):
@@ -420,8 +433,6 @@ def matchups(results: list[dict[str, Any]], direct: list[dict[str, Any]], rows: 
                     "file": game_file(codes.get(a, a), codes.get(b, b))})  # fmt: skip
 
     for r in results:
-        if r.get("provisional"):
-            continue
         for v in r["versus"]:
             add(SUB_PREFIX + r["bot"], v["spec"], r.get("position_pairs", []), v.get("scores"), r.get("played_at", ""), "benchmark")
     for m in direct:
@@ -476,7 +487,8 @@ def render(board: dict[str, Any]) -> str:
     rank = 0
     for r in rows:
         e = html.escape
-        rank += 1  # one global ranking: anchors and submissions alike
+        early = r.get("provisional")
+        rank += 0 if early else 1  # one global ranking of anchors and submissions; early results sit outside it
         elo = r["elo"]
         cells = "".join(
             f'<td class="num m-{m}">{r[k]:,.0f}</td>' if r.get(k) is not None else f'<td class="num m-{m} unrated">unrated</td>'
