@@ -1,0 +1,41 @@
+{
+ "a": "hybrid-v4",
+ "b": "pimc-clone",
+ "hash_a": "f2f793ae33514ed4",
+ "hash_b": "7deed9c28c53df0b",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T05:59:58+00:00",
+   "wall_s": 605.5542027399997
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:hybrid-v4",
+   "b": "sub:pimc-clone",
+   "a_wins": 20,
+   "draws": 0,
+   "b_wins": 0
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:hybrid-v4",
+   "b": "sub:pimc-clone",
+   "a_wins": 20,
+   "draws": 0,
+   "b_wins": 0
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:hybrid-v4",
+   "b": "sub:pimc-clone",
+   "a_wins": 20,
+   "draws": 0,
+   "b_wins": 0
+  }
+ ]
+}
