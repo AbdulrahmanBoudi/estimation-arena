@@ -71,6 +71,15 @@ def test_a_codex_reply_that_used_a_tool_is_refused():
         llm.codex_reply(bad)
 
 
+def test_ipv4_addresses_are_tried_first(monkeypatch):
+    import socket
+
+    v6, v4 = (socket.AF_INET6, 0, 0, "", ("::1", 443)), (socket.AF_INET, 0, 0, "", ("1.1.1.1", 443))
+    monkeypatch.setattr(socket, "getaddrinfo", lambda *_, **__: [v6, v4])
+    llm.prefer_ipv4()
+    assert socket.getaddrinfo("example.com", 443) == [v4, v6]
+
+
 def test_the_report_prices_opus_and_counts_problems():
     rows = [
         {"bot": "claude-api", "status": "ok", "tries": 2, "seconds": 3.0, "model": "claude-opus-5-5", "errors": ["down"],

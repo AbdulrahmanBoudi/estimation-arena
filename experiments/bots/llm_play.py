@@ -15,6 +15,7 @@ import json
 import os
 import re
 import signal
+import socket
 import subprocess
 import sys
 import tempfile
@@ -210,9 +211,17 @@ def ask_claude_api(prompt: str, client) -> tuple[str, dict]:
     }
 
 
+def prefer_ipv4() -> None:
+    """The home server blocks IPv6 on purpose, and the SDK waits out its whole timeout on a blocked
+    address before trying the next, which added two minutes to each new connection."""
+    original = socket.getaddrinfo
+    socket.getaddrinfo = lambda *args, **kwargs: sorted(original(*args, **kwargs), key=lambda item: item[0] != socket.AF_INET)
+
+
 def claude_client():
     import anthropic
 
+    prefer_ipv4()
     return anthropic.Anthropic(api_key=KEY_FILE.read_text().strip(), timeout=CALL_TIMEOUT_S, max_retries=2)
 
 
