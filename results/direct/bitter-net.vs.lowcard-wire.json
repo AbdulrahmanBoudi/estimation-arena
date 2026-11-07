@@ -1,0 +1,41 @@
+{
+ "a": "bitter-net",
+ "b": "lowcard-wire",
+ "hash_a": "0ee768fef2f2037b",
+ "hash_b": "7d23b34157753183",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T08:22:07+00:00",
+   "wall_s": 6.89567863999946
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:bitter-net",
+   "b": "sub:lowcard-wire",
+   "a_wins": 20,
+   "draws": 0,
+   "b_wins": 0
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:bitter-net",
+   "b": "sub:lowcard-wire",
+   "a_wins": 20,
+   "draws": 0,
+   "b_wins": 0
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:bitter-net",
+   "b": "sub:lowcard-wire",
+   "a_wins": 20,
+   "draws": 0,
+   "b_wins": 0
+  }
+ ]
+}
