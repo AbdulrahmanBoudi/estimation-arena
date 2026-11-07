@@ -134,3 +134,12 @@ def test_the_browser_lists_every_pairing_with_its_set_margins():
     with_sets = next(m for m in hybrid if m["kind"] == "benchmark")
     assert with_sets["sets"] == len(with_sets["detail"]) or not with_sets["detail"]
     assert all(len(s["games"]) == 4 for s in with_sets["detail"])
+
+
+def test_the_app_notices_a_new_watchable_game(tmp_path):
+    from arena import board
+
+    (tmp_path / "site" / "games").mkdir(parents=True)
+    before = board._signature(tmp_path)
+    (tmp_path / "site" / "games" / "a.vs.b.json").write_text("{}")
+    assert board._signature(tmp_path) != before
