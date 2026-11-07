@@ -1,0 +1,41 @@
+{
+ "a": "bitter-search",
+ "b": "net-pimc",
+ "hash_a": "5c0604a1e4e0f545",
+ "hash_b": "6152cc0e6df496d1",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T06:29:24+00:00",
+   "wall_s": 347.43397444700076
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:bitter-search",
+   "b": "sub:net-pimc",
+   "a_wins": 20,
+   "draws": 0,
+   "b_wins": 0
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:bitter-search",
+   "b": "sub:net-pimc",
+   "a_wins": 19,
+   "draws": 1,
+   "b_wins": 0
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:bitter-search",
+   "b": "sub:net-pimc",
+   "a_wins": 17,
+   "draws": 3,
+   "b_wins": 0
+  }
+ ]
+}
