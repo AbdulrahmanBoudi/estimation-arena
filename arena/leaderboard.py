@@ -21,7 +21,7 @@ from typing import Any
 from estimation.arena.ratings import ANCHOR, ANCHOR_RATING, DEFAULT_PRIOR, PairRecord, bradley_terry
 
 from .bots import ROOT, SUB_PREFIX, load_manifest
-from .direct import current, load_matches, runoff, table
+from .direct import current as current_matches, load_matches, runoff, table
 from .guide import GUIDE, STYLE as GUIDE_STYLE
 from .anchor_positions import OUT as POSITIONS_FILE
 from .import_ladder import LADDER_FILE
@@ -101,7 +101,7 @@ def build(root: Path = ROOT, live: list[dict[str, Any]] | None = None, experimen
             result = json.loads(path.read_text())
             if result["bot"] not in official:
                 results.append({**result, "provisional": True})
-    direct = current(load_matches(root), [r for r in results if not r.get("provisional")])
+    direct = current_matches(load_matches(root), [r for r in results if not r.get("provisional")])
     counted = [m for m in live or [] if m.get("pairs") and m["state"] != "stopped"
                and (m["kind"] == "entry" or (m["kind"] == "rating" and m["alive"]))]  # fmt: skip
     pairs = _pairs(ladder["pairs"])
