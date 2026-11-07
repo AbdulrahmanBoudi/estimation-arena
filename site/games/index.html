@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Estimation games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--cloth:#17235e;--raised:#22307a;--line:#3a4a9a;--ivory:#fbf6e9;--text:#eef0ff;--muted:#aab4e6;--gold:#f2c14e;--sea:#7fd8cf;--bad:#f0a59b;--red:#b3262e;--ink:#17235e}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--cloth);color:var(--text);font:16px/1.5 "Instrument Sans",system-ui,sans-serif;font-variant-numeric:tabular-nums}
+main{max-width:1180px;margin:0 auto;padding:24px clamp(16px,4vw,48px) 96px}
+h1,h2{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:700;letter-spacing:-.02em;margin:0;color:var(--ivory)}
+h1{font-size:clamp(32px,6vw,56px);line-height:1.05}h2{font-size:22px;margin:32px 0 10px}
+a{color:var(--text)}:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+button{font:inherit;color:inherit;background:none;border:1px solid var(--line);border-radius:6px;padding:6px 12px;cursor:pointer;min-height:36px}
+button:hover{background:var(--raised)}button[aria-pressed=true]{background:var(--ivory);color:var(--ink);border-color:var(--ivory)}
+.crumb{color:var(--muted);margin:0 0 14px;display:flex;gap:14px;flex-wrap:wrap}.muted{color:var(--muted)}.note{color:var(--muted);max-width:70ch;margin:8px 0}
+.bots{list-style:none;margin:20px 0;padding:0;border-top:1px solid var(--line)}
+.bots li{border-bottom:1px solid var(--line)}.bots a{display:grid;grid-template-columns:2.5em 1fr auto;gap:10px;padding:11px 4px;text-decoration:none}.bots a:hover{background:var(--raised)}
+.bots .rank,.bots .elo{color:var(--muted)}.tag{font-size:13px;color:var(--muted);border:1px solid var(--line);border-radius:10px;padding:0 7px;margin-left:8px;white-space:nowrap}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.match{border-top:1px solid var(--line);padding:12px 0}.match-main{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(90px,1fr) 5em 11em;gap:6px 16px;align-items:center}
+.opp{font-weight:600}.record{text-align:right}.close{color:var(--muted)}.won{color:var(--gold);font-weight:600}.lost{color:var(--bad);font-weight:600}
+.bar{display:flex;height:9px;gap:1px;border-radius:3px;overflow:hidden;background:var(--raised)}.bar i{display:block}.bar .w{background:var(--gold)}.bar .d{background:var(--muted)}.bar .l{background:var(--bad)}
+.actions{display:flex;gap:6px;justify-content:flex-end;align-items:center}.actions a{display:inline-block;padding:6px 12px;border-radius:6px;background:var(--ivory);color:var(--ink);text-decoration:none;font-weight:600;min-height:36px}
+.sets .note{grid-column:1/-1;margin:0}.sets{margin:10px 0 2px;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:4px 18px}.set{display:flex;gap:10px;padding:3px 0;font-size:14px;align-items:baseline}.set b{width:1.5em}.set span{color:var(--muted)}.set .up{color:var(--gold)}.set .down{color:var(--bad)}
+
+.table{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr);grid-template-areas:". top ." "left mid right" ". bottom .";gap:12px;margin:18px 0}
+.seat{background:var(--raised);border-radius:8px;padding:10px;min-width:0;border-left:4px solid var(--seat)}.seat.turn{outline:2px solid var(--ivory)}
+.s0{grid-area:bottom}.s1{grid-area:right}.s2{grid-area:top}.s3{grid-area:left}.mid{grid-area:mid;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;text-align:center;gap:8px}
+.a{--seat:var(--gold)}.b{--seat:var(--sea)}
+.who{font-weight:600;line-height:1.25}.count{color:var(--muted);font-size:14px}.hand{display:flex;flex-wrap:wrap;gap:3px;margin-top:8px}
+.card{display:inline-flex;align-items:center;justify-content:center;width:31px;height:43px;border-radius:4px;background:var(--ivory);color:var(--ink);font-weight:600;font-size:14px;line-height:1;flex-direction:column;gap:1px}.card.r{color:var(--red)}.card.t{box-shadow:inset 0 -3px 0 var(--gold)}
+.trick{display:grid;grid-template-columns:repeat(3,44px);grid-template-rows:repeat(3,58px);gap:2px;justify-items:center;align-items:center}.trick .card{width:40px;height:54px;font-size:17px}.trick .card.best{outline:3px solid var(--gold)}
+.trick .p0{grid-area:3/2}.trick .p1{grid-area:2/3}.trick .p2{grid-area:1/2}.trick .p3{grid-area:2/1}.trick .new{animation:land .22s ease-out}@keyframes land{from{transform:scale(.8);opacity:0}}
+.say{min-height:3em;font-size:15px}.trumpline{font-weight:600;color:var(--ivory)}
+.controls{position:sticky;bottom:0;background:var(--cloth);padding:10px 0;border-top:1px solid var(--line);display:grid;gap:8px}.controls .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}input[type=range]{flex:1;min-width:120px;accent-color:var(--gold)}
+.rounds{display:flex;flex-wrap:wrap;gap:3px;margin:10px 0}.rounds button{min-width:36px;padding:3px 0;font-size:14px}
+.score{width:100%;border-collapse:collapse;margin-top:6px}.score td,.score th{padding:5px 8px;border-bottom:1px solid var(--line);text-align:right;font-weight:400}.score td:first-child,.score th:first-child{text-align:left}.score th{color:var(--muted);font-size:14px}
+.calls{max-height:220px;overflow:auto;font-size:14px;color:var(--muted);columns:2;column-gap:20px;margin:0;padding:0;list-style:none}
+@media(max-width:760px){.table{grid-template-columns:minmax(0,1fr);grid-template-areas:"mid" "bottom" "right" "top" "left"}.card{width:27px;height:38px;font-size:13px}.match-main{grid-template-columns:minmax(0,1fr) auto}.bar{grid-column:1/-1;grid-row:2}.actions{grid-column:1/-1;justify-content:flex-start}.calls{columns:1}}
+@media(prefers-reduced-motion:reduce){.trick .new{animation:none}}
+</style></head>
+<body><main id="app"><p class="muted" role="status">Loading games</p></main>
+<script>
+"use strict";
+const SUITS = ["♣", "♦", "♥", "♠", "NT"], RANKS = "23456789TJQKA";
+const app = document.getElementById("app");
+const BOARD = location.pathname === "/games/" ? "/board" : "../";  // the app's board, or the public page
+let data = null, game = null, timer = null, view = {};
+const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; };
+const rank = (c) => RANKS[c % 13].replace("T", "10");
+const cardText = (c) => rank(c) + SUITS[Math.floor(c / 13)];
+const bidText = (a) => { const t = (a - 2) % 5; return `${Math.floor((a - 2) / 5) + 4} ${SUITS[t]}`; };
+const moveText = (a) => a === 0 ? "No Dash" : a === 1 ? "Dash Call" : a <= 51 ? "bids " + bidText(a) : a === 52 ? "With" : a === 53 ? "Pass" : a <= 67 ? "estimates " + (a - 54) : "plays " + cardText(a - 68);
+const nameOf = (key) => data.bots.find((b) => b.key === key)?.name ?? key;
+const signed = (x) => (x > 0 ? "+" : "") + Math.round(x);
+
+function card(c, trump, cls) {
+  const n = el("span", `card${Math.floor(c / 13) === 1 || Math.floor(c / 13) === 2 ? " r" : ""}${Math.floor(c / 13) === trump ? " t" : ""}${cls ? " " + cls : ""}`);
+  n.append(el("span", "", rank(c)), el("span", "", SUITS[Math.floor(c / 13)]));
+  n.setAttribute("aria-label", cardText(c));
+  return n;
+}
+
+function crumbs(...links) {
+  const p = el("p", "crumb");
+  for (const [text, href] of links) { const a = el("a", "", text); a.href = href; p.append(a); }
+  return p;
+}
+
+function home() {
+  document.title = "Estimation games";
+  const list = el("ul", "bots");
+  const rated = data.bots.filter((b) => b.elo !== null);
+  rated.forEach((b, k) => {
+    const li = el("li"), a = el("a");
+    a.href = "#bot=" + encodeURIComponent(b.key);
+    const name = el("span", "", b.name);
+    if (b.anchor) name.append(el("span", "tag", "benchmark"));
+    if (b.provisional) name.append(el("span", "tag", "early result"));
+    a.append(el("span", "rank", k + 1), name, el("span", "elo", Math.round(b.elo)));
+    li.append(a); list.append(li);
+  });
+  app.replaceChildren(crumbs(["Standings", BOARD]), el("h1", "", "Games"), el("p", "note", "Pick a bot to see who it played, how each match went, and to watch a game with every card showing."), list);
+}
+
+function sidesFor(m, key) {
+  return m.a === key ? { other: m.b, otherName: m.b_name, w: m.a_wins, l: m.b_wins, flip: false }
+    : { other: m.a, otherName: m.a_name, w: m.b_wins, l: m.a_wins, flip: true };
+}
+
+function setRows(m, side) {
+  const box = el("div", "sets");
+  if (!m.detail.length) { box.append(el("p", "note", "Only this match's total was kept. Set-by-set scores start with matches played from now on.")); return box; }
+  m.detail.forEach((s, k) => {
+    const raw = s.outcome, out = side.flip ? raw.replace(/[WL]/g, (c) => (c === "W" ? "L" : "W")) : raw;
+    const row = el("div", "set");
+    row.append(el("b", out === "W" ? "won" : out === "L" ? "lost" : "close", out === "W" ? "Won" : out === "L" ? "Lost" : "Draw"));
+    row.append(el("span", "", `Set ${k + 1}`));
+    for (const g of s.games) { const d = side.flip ? g[1] - g[0] : g[0] - g[1]; row.append(el("span", d > 0 ? "up" : d < 0 ? "down" : "", signed(d))); }
+    box.append(row);
+  });
+  return box;
+}
+
+function strategy(key) {
+  const bot = data.bots.find((b) => b.key === key);
+  if (!bot) return home();
+  document.title = bot.name + ", Estimation games";
+  const all = data.matchups.filter((m) => m.a === key || m.b === key);
+  const order = new Map(data.bots.map((b, k) => [b.key, k]));
+  const place = data.runoff.indexOf(key);
+  const head = [crumbs(["All bots", "#"], ["Standings", BOARD]), el("h1", "", bot.name)];
+  if (bot.elo !== null) head.push(el("p", "muted", `Rated ${Math.round(bot.elo)}` + (place >= 0 ? `. Runoff place ${place + 1} of ${data.runoff.length}.` : ".")));
+  if (bot.description) head.push(el("p", "note", bot.description));
+  const filter = view.filter ?? "all";
+  const filters = el("div", "filters");
+  for (const [id, text] of [["all", `All ${all.length}`], ["direct", "Bots"], ["benchmark", "Benchmarks"]]) {
+    const b = el("button", "", text); b.setAttribute("aria-pressed", filter === id);
+    b.onclick = () => { view.filter = id; strategy(key); }; filters.append(b);
+  }
+  const rows = all.filter((m) => filter === "all" || m.kind === filter).sort((p, q) => order.get(sidesFor(p, key).other) - order.get(sidesFor(q, key).other));
+  const list = el("div");
+  for (const m of rows) {
+    const side = sidesFor(m, key), box = el("div", "match"), main = el("div", "match-main");
+    const opp = el("a", "opp", side.otherName); opp.href = "#bot=" + encodeURIComponent(side.other);
+    const label = el("div"); label.append(opp, m.kind === "benchmark" ? el("span", "tag", "benchmark") : "");
+    const total = Math.max(m.sets, 1), bar = el("div", "bar");
+    bar.setAttribute("role", "img"); bar.setAttribute("aria-label", `${side.w} won, ${m.draws} drawn, ${side.l} lost`);
+    for (const [c, n] of [["w", side.w], ["d", m.draws], ["l", side.l]]) { const i = el("i", c); i.style.width = 100 * n / total + "%"; bar.append(i); }
+    const rec = el("div", "record " + (!m.clear ? "close" : side.w > side.l ? "won" : "lost"), `${side.w}-${m.draws}-${side.l}`);
+    rec.title = m.clear ? "Unlikely between equal bots" : "Too close to call";
+    const actions = el("div", "actions");
+    const open = el("button", "", "Sets"); open.setAttribute("aria-expanded", "false");
+    let sets = null;
+    open.onclick = () => { if (sets) { sets.remove(); sets = null; open.setAttribute("aria-expanded", "false"); } else { sets = setRows(m, side); box.append(sets); open.setAttribute("aria-expanded", "true"); } };
+    actions.append(open);
+    if (m.file && data.games.includes(m.file)) { const w = el("a", "", "Watch"); w.href = `#game=${encodeURIComponent(m.file)}&bot=${encodeURIComponent(key)}`; actions.append(w); }
+    else actions.append(el("span", "muted", "Game coming"));
+    main.append(label, bar, rec, actions); box.append(main); list.append(box);
+  }
+  app.replaceChildren(...head, el("h2", "", "Matches"), el("p", "note", "Records are rated sets won, drawn and lost. Sets lists each one, with the bot's margin in its four games. Rated cards stay hidden so the secret deals stay secret, so Watch shows the same two bots on public deals, in a game that isn't rated."), filters, rows.length ? list : el("p", "note", "No matches yet."));
+  scrollTo(0, 0);
+}
+
+function beats(c, best, trump) { const s = Math.floor(c / 13), b = Math.floor(best / 13); return s === b ? c > best : s === trump; }
+
+function stateAt(r, upto) {
+  const hands = r.hands.map((h) => [...h]), calls = [], won = [0, 0, 0, 0], tricks = [];
+  let trick = [], last = null, say = "Cards dealt";
+  r.moves.slice(0, upto).forEach(([seat, a]) => {
+    say = `${nameOf(game.seats[seat])} ${moveText(a)}`; last = seat;
+    if (a < 68) { calls.push([seat, moveText(a)]); return; }
+    const c = a - 68;
+    hands[seat].splice(hands[seat].indexOf(c), 1);
+    if (trick.length === 4) trick = [];
+    trick.push([seat, c]);
+    if (trick.length === 4) {
+      let best = trick[0];
+      for (const p of trick.slice(1)) if (beats(p[1], best[1], r.trump)) best = p;
+      won[best[0]]++; tricks.push(best[0]); say += `. ${nameOf(game.seats[best[0]])} takes the trick`;
+    }
+  });
+  let best = trick[0];
+  for (const p of trick.slice(1)) if (beats(p[1], best[1], r.trump)) best = p;
+  return { hands, calls, won, trick, best: best?.[1], say, last, next: r.moves[upto]?.[0] };
+}
+
+function renderGame() {
+  const r = game.rounds[view.round], s = stateAt(r, view.step);
+  const sideOf = (seat) => seat % 2 ? "b" : "a";
+  const table = el("div", "table");
+  for (let seat = 0; seat < 4; seat++) {
+    const box = el("section", `seat s${seat} ${sideOf(seat)}${s.next === seat ? " turn" : ""}`);
+    box.setAttribute("aria-label", `Seat ${seat + 1}`);
+    box.append(el("div", "who", nameOf(game.seats[seat])));
+    const role = seat === r.caller ? "Caller" : r.with.includes(seat) ? "With" : "";
+    const est = r.estimates[seat];
+    box.append(el("div", "count", [role, est !== null ? `said ${est}` : "", `won ${s.won[seat]}`].filter(Boolean).join(", ")));
+    const hand = el("div", "hand");
+    [...s.hands[seat]].sort((p, q) => Math.floor(q / 13) - Math.floor(p / 13) || q - p).forEach((c) => hand.append(card(c, r.trump)));
+    box.append(hand); table.append(box);
+  }
+  const mid = el("div", "mid");
+  mid.append(el("div", "trumpline", r.trump === null ? (r.fixed !== null ? "Fixed trump " + SUITS[r.fixed] : "No trump chosen yet") : "Trump " + SUITS[r.trump]));
+  const trick = el("div", "trick");
+  s.trick.forEach(([seat, c], k) => trick.append(card(c, r.trump, `p${seat}${k === s.trick.length - 1 ? " new" : ""}${c === s.best && s.trick.length === 4 ? " best" : ""}`)));
+  mid.append(trick, el("div", "say", s.say)); table.append(mid);
+
+  const rounds = el("div", "rounds"); rounds.setAttribute("aria-label", "Rounds");
+  game.rounds.forEach((x, k) => { const b = el("button", "", x.round); b.setAttribute("aria-pressed", k === view.round); b.onclick = () => go(k, 0); rounds.append(b); });
+
+  const a = game.seats[0], b = game.seats[1];
+  const score = el("table", "score");
+  score.innerHTML = "<thead><tr><th>Seat</th><th>Before</th><th>This round</th><th>Total</th></tr></thead>";
+  const body = el("tbody");
+  [0, 1, 2, 3].forEach((seat) => {
+    const row = el("tr"), done = view.step >= r.moves.length && r.after;
+    row.append(el("td", "", `${seat + 1}. ${nameOf(game.seats[seat])}`), el("td", "", r.before[seat]), el("td", "", done ? signed(r.after[seat] - r.before[seat]) : ""), el("td", "", done ? r.after[seat] : ""));
+    body.append(row);
+  });
+  score.append(body);
+  const calls = el("ol", "calls");
+  s.calls.forEach(([seat, text]) => calls.append(el("li", "", `${seat + 1}: ${text}`)));
+
+  const controls = el("div", "controls");
+  const line = el("div", "row"), slider = el("input"); slider.type = "range"; slider.min = 0; slider.max = r.moves.length; slider.value = view.step; slider.setAttribute("aria-label", "Move in this round");
+  slider.oninput = () => { stop(); view.step = +slider.value; renderGame(); };
+  const button = (text, label, fn) => { const x = el("button", "", text); x.setAttribute("aria-label", label); x.onclick = fn; return x; };
+  line.append(button("⏮", "Previous round", () => go(Math.max(view.round - 1, 0), 0)), button("◀", "Previous move", () => step(-1)), button(timer ? "Pause" : "Play", timer ? "Pause" : "Play", toggle), button("▶", "Next move", () => step(1)), button("⏭", "Next round", () => go(Math.min(view.round + 1, game.rounds.length - 1), 0)), slider, el("span", "muted", `Round ${r.round}${r.carry > 1 ? `, x${r.carry}` : ""}, move ${view.step} of ${r.moves.length}`));
+  controls.append(line);
+
+  const back = view.bot ? ["Back to " + nameOf(view.bot), "#bot=" + encodeURIComponent(view.bot)] : ["All bots", "#"];
+  const head = el("h1", "", `${nameOf(a)} vs ${nameOf(b)}`);
+  const finish = game.final ? `${nameOf(a)} ${game.final[0]} and ${game.final[2]}, ${nameOf(b)} ${game.final[1]} and ${game.final[3]}` : "";
+  app.replaceChildren(crumbs(back), head, el("p", "note", `Public deals, not a rated game. Every card is shown here, but each bot only saw its own hand. Final scores: ${finish}.`), rounds, table, controls, el("h2", "", "Scores"), score, el("h2", "", "Calls this round"), calls);
+}
+
+function stop() { clearInterval(timer); timer = null; }
+function step(by) { stop(); move(by); }
+function move(by) {
+  const r = game.rounds[view.round], next = view.step + by;
+  if (next > r.moves.length) { if (view.round + 1 < game.rounds.length) { view.round++; view.step = 0; } else stop(); }
+  else if (next < 0) { if (view.round > 0) { view.round--; view.step = game.rounds[view.round].moves.length; } }
+  else view.step = next;
+  renderGame();
+}
+function toggle() { if (timer) stop(); else timer = setInterval(() => move(1), 800); renderGame(); }
+function go(round, at) { stop(); view.round = round; view.step = at; renderGame(); scrollTo({ top: 0 }); }
+
+addEventListener("keydown", (e) => {
+  if (!game || e.target.tagName === "INPUT" && e.target.type !== "range") return;
+  if (e.key === "ArrowRight") { step(1); e.preventDefault(); }
+  if (e.key === "ArrowLeft") { step(-1); e.preventDefault(); }
+  if (e.key === " " && e.target.tagName !== "BUTTON") { toggle(); e.preventDefault(); }
+});
+
+async function route() {
+  stop(); game = null;
+  const params = new URLSearchParams(location.hash.slice(1));
+  if (!data) data = await (await fetch("data.json", { cache: "no-store" })).json();
+  const file = params.get("game");
+  view = { filter: view.filter, bot: params.get("bot") };
+  if (file && /^[a-z0-9.-]+\.vs\.[a-z0-9.-]+\.json$/.test(file)) {
+    app.replaceChildren(el("p", "muted", "Loading the game"));
+    const res = await fetch(file);
+    if (!res.ok) { app.replaceChildren(el("p", "note", "That game isn't available yet.")); return; }
+    game = await res.json(); view.round = 0; view.step = 0; renderGame();
+  } else if (params.get("bot")) strategy(params.get("bot"));
+  else home();
+}
+addEventListener("hashchange", route);
+route().catch(() => app.replaceChildren(el("p", "note", "The games couldn't load. Reload the page to try again.")));
+</script></body></html>
