@@ -17,15 +17,17 @@ import json
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 
+from estimation.arena.duplicate import slot_at
 from estimation.arena.ratings import ANCHOR, ANCHOR_RATING, DEFAULT_PRIOR, PairRecord, bradley_terry
 
 from .bots import ROOT, SUB_PREFIX, load_manifest
-from .direct import current as current_matches, load_matches, runoff, table
+from .direct import current as current_matches, game_file, is_clear, load_matches, runoff, table
 from .guide import GUIDE, STYLE as GUIDE_STYLE
 from .anchor_positions import OUT as POSITIONS_FILE
 from .import_ladder import LADDER_FILE
-from .positions import NAMES as POSITION_NAMES
+from .positions import NAMES as POSITION_NAMES, decode_scores, set_outcomes
 from .plain import about_bot, benchmark_name, plain_name
 from .run import ANCHORS_FILE, RESULTS_DIR
 
@@ -211,6 +213,7 @@ def build(root: Path = ROOT, live: list[dict[str, Any]] | None = None, experimen
     rows.sort(key=lambda row: (row["elo"] is None, -(row["elo"] or 0)))
     rated = [row["key"] for row in rows if row["elo"] is not None and not row.get("provisional")]
     return {
+        "matchups": matchups(results, direct, rows),
         "direct": table(direct),
         "runoff": runoff(rated, official_records),
         "built_at": datetime.now(UTC).isoformat(timespec="seconds"),
@@ -384,6 +387,49 @@ def _favicon() -> str:
     return base64.b64encode((ROOT / "brand" / "favicon.svg").read_bytes()).decode()
 
 
+def matchups(results: list[dict[str, Any]], direct: list[dict[str, Any]], rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Every pairing played, for the game browser: the record and, where kept, each set's games.
+
+    Each game holds both bots' average seat scores, from ``a``'s side. Direct matches played before
+    scores were kept have totals only.
+    """
+    out = []
+    names = {row["key"]: row["name"] for row in rows}
+    codes = {row["key"]: row["code_name"] for row in rows}
+
+    def add(a: str, b: str, position_pairs: list[dict[str, Any]], scores: str | None, played: str, kind: str) -> None:
+        wins = draws = losses = 0
+        for pair in position_pairs:
+            if {pair["a"], pair["b"]} != {a, b}:
+                continue
+            mine, theirs = (pair["a_wins"], pair["b_wins"]) if pair["a"] == a else (pair["b_wins"], pair["a_wins"])
+            wins, draws, losses = wins + mine, draws + pair["draws"], losses + theirs
+        sets = []
+        if scores:
+            line = (a, b, a, b)
+            for result in decode_scores(scores):
+                games = []
+                for rotation, game in enumerate(result.scores):
+                    mine = [game[s] for s in range(4) if line[slot_at(s, rotation)] == a]
+                    theirs = [game[s] for s in range(4) if line[slot_at(s, rotation)] == b]
+                    games.append([sum(mine) / 2, sum(theirs) / 2])
+                sets.append({"outcome": set_outcomes([result], line, a), "games": games})
+        out.append({"a": a, "b": b, "kind": kind, "a_wins": wins, "draws": draws, "b_wins": losses,
+                    "sets": wins + draws + losses, "clear": is_clear(wins, losses), "played_at": played[:10],
+                    "detail": sets, "a_name": names.get(a, a), "b_name": names.get(b, b),
+                    "file": game_file(codes.get(a, a), codes.get(b, b))})  # fmt: skip
+
+    for r in results:
+        if r.get("provisional"):
+            continue
+        for v in r["versus"]:
+            add(SUB_PREFIX + r["bot"], v["spec"], r.get("position_pairs", []), v.get("scores"), r.get("played_at", ""), "benchmark")
+    for m in direct:
+        played = m["batches"][-1]["played_at"] if m.get("batches") else ""
+        add(SUB_PREFIX + m["a"], SUB_PREFIX + m["b"], m["position_pairs"], m.get("scores"), played, "direct")
+    return out
+
+
 def head_to_head(board: dict[str, Any], top: int = 8) -> str:
     """The top bots against each other, or nothing until direct games exist."""
     if not board["direct"]:
@@ -444,11 +490,11 @@ def render(board: dict[str, Any]) -> str:
             parts = "".join(f'<span class="p{k}" style="width:{x * 100:.1f}%"></span>' for k, x in enumerate(places))
             place_bar = f'<div class="places" title="{title}" role="img" aria-label="{title}">{parts}</div><span class="king">King {places[0]:.0%}</span>'
         if r["anchor"]:
-            name = f'{e(r["name"])} <span class="tag">benchmark</span>'
+            name = f'<a href="games/#bot={quote(r["key"])}">{e(r["name"])}</a> <span class="tag">benchmark</span>'
             meta = f'<span class="desc who">{e(r["description"])} By {e(r["author"])}. Code name: {e(r["code_name"])}.</span>'
             detail = ""
         else:
-            name = f'<strong>{e(r["name"])}</strong>'
+            name = f'<strong><a href="games/#bot={quote(r["key"])}">{e(r["name"])}</a></strong>'
             meta = f'<span class="desc who">{e(r["description"])} By {e(r["author"])}. Code name: {e(r["code_name"])}.</span>'
             vs = " · ".join(
                 f'{e(benchmark_name(v["anchor"]))} <span class="m-weighted {"pos" if (v["position_reward"] or 0) >= 0 else "neg"}">{(v["position_reward"] or 0):+.2f}</span>'
@@ -480,7 +526,7 @@ def render(board: dict[str, Any]) -> str:
 <p class="sub">{len(rows)} bots ranked three ways from the same games, including {len(anchors)} fixed benchmarks. Updated {built}.</p>
 <div class="metrics" role="group" aria-label="Rank by">{"".join(f'<button type="button" data-rank="{m}"{" aria-pressed=true" if m == "weighted" else " aria-pressed=false"}>{label}</button>' for m, _, label in METRICS)}</div>
 <p class="desc"><span class="key p0"></span>King +1<span class="key p1"></span>Sub-King +0.2<span class="key p2"></span>Sub-Kooz −0.2<span class="key p3"></span>Kooz −1</p>
-<p class="desc"><a href="#guide">What the numbers mean</a> · <a href="diagrams/how-it-works.html">How it works</a> · <a href="https://github.com/essamgouda97/estimation-arena">Code on GitHub</a></p>
+<p class="desc"><a href="games/">Games</a> · <a href="#guide">What the numbers mean</a> · <a href="diagrams/how-it-works.html">How it works</a> · <a href="https://github.com/essamgouda97/estimation-arena">Code on GitHub</a></p>
 <p class="desc">Open “how it plays” under any bot to see how it decides.</p>
 <table>
 <thead><tr><th class="num">#</th><th>Bot</th>{"".join(f'<th class="num m-{m}">{label}</th>' for m, _, label in METRICS)}<th class="opt">Finishing places</th><th class="opt">Against each benchmark</th></tr></thead>
@@ -493,6 +539,25 @@ def render(board: dict[str, Any]) -> str:
 """
 
 
+def browser_data(board: dict[str, Any], games_dir: Path) -> dict[str, Any]:
+    """What the game browser reads: the bots, their pairings and which games can be watched."""
+    fields = ("key", "name", "code_name", "anchor", "provisional", "elo", "king_elo", "score_elo", "positions", "description")
+    return {
+        "built_at": board["built_at"],
+        "bots": [{k: row.get(k) for k in fields} for row in board["rows"]],
+        "matchups": board["matchups"],
+        "games": sorted(p.name for p in games_dir.glob("*.vs.*.json")),
+        "runoff": board["runoff"],
+    }
+
+
+def write_browser(board: dict[str, Any], out: Path) -> None:
+    folder = out / "games"
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / "index.html").write_text((Path(__file__).parent / "static" / "games.html").read_text())
+    (folder / "data.json").write_text(json.dumps(browser_data(board, folder), separators=(",", ":")) + "\n")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m arena.leaderboard")
     parser.add_argument("--out", type=Path, default=SITE_DIR, help="output folder (site/)")
@@ -501,6 +566,7 @@ def main(argv: list[str] | None = None) -> int:
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / "leaderboard.json").write_text(json.dumps(board, indent=1) + "\n")
     (args.out / "index.html").write_text(render(board))
+    write_browser(board, args.out)
     for r in board["rows"]:
         elo = f"{r['elo']:7.0f}" if r["elo"] is not None else "unrated"
         print(f"{elo}  {r['name']}{'  (anchor)' if r['anchor'] else ''}")

@@ -83,4 +83,13 @@ jobs:
               fi
             done
           fi
+          # Games people can watch, on public deals. They never count towards a rating.
+          while IFS=$'\t' read -r a b; do
+            [ "$SECONDS" -lt 18000 ] || { echo "out of time; the next run carries on"; break; }
+            if file=$(uv run python -m arena.replay play "$a" "$b" </dev/null); then
+              scripts/ladder-save.sh "$file"
+            else
+              failed="$failed $a:$b"
+            fi
+          done < <(uv run python -m arena.replay due)
           [ -z "$failed" ] || { echo "failed:$failed"; exit 1; }

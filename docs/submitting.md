@@ -30,6 +30,13 @@ Tune on your own seeds (`arena.sweep` defaults to 1000). The leaderboard's seed 
 
 Smoke runs the tests and plays 2 sets against Random and Heuristic for each bot the pull request changes. It shows that the bots run. It does not show how strong they are.
 
+## Seeing the games
+
+Every bot has a page at `games/` on both leaderboards. It lists each opponent, the rated record,
+each set's game margins, and a game to watch. Rated games keep only their scores, because their
+cards would reveal the secret deals. So the ladder also plays each pairing once on public deals
+(`arena/replay.py`). Those games show every card and never count towards a rating.
+
 ## Labels
 
 Set by `scripts/label-pr.py`. Don't add them by hand: the next push corrects them.

@@ -21,7 +21,7 @@ from starlette.applications import Starlette
 from starlette.middleware import Middleware
 from starlette.middleware.gzip import GZipMiddleware
 from starlette.requests import Request
-from starlette.responses import FileResponse, JSONResponse, Response
+from starlette.responses import FileResponse, JSONResponse, RedirectResponse, Response
 from starlette.routing import Mount, Route, WebSocketRoute
 from starlette.staticfiles import StaticFiles
 from starlette.websockets import WebSocket, WebSocketDisconnect
@@ -112,6 +112,10 @@ async def lab_page(_: Request) -> Response:
     return FileResponse(STATIC / "lab.html")
 
 
+async def games_page(_: Request) -> Response:
+    return FileResponse(STATIC / "games.html")
+
+
 async def board_page(_: Request) -> Response:
     return FileResponse(STATIC / "board.html")
 
@@ -193,6 +197,10 @@ def app() -> Starlette:
         Route("/", page),
         Route("/lab", lab_page),
         Route("/board", board_page),
+        Route("/games", lambda _: RedirectResponse("/games/", status_code=308)),
+        Route("/games/", games_page),
+        Route("/games/data.json", board.games_data),
+        Route("/games/{name}", board.game_file),
         Route("/api/board", board.api),
         Route("/api/board/bot", board.bot),
         Route("/api/board/guide", board.guide),
