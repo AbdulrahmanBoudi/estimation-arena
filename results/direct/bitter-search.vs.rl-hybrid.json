@@ -1,0 +1,41 @@
+{
+ "a": "bitter-search",
+ "b": "rl-hybrid",
+ "hash_a": "5c0604a1e4e0f545",
+ "hash_b": "fcd28852962a533c",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T05:49:48+00:00",
+   "wall_s": 486.6811302209999
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:bitter-search",
+   "b": "sub:rl-hybrid",
+   "a_wins": 10,
+   "draws": 0,
+   "b_wins": 10
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:bitter-search",
+   "b": "sub:rl-hybrid",
+   "a_wins": 11,
+   "draws": 0,
+   "b_wins": 9
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:bitter-search",
+   "b": "sub:rl-hybrid",
+   "a_wins": 4,
+   "draws": 9,
+   "b_wins": 7
+  }
+ ]
+}
