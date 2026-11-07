@@ -179,6 +179,9 @@ function renderRows(force = false, animate = true) {
     open.setAttribute("aria-expanded", openKey === row.key);
     open.addEventListener("click", () => toggle(row.key));
     name.appendChild(open);
+    const games = el("a", "tag", "Games");
+    games.href = "/games/#bot=" + encodeURIComponent(row.key);
+    name.appendChild(games);
     if (row.anchor) name.appendChild(el("span", "tag", "Benchmark"));
     if (row.provisional) name.appendChild(el("span", "tag", `Early result, ${row.games} games`));
     if (playing.has(row.key)) name.appendChild(el("span", "tag on", "Playing"));

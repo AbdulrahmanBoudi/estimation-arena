@@ -4,14 +4,15 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from pathlib import Path
 from typing import Any
 
 from starlette.requests import Request
-from starlette.responses import JSONResponse, Response
+from starlette.responses import FileResponse, JSONResponse, Response
 
 from .guide import GUIDE, STYLE as GUIDE_STYLE
-from .leaderboard import build, method_svg
+from .leaderboard import browser_data, build, method_svg
 from .live import LIVE, public, read_matches
 from .plain import about_bot, plain_name
 from .training import training_of
@@ -21,6 +22,7 @@ from .bots import ROOT, SUB_PREFIX
 # on the home server, a bot not merged yet can also have results: those show as provisional.
 RESULTS_ROOT = Path(os.environ.get("ESTIMATION_RESULTS_ROOT", Path.home() / "workspace" / "estimation-arena"))
 RECENT = 8
+GAME_NAME = re.compile(r"[a-z0-9-]+\.vs\.[a-z0-9-]+\.json")
 _cache: dict[str, Any] = {"signature": None, "standings": [], "direct": [], "runoff": []}
 ROW_FIELDS = ("name", "code_name", "key", "kind", "anchor", "provisional", "elo", "king_elo", "score_elo", "positions", "games", "played_at")
 MATCH_FIELDS = ("id", "kind", "key", "name", "opponent", "sets", "done", "state", "strip", "shares", "reward", "king", "delta", "started_at", "updated_at")
@@ -44,6 +46,7 @@ def payload() -> dict[str, Any]:
         board = build(ROOT, matches, RESULTS_ROOT)
         _cache["standings"] = [{k: row.get(k) for k in ROW_FIELDS} for row in board["rows"]]
         _cache["direct"], _cache["runoff"] = board["direct"], board["runoff"]
+        _cache["browser"] = browser_data(board, ROOT / "site" / "games")
         _cache["signature"] = signature
     names = {row["key"]: row["name"] for row in _cache["standings"]}
     view = [{**{k: m.get(k) for k in MATCH_FIELDS}, "name": plain_name(m["key"], m["name"]), "opponent": names.get(m["opponent"], plain_name(m["opponent"], public(m["opponent"])[1]))} for m in matches]
@@ -92,6 +95,20 @@ def explain(key: str) -> dict[str, Any] | None:
 
 def api(_: Request) -> Response:
     return JSONResponse(payload())
+
+
+def games_data(_: Request) -> Response:
+    payload()
+    return JSONResponse(_cache["browser"])
+
+
+def game_file(request: Request) -> Response:
+    """A watchable game: the name is checked, so a request can't name any other file."""
+    name = request.path_params["name"]
+    path = ROOT / "site" / "games" / name
+    if not GAME_NAME.fullmatch(name) or not path.is_file():
+        return JSONResponse({"error": "no such game"}, status_code=404)
+    return FileResponse(path)
 
 
 def guide(_: Request) -> Response:

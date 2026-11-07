@@ -102,3 +102,35 @@ def test_the_app_notices_a_new_direct_match(tmp_path):
     before = board._signature(tmp_path)
     (tmp_path / "results" / "direct" / "a.vs.b.json").write_text("{}")
     assert board._signature(tmp_path) != before
+
+
+def test_game_files_are_safe_and_order_free():
+    assert direct.game_file("hybrid-v4", "RL v2") == direct.game_file("RL v2", "hybrid-v4") == "hybrid-v4.vs.rl-v2.json"
+
+
+def test_a_watchable_game_has_every_card_and_move(tmp_path):
+    from arena import replay
+
+    game = replay.record_game(["sub:lowcard-wire", "sub:highcard-wire", "sub:lowcard-wire", "sub:highcard-wire"], 5, rounds=2)
+    assert len(game["rounds"]) == 2
+    first = game["rounds"][0]
+    assert sorted(c for hand in first["hands"] for c in hand) == list(range(52))
+    played = [a - 68 for _, a in first["moves"] if a >= 68]
+    assert not played or sorted(played) == list(range(52))
+    assert first["after"] != first["before"] or not played
+
+
+def test_public_game_seeds_are_per_pair_and_order_free():
+    from arena import replay
+
+    assert replay.game_seed("a", "b") == replay.game_seed("b", "a") != replay.game_seed("a", "c")
+
+
+def test_the_browser_lists_every_pairing_with_its_set_margins():
+    board = leaderboard.build(ROOT)
+    data = leaderboard.browser_data(board, ROOT / "site" / "games")
+    hybrid = [m for m in data["matchups"] if "sub:hybrid-v4" in (m["a"], m["b"])]
+    assert len(hybrid) >= 6
+    with_sets = next(m for m in hybrid if m["kind"] == "benchmark")
+    assert with_sets["sets"] == len(with_sets["detail"]) or not with_sets["detail"]
+    assert all(len(s["games"]) == 4 for s in with_sets["detail"])

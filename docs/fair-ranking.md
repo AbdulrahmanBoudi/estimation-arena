@@ -28,6 +28,10 @@ shows any cycles instead of hiding them.
 - **TrueSkill with matchmaking:** suits large fields where not everyone can meet. Twelve bots can
   all meet.
 
+## Watching games without giving away the test
+
+A bot could memorize a deal it has seen. The rated deals therefore stay secret, and the games people can watch use public deals and don't count.
+
 ## Known limits
 
 - **Two bots at a table:** a match seats two copies of each bot. ACPC's three-player events
