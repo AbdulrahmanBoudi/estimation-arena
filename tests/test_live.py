@@ -206,7 +206,7 @@ def test_official_results_beat_the_servers_copy(tmp_path):
 def test_without_experiments_it_matches_the_public_page():
     rows = leaderboard.build(ROOT)["rows"]
     assert [r["key"] for r in rows] == [r["key"] for r in leaderboard.build(ROOT, None, ROOT)["rows"]]
-    assert not any(r["provisional"] for r in rows)
+    assert not any(r.get("provisional") for r in rows)
 
 
 def test_experiments_do_not_move_official_ratings(tmp_path):
