@@ -1,5 +1,36 @@
 {
- "built_at": "2026-11-07T00:00:12+00:00",
+ "direct": [
+  {
+   "a": "sub:hybrid-v4",
+   "b": "sub:rl-pimc",
+   "a_wins": 17,
+   "draws": 1,
+   "b_wins": 2,
+   "sets": 20,
+   "clear": true
+  }
+ ],
+ "runoff": [
+  "sub:hybrid-v4",
+  "sub:rl-pimc",
+  "sub:bitter-search",
+  "sub:bitter-net",
+  "sub:rl-hybrid",
+  "sub:rl-cards",
+  "hybrid",
+  "rl:checkpoint=runs/m4-rules-v2/checkpoints/final.pt",
+  "sub:net-pimc",
+  "search",
+  "pimc",
+  "sub:pimc-clone",
+  "sub:table-pressure",
+  "sub:cautious-heuristic",
+  "heuristic",
+  "sub:highcard-wire",
+  "sub:lowcard-wire",
+  "random"
+ ],
+ "built_at": "2026-11-07T04:21:17+00:00",
  "anchor": "random",
  "anchor_rating": 400.0,
  "ladder": {
@@ -10,26 +41,27 @@
  "submissions": 12,
  "rows": [
   {
-   "name": "hybrid-v4",
+   "name": "Yosif's Hybrid v4",
    "author": "Yosif Elessawi",
    "kind": "python",
-   "description": "Yosif's Hybrid v4: nets trained by self-play and by copying a deeper search, with a search that imagines hidden hands from where its guess net thinks each card is.",
+   "description": "Yosif's strongest bot. One model bids, one chooses cards, and one guesses who holds the hidden cards. It tries its top 2 cards on 32 imagined deals built from those guesses.",
    "key": "sub:hybrid-v4",
+   "provisional": false,
    "method": [
     [
-     "the bid net picks the bid",
+     "the bid model picks the bid",
      "bid"
     ],
     [
-     "the card net keeps its top 2 cards",
+     "the card model keeps its top 2 cards",
      "net"
     ],
     [
-     "imagine hidden hands from the guess net, keep those that fit the bids x32",
+     "imagine 32 deals from where the guess model thinks the cards are",
      "deal"
     ],
     [
-     "each kept card: the card net plays all 4 seats to the end",
+     "play each kept card to the end",
      "rollout"
     ],
     [
@@ -37,9 +69,9 @@
      "pick"
     ]
    ],
-   "elo": 2118.667138349596,
-   "king_elo": 1948.3548676810997,
-   "score_elo": 4929.482482851586,
+   "elo": 2124.8204443038962,
+   "king_elo": 1907.732371555867,
+   "score_elo": 4941.174855010256,
    "positions": [
     0.4604166666666667,
     0.36562500000000003,
@@ -49,7 +81,7 @@
    "games": 960,
    "sets": 20,
    "played_at": "2026-11-06T19:32:20+00:00",
-   "engine": "0.1.0",
+   "engine": "0.1.0+2dbf68df",
    "p95_ms": 210.62325524164353,
    "over_budget": 0.006423911100518382,
    "versus": [
@@ -153,6 +185,7 @@
    "kind": "python",
    "description": "The practised model picks its 2 best cards, then Look-ahead tries them on imagined hands.",
    "key": "sub:rl-pimc",
+   "provisional": false,
    "method": [
     [
      "bid the tricks the hand should win",
@@ -175,9 +208,9 @@
      "pick"
     ]
    ],
-   "elo": 1823.8509298470135,
-   "king_elo": 1573.5523757316546,
-   "score_elo": 4519.468749498681,
+   "elo": 1822.0296431278912,
+   "king_elo": 1585.1522776885586,
+   "score_elo": 4516.812247241463,
    "positions": [
     0.3822916666666667,
     0.37343750000000003,
@@ -187,7 +220,7 @@
    "games": 960,
    "sets": 20,
    "played_at": "2026-11-06T21:47:29+00:00",
-   "engine": "0.1.0",
+   "engine": "0.1.0+2dbf68df",
    "p95_ms": 16.050330942755195,
    "over_budget": 0.005537726238712,
    "versus": [
@@ -291,6 +324,7 @@
    "kind": "python",
    "description": "The Self-taught model bids alone and picks its best cards, then tries each one on imagined hands.",
    "key": "sub:bitter-search",
+   "provisional": false,
    "method": [
     [
      "the model picks the bid",
@@ -313,9 +347,9 @@
      "pick"
     ]
    ],
-   "elo": 1809.4718035480162,
-   "king_elo": 1650.7310381371094,
-   "score_elo": 4567.193801904128,
+   "elo": 1809.5156534321125,
+   "king_elo": 1650.3014281782973,
+   "score_elo": 4567.255047207628,
    "positions": [
     0.4088541666666667,
     0.3619791666666667,
@@ -325,7 +359,7 @@
    "games": 960,
    "sets": 20,
    "played_at": "2026-11-06T22:52:18+00:00",
-   "engine": "0.1.0",
+   "engine": "0.1.0+2dbf68df",
    "p95_ms": 88.12492555104227,
    "over_budget": 0.0001522776936020527,
    "versus": [
@@ -429,6 +463,7 @@
    "kind": "python",
    "description": "One trained model makes every decision. It began by playing randomly and learned only by playing itself, with no strategy written in and nothing copied.",
    "key": "sub:bitter-net",
+   "provisional": false,
    "method": [
     [
      "learned from millions of practice decisions",
@@ -443,9 +478,9 @@
      "pick"
     ]
    ],
-   "elo": 1802.4841485638349,
-   "king_elo": 1573.5523757316546,
-   "score_elo": 4504.517253092728,
+   "elo": 1802.5274874215281,
+   "king_elo": 1573.1840969629936,
+   "score_elo": 4504.5703907397865,
    "positions": [
     0.3807291666666666,
     0.3520833333333333,
@@ -455,7 +490,7 @@
    "games": 960,
    "sets": 20,
    "played_at": "2026-11-06T22:01:39+00:00",
-   "engine": "0.1.0",
+   "engine": "0.1.0+2dbf68df",
    "p95_ms": 0.3802345080615357,
    "over_budget": 0.0,
    "versus": [
@@ -559,6 +594,7 @@
    "kind": "python",
    "description": "Yosif's look-ahead bot with its card model swapped for Copycat with practice. It keeps Yosif's bidding.",
    "key": "sub:rl-hybrid",
+   "provisional": false,
    "method": [
     [
      "Yosif's bidding model picks the bid",
@@ -581,9 +617,9 @@
      "pick"
     ]
    ],
-   "elo": 1788.8735435944327,
-   "king_elo": 1616.0072162892998,
-   "score_elo": 4519.468749498681,
+   "elo": 1788.9158612981787,
+   "king_elo": 1615.6043944522705,
+   "score_elo": 4519.523905133424,
    "positions": [
     0.39479166666666665,
     0.33229166666666665,
@@ -593,7 +629,7 @@
    "games": 960,
    "sets": 20,
    "played_at": "2026-11-06T21:20:26+00:00",
-   "engine": "0.1.0",
+   "engine": "0.1.0+2dbf68df",
    "p95_ms": 99.24297935602165,
    "over_budget": 0.00014708766424789175,
    "versus": [
@@ -719,9 +755,9 @@
      "pick"
     ]
    ],
-   "elo": 1752.9314195683323,
-   "king_elo": 1606.7271078936753,
-   "score_elo": 4554.471927880445,
+   "elo": 1753.0306397771117,
+   "king_elo": 1605.6427603485422,
+   "score_elo": 4554.59087204014,
    "positions": [
     0.426875,
     0.353125,
@@ -739,6 +775,7 @@
    "kind": "python",
    "description": "Copycat's model, improved further by playing itself. It bids with Basic rules.",
    "key": "sub:rl-cards",
+   "provisional": false,
    "method": [
     [
      "bid the tricks the hand should win",
@@ -753,9 +790,9 @@
      "pick"
     ]
    ],
-   "elo": 1655.1195589360634,
-   "king_elo": 1510.7498849631113,
-   "score_elo": 4348.000775020167,
+   "elo": 1655.1505056128874,
+   "king_elo": 1510.434310239862,
+   "score_elo": 4348.032427484917,
    "positions": [
     0.35572916666666665,
     0.3223958333333333,
@@ -765,7 +802,7 @@
    "games": 960,
    "sets": 20,
    "played_at": "2026-11-06T20:24:05+00:00",
-   "engine": "0.1.0",
+   "engine": "0.1.0+2dbf68df",
    "p95_ms": 0.4635037436164635,
    "over_budget": 0.0,
    "versus": [
@@ -887,9 +924,9 @@
      "pick"
     ]
    ],
-   "elo": 1607.8792262572622,
-   "king_elo": 1465.208546442186,
-   "score_elo": 4296.340261883265,
+   "elo": 1607.8924476836241,
+   "king_elo": 1465.0072493875862,
+   "score_elo": 4296.344698434605,
    "positions": [
     0.36,
     0.33187500000000003,
@@ -907,6 +944,7 @@
    "kind": "python",
    "description": "Copycat's model picks the most promising cards, so Look-ahead can spend its effort trying only those.",
    "key": "sub:net-pimc",
+   "provisional": false,
    "method": [
     [
      "bid the tricks the hand should win",
@@ -929,9 +967,9 @@
      "pick"
     ]
    ],
-   "elo": 1485.2506627130138,
-   "king_elo": 1336.0242857507371,
-   "score_elo": 4105.140560878723,
+   "elo": 1485.267398400408,
+   "king_elo": 1335.8407573183229,
+   "score_elo": 4105.151464608143,
    "positions": [
     0.30416666666666664,
     0.32864583333333336,
@@ -941,7 +979,7 @@
    "games": 960,
    "sets": 20,
    "played_at": "2026-11-06T19:59:37+00:00",
-   "engine": "0.1.0",
+   "engine": "0.1.0+2dbf68df",
    "p95_ms": 18.43678511497065,
    "over_budget": 0.00500698739181124,
    "versus": [
@@ -1063,9 +1101,9 @@
      "pick"
     ]
    ],
-   "elo": 1398.7454415972597,
-   "king_elo": 1327.4479224896145,
-   "score_elo": 4083.24989907628,
+   "elo": 1398.7399589888164,
+   "king_elo": 1327.4920447459144,
+   "score_elo": 4083.24960120909,
    "positions": [
     0.31375000000000003,
     0.32875,
@@ -1101,9 +1139,9 @@
      "pick"
     ]
    ],
-   "elo": 1388.2713174178361,
-   "king_elo": 1322.304767256966,
-   "score_elo": 4048.735563795151,
+   "elo": 1388.2658456692716,
+   "king_elo": 1322.352275491915,
+   "score_elo": 4048.73415177202,
    "positions": [
     0.286875,
     0.3125,
@@ -1121,6 +1159,7 @@
    "kind": "python",
    "description": "A trained model that learned its card play by copying Look-ahead. It bids with Basic rules and does no look-ahead itself.",
    "key": "sub:pimc-clone",
+   "provisional": false,
    "method": [
     [
      "bid the tricks the hand should win",
@@ -1135,9 +1174,9 @@
      "pick"
     ]
    ],
-   "elo": 1259.931583741467,
-   "king_elo": 1246.2078097987394,
-   "score_elo": 3917.157428411533,
+   "elo": 1259.9372114803764,
+   "king_elo": 1246.0749711942365,
+   "score_elo": 3917.162820258241,
    "positions": [
     0.25729166666666664,
     0.265625,
@@ -1147,7 +1186,7 @@
    "games": 960,
    "sets": 20,
    "played_at": "2026-11-06T20:11:34+00:00",
-   "engine": "0.1.0",
+   "engine": "0.1.0+2dbf68df",
    "p95_ms": 0.4635037436164635,
    "over_budget": 0.0,
    "versus": [
@@ -1251,6 +1290,7 @@
    "kind": "python",
    "description": "Basic rules, except it stops chasing tricks once its unbeatable trumps cover what it still needs.",
    "key": "sub:table-pressure",
+   "provisional": false,
    "method": [
     [
      "bid the tricks the hand should win",
@@ -1269,9 +1309,9 @@
      "pick"
     ]
    ],
-   "elo": 1022.7768096021925,
-   "king_elo": 931.9871221655051,
-   "score_elo": 3314.622089693492,
+   "elo": 1022.778113558771,
+   "king_elo": 931.9577693785262,
+   "score_elo": 3314.6225163554095,
    "positions": [
     0.15,
     0.19843750000000002,
@@ -1281,7 +1321,7 @@
    "games": 960,
    "sets": 20,
    "played_at": "2026-11-07T00:00:11+00:00",
-   "engine": "0.1.0",
+   "engine": "0.1.0+2dbf68df",
    "p95_ms": 0.018374911201915742,
    "over_budget": 0.0,
    "versus": [
@@ -1403,9 +1443,9 @@
      "pick"
     ]
    ],
-   "elo": 969.016013700422,
-   "king_elo": 944.5603496457244,
-   "score_elo": 3095.774800159744,
+   "elo": 969.0153250224686,
+   "king_elo": 944.5874210894453,
+   "score_elo": 3095.7748001591185,
    "positions": [
     0.1125,
     0.17250000000000001,
@@ -1423,6 +1463,7 @@
    "kind": "python",
    "description": "Basic rules, set to take fewer risks.",
    "key": "sub:cautious-heuristic",
+   "provisional": false,
    "method": [
     [
      "bid the tricks the hand should win",
@@ -1441,9 +1482,9 @@
      "pick"
     ]
    ],
-   "elo": 944.8634753018556,
-   "king_elo": 891.1350610383463,
-   "score_elo": 3238.4458568699056,
+   "elo": 944.864187640047,
+   "king_elo": 891.1126093334601,
+   "score_elo": 3238.4460966955835,
    "positions": [
     0.134375,
     0.17708333333333334,
@@ -1453,7 +1494,7 @@
    "games": 960,
    "sets": 20,
    "played_at": "2026-11-06T23:04:02+00:00",
-   "engine": "0.1.0",
+   "engine": "0.1.0+2dbf68df",
    "p95_ms": 0.016975577667533215,
    "over_budget": 0.0,
    "versus": [
@@ -1557,6 +1598,7 @@
    "kind": "wire",
    "description": "A simple example bot. It never bids and always plays its highest card.",
    "key": "sub:highcard-wire",
+   "provisional": false,
    "method": [
     [
      "never bid; call the minimum",
@@ -1571,9 +1613,9 @@
      "pick"
     ]
    ],
-   "elo": 714.7403649189082,
-   "king_elo": 677.7379956141824,
-   "score_elo": 2782.459840008797,
+   "elo": 714.7403968728285,
+   "king_elo": 677.7345537596234,
+   "score_elo": 2782.459872693618,
    "positions": [
     0.078125,
     0.06979166666666665,
@@ -1583,7 +1625,7 @@
    "games": 960,
    "sets": 20,
    "played_at": "2026-11-06T23:25:50+00:00",
-   "engine": "0.1.0",
+   "engine": "0.1.0+2dbf68df",
    "p95_ms": 0.39559598218722175,
    "over_budget": 0.0,
    "versus": [
@@ -1687,6 +1729,7 @@
    "kind": "wire",
    "description": "A simple example bot. It never bids and always plays its lowest card.",
    "key": "sub:lowcard-wire",
+   "provisional": false,
    "method": [
     [
      "never bid; call the minimum",
@@ -1701,9 +1744,9 @@
      "pick"
     ]
    ],
-   "elo": 714.7403649189082,
-   "king_elo": 689.5906986822513,
-   "score_elo": 2702.840850132492,
+   "elo": 714.7403968728285,
+   "king_elo": 689.5867627005676,
+   "score_elo": 2702.8408795388805,
    "positions": [
     0.07604166666666666,
     0.07604166666666667,
@@ -1713,7 +1756,7 @@
    "games": 960,
    "sets": 20,
    "played_at": "2026-11-06T23:48:25+00:00",
-   "engine": "0.1.0",
+   "engine": "0.1.0+2dbf68df",
    "p95_ms": 0.39559598218722175,
    "over_budget": 0.0,
    "versus": [
