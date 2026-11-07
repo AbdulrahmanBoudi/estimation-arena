@@ -1,0 +1,41 @@
+{
+ "a": "bitter-net",
+ "b": "rl-cards",
+ "hash_a": "0ee768fef2f2037b",
+ "hash_b": "143bc51f972907a2",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T06:29:33+00:00",
+   "wall_s": 4.356761839000683
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:bitter-net",
+   "b": "sub:rl-cards",
+   "a_wins": 15,
+   "draws": 0,
+   "b_wins": 5
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:bitter-net",
+   "b": "sub:rl-cards",
+   "a_wins": 12,
+   "draws": 5,
+   "b_wins": 3
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:bitter-net",
+   "b": "sub:rl-cards",
+   "a_wins": 10,
+   "draws": 7,
+   "b_wins": 3
+  }
+ ]
+}
