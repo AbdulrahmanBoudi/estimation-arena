@@ -1,0 +1,41 @@
+{
+ "a": "net-pimc",
+ "b": "rl-hybrid",
+ "hash_a": "6152cc0e6df496d1",
+ "hash_b": "fcd28852962a533c",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T07:20:22+00:00",
+   "wall_s": 352.39639545499995
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:net-pimc",
+   "b": "sub:rl-hybrid",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 20
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:net-pimc",
+   "b": "sub:rl-hybrid",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 20
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:net-pimc",
+   "b": "sub:rl-hybrid",
+   "a_wins": 0,
+   "draws": 4,
+   "b_wins": 16
+  }
+ ]
+}
