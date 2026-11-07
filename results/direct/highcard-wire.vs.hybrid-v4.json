@@ -1,0 +1,41 @@
+{
+ "a": "highcard-wire",
+ "b": "hybrid-v4",
+ "hash_a": "ac81254bcf20c320",
+ "hash_b": "f2f793ae33514ed4",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T07:08:43+00:00",
+   "wall_s": 1022.5154074439997
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:highcard-wire",
+   "b": "sub:hybrid-v4",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 20
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:highcard-wire",
+   "b": "sub:hybrid-v4",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 20
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:highcard-wire",
+   "b": "sub:hybrid-v4",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 20
+  }
+ ]
+}
