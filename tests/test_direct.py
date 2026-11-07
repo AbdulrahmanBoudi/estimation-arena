@@ -67,7 +67,7 @@ def test_runoff_lists_everyone_once():
     assert sorted(direct.runoff(keys, [])) == sorted(keys)
 
 
-def test_a_real_direct_match_changes_the_board_and_stays_secret(tmp_path):
+def test_a_real_direct_match_changes_the_board_and_stays_secret(tmp_path, monkeypatch):
     import shutil
 
     for name in ("anchors.json", "ladder"):
@@ -82,7 +82,9 @@ def test_a_real_direct_match_changes_the_board_and_stays_secret(tmp_path):
     assert duels.due(tmp_path) in ([("lowcard-wire", "highcard-wire")], [("highcard-wire", "lowcard-wire")])
     match = duels.play("lowcard-wire", "highcard-wire", 7, workers=1, sets=1, root=tmp_path)
     assert "seed" not in match
-    assert duels.due(tmp_path) == []
+    assert len(duels.due(tmp_path)) == 1  # one set can't be clear, so this top pair plays on
+    monkeypatch.setattr(duels, "MAX_SETS", 1)
+    assert duels.due(tmp_path) == []  # until it reaches the limit
     board = leaderboard.build(tmp_path)
     assert len(board["direct"]) == 1 and board["direct"][0]["sets"] == 1
     assert set(board["runoff"]) >= {"sub:lowcard-wire", "sub:highcard-wire"}
