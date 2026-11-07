@@ -1,0 +1,41 @@
+{
+ "a": "bitter-net",
+ "b": "rl-hybrid",
+ "hash_a": "0ee768fef2f2037b",
+ "hash_b": "fcd28852962a533c",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T06:11:58+00:00",
+   "wall_s": 252.35199970200028
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:bitter-net",
+   "b": "sub:rl-hybrid",
+   "a_wins": 11,
+   "draws": 0,
+   "b_wins": 9
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:bitter-net",
+   "b": "sub:rl-hybrid",
+   "a_wins": 13,
+   "draws": 0,
+   "b_wins": 7
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:bitter-net",
+   "b": "sub:rl-hybrid",
+   "a_wins": 8,
+   "draws": 6,
+   "b_wins": 6
+  }
+ ]
+}
