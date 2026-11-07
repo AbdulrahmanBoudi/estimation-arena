@@ -34,11 +34,13 @@ def test_the_prompt_lists_only_this_seats_view_and_the_legal_moves():
     assert "seat 0: A♣" in text
 
 
-def test_a_reply_must_be_one_legal_number():
+def test_a_reply_must_end_with_one_legal_number():
     assert llm.parse_reply("70", [70, 76]) == 70
     assert llm.parse_reply(" 70\n", [70, 76]) == 70
+    assert llm.parse_reply("I hold 3 spades, so:\n**76**", [70, 76]) == 76
     assert llm.parse_reply("71", [70, 76]) is None
     assert llm.parse_reply("70 or 76", [70, 76]) is None
+    assert llm.parse_reply("I will play 76 because it is safe", [70, 76]) is None
     assert llm.parse_reply("", [70, 76]) is None
 
 

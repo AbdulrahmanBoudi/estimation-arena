@@ -110,16 +110,15 @@ def prompt_for(obs: dict, legal: list[int]) -> str:
         lines.append(f"On the table: {table}.")
     lines.append("Legal moves:")
     lines += [f"{action} = {action_name(action)}" for action in legal]
-    lines.append("Think only as much as you need. Reply with only the number of your chosen move.")
+    lines.append("Think as you need, then end with a final line holding only the number of your chosen move.")
     return "\n".join(lines)
 
 
 def parse_reply(reply: str, legal: list[int]) -> int | None:
-    """The move in a reply: the only number in it, and a legal one, or nothing."""
-    numbers = re.findall(r"\d+", reply or "")
-    if len(numbers) == 1 and int(numbers[0]) in legal:
-        return int(numbers[0])
-    return None
+    """The move in a reply's last line, if that line is just one legal number."""
+    lines = (reply or "").strip().splitlines()
+    match = re.fullmatch(r"\W*(\d+)\W*", lines[-1]) if lines else None
+    return int(match.group(1)) if match and int(match.group(1)) in legal else None
 
 
 def ask_claude(prompt: str, folder: str) -> tuple[str, dict]:
