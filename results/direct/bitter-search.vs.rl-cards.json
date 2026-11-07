@@ -1,0 +1,41 @@
+{
+ "a": "bitter-search",
+ "b": "rl-cards",
+ "hash_a": "5c0604a1e4e0f545",
+ "hash_b": "143bc51f972907a2",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T06:07:42+00:00",
+   "wall_s": 253.20263183299994
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:bitter-search",
+   "b": "sub:rl-cards",
+   "a_wins": 15,
+   "draws": 0,
+   "b_wins": 5
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:bitter-search",
+   "b": "sub:rl-cards",
+   "a_wins": 17,
+   "draws": 2,
+   "b_wins": 1
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:bitter-search",
+   "b": "sub:rl-cards",
+   "a_wins": 17,
+   "draws": 3,
+   "b_wins": 0
+  }
+ ]
+}
