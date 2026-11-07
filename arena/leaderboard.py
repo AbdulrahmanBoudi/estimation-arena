@@ -21,6 +21,7 @@ from typing import Any
 from estimation.arena.ratings import ANCHOR, ANCHOR_RATING, DEFAULT_PRIOR, PairRecord, bradley_terry
 
 from .bots import ROOT, SUB_PREFIX, load_manifest
+from .direct import current, load_matches, runoff, table
 from .guide import GUIDE, STYLE as GUIDE_STYLE
 from .anchor_positions import OUT as POSITIONS_FILE
 from .import_ladder import LADDER_FILE
@@ -100,21 +101,23 @@ def build(root: Path = ROOT, live: list[dict[str, Any]] | None = None, experimen
             result = json.loads(path.read_text())
             if result["bot"] not in official:
                 results.append({**result, "provisional": True})
+    direct = current(load_matches(root), [r for r in results if not r.get("provisional")])
     counted = [m for m in live or [] if m.get("pairs") and m["state"] != "stopped"
                and (m["kind"] == "entry" or (m["kind"] == "rating" and m["alive"]))]  # fmt: skip
     pairs = _pairs(ladder["pairs"])
-    for r in results:
+    for r in [*results, *direct]:
         pairs += _pairs(r["pairs"])
     _add_new(pairs, _pairs([q for m in counted for q in m["pairs"]["delta"]]))
     score_ratings = bradley_terry(pairs, ANCHOR, ANCHOR_RATING, DEFAULT_PRIOR) if pairs else {}
     matches = json.loads(positions_file.read_text())["matches"] if positions_file.is_file() else []
     by_position = [q for m in matches for q in _pairs(m["pairs"])]
-    for r in results:
+    for r in [*results, *direct]:
         by_position += _pairs(r.get("position_pairs", []))
+    official_records = list(by_position)
     _add_new(by_position, _pairs([q for m in counted for q in m["pairs"]["weighted"]]))
     ratings = bradley_terry(by_position, ANCHOR, ANCHOR_RATING, DEFAULT_PRIOR) if by_position else {}
     by_king = [q for m in matches for q in _pairs(m.get("king_pairs", []))]
-    for r in results:
+    for r in [*results, *direct]:
         by_king += _pairs(r.get("king_pairs", []))
     _add_new(by_king, _pairs([q for m in counted for q in m["pairs"]["king"]]))
     king_ratings = bradley_terry(by_king, ANCHOR, ANCHOR_RATING, DEFAULT_PRIOR) if by_king else {}
@@ -206,7 +209,10 @@ def build(root: Path = ROOT, live: list[dict[str, Any]] | None = None, experimen
                 for field in ("elo", "king_elo", "score_elo"):
                     row[field] = official_rows[row["key"]][field]
     rows.sort(key=lambda row: (row["elo"] is None, -(row["elo"] or 0)))
+    rated = [row["key"] for row in rows if row["elo"] is not None and not row.get("provisional")]
     return {
+        "direct": table(direct),
+        "runoff": runoff(rated, official_records),
         "built_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "anchor": ANCHOR,
         "anchor_rating": ANCHOR_RATING,
@@ -224,7 +230,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:8px 10px;border-bottom:1
 th{font-weight:600;color:var(--muted);font-size:13px}td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 tr.anchor td{color:var(--muted);background:var(--tint)}tr:has(+ tr.howrow) td{border-bottom:none}tr.howrow td{white-space:normal;padding-top:0}.places{display:flex;gap:2px;width:210px;height:12px;vertical-align:middle}.places span{display:block;height:100%}.places span:first-child{border-radius:3px 0 0 3px}.places span:last-child{border-radius:0 3px 3px 0}.p0{background:#f2c14e}.p1{background:#f8e3a8}.p2{background:#f3a6a8}.p3{background:#e5484d}.key{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 4px 0 12px;vertical-align:-1px}.king{font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted)}.metrics{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}.metrics button{font:inherit;font-size:14px;padding:6px 12px;border:1px solid var(--muted);border-radius:6px;background:transparent;color:inherit;cursor:pointer}.metrics button[aria-pressed=true]{background:#f2c14e;border-color:#f2c14e;color:#1c2147;font-weight:600}.banner{display:block;width:100%;height:auto;margin:0 0 16px}.unrated{color:var(--muted);font-size:13px}td.m-weighted,td.m-king,td.m-delta{color:var(--muted)}body[data-metric=weighted] td.m-weighted,body[data-metric=king] td.m-king,body[data-metric=delta] td.m-delta{color:inherit;font-weight:700}span.m-king,span.m-delta{display:none}body[data-metric=king] span.m-weighted,body[data-metric=delta] span.m-weighted{display:none}body[data-metric=king] span.m-king,body[data-metric=delta] span.m-delta{display:inline}
 .brand-title{margin:0}.tag{font-size:12px;padding:1px 6px;border:1px solid var(--line);border-radius:10px;color:var(--muted)}.desc{color:var(--muted);font-size:13px;white-space:normal}
-.pos{color:var(--good)}.neg{color:var(--bad)}details{margin-top:24px}summary{cursor:pointer;color:var(--muted)}
+.direct{margin-top:32px}table.cross td,table.cross th{white-space:nowrap}table.cross .self{background:var(--tint)}table.cross .close,table.cross .unrated{color:var(--muted)}.pos{color:var(--good)}.neg{color:var(--bad)}details{margin-top:24px}summary{cursor:pointer;color:var(--muted)}
 .who-cell{white-space:normal;min-width:230px}td.opt{white-space:normal}.places{flex-shrink:0}
 @media(max-width:700px){th.opt,td.opt,.who{display:none}.who-cell{min-width:0}body:not([data-metric=weighted]) .num.m-weighted,body:not([data-metric=king]) .num.m-king,body:not([data-metric=delta]) .num.m-delta{display:none}}
 details.how{margin:6px 0 2px}details.how summary{font-size:13px}.scroll{overflow-x:auto;margin:10px 0}
@@ -378,6 +384,45 @@ def _favicon() -> str:
     return base64.b64encode((ROOT / "brand" / "favicon.svg").read_bytes()).decode()
 
 
+def head_to_head(board: dict[str, Any], top: int = 8) -> str:
+    """The top bots against each other, or nothing until direct games exist."""
+    if not board["direct"]:
+        return ""
+    e = html.escape
+    bots = [r for r in board["rows"] if not r["anchor"] and not r.get("provisional")][:top]
+    played = {(m["a"], m["b"]): m for m in board["direct"]}
+    head = "".join(f'<th class="num" title="{e(r["name"])}">{k + 1}</th>' for k, r in enumerate(bots))
+    lines = []
+    for k, row in enumerate(bots):
+        cells = []
+        for j, other in enumerate(bots):
+            match = played.get((row["key"], other["key"]))
+            flip = played.get((other["key"], row["key"]))
+            if k == j:
+                cells.append('<td class="num self"></td>')
+            elif match or flip:
+                mine, theirs = (match["a_wins"], match["b_wins"]) if match else (flip["b_wins"], flip["a_wins"])
+                clear = (match or flip)["clear"]
+                kind = ("pos" if mine > theirs else "neg") if clear else "close"
+                draws = (match or flip)["draws"]
+                cells.append(f'<td class="num {kind}">{mine}-{draws}-{theirs}</td>')
+            else:
+                cells.append('<td class="num unrated">-</td>')
+        lines.append(f'<tr><td class="num rank">{k + 1}</td><td class="who-cell">{e(row["name"])}</td>{"".join(cells)}</tr>')
+    names = {r["key"]: r["name"] for r in board["rows"]}
+    leader = next((r for r in board["rows"] if r["elo"] is not None and not r.get("provisional")), None)
+    winner = names.get(board["runoff"][0]) if board["runoff"] else None
+    verdict = f"Runoff winner: <strong>{e(winner)}</strong>." if winner else ""
+    if winner and leader and leader["key"] != board["runoff"][0]:
+        verdict += f' The rating puts {e(leader["name"])} first, so treat the top spot as contested.'
+    return f"""<section class="direct" aria-labelledby="direct-title">
+<h2 id="direct-title">Head to head</h2>
+<p class="desc">Sets won, drawn and lost by the bot on the left against each bot across the top. Coloured results are unlikely between equal bots; plain ones are too close to call, and a dash means not played yet. {verdict} The runoff drops the bot scoring least against those left, until one remains.</p>
+<div class="scroll"><table class="cross"><thead><tr><th class="num">#</th><th>Bot</th>{head}</tr></thead><tbody>
+{chr(10).join(lines)}
+</tbody></table></div></section>"""
+
+
 def render(board: dict[str, Any]) -> str:
     rows = board["rows"]
     anchors = [r["name"] for r in rows if r["anchor"]]
@@ -442,6 +487,7 @@ def render(board: dict[str, Any]) -> str:
 <tbody>
 {chr(10).join(lines)}
 </tbody></table>
+{head_to_head(board)}
 {GUIDE}
 </main><script>{RANK_SCRIPT}</script></body></html>
 """

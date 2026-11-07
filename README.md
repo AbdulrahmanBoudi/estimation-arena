@@ -87,6 +87,11 @@ Protocol: [docs/table.md](docs/table.md).
 | Fresh process per game, no seed sent | No peeking across rotations |
 | Rating from final position: King, Sub-King, Sub-Kooz, Kooz | The Bola pays by position, and stacked doubles make raw scores explode |
 | Leaderboard seed is a secret | No tuning to the test deals |
+| Every bot plays every other bot, on fresh deals per pair | A top spot has to be earned head to head |
+| Results show when they're too close to call | A small lead isn't presented as a real one |
+| Runoff next to the rating | Beating weak bots can't win it, because weak bots leave first |
+
+Reasoning and sources: [docs/fair-ranking.md](docs/fair-ranking.md).
 
 ## Eval set
 

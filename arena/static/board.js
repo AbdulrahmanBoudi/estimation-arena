@@ -202,6 +202,35 @@ function renderRows(force = false, animate = true) {
   setTimeout(() => body.querySelectorAll(".flash").forEach((tr) => tr.classList.remove("flash")), 1600);
 }
 
+function renderDirect() {
+  $("direct-section").hidden = !state.direct.length;
+  if (!state.direct.length) return;
+  const bots = state.standings.filter((r) => !r.anchor && !r.provisional).slice(0, 8);
+  const find = (a, b) => state.direct.find((m) => m.a === a && m.b === b);
+  const head = el("tr");
+  head.append(el("th", "num", "#"), el("th", "", "Bot"), ...bots.map((r, k) => {
+    const th = el("th", "num", k + 1);
+    th.title = r.name;
+    return th;
+  }));
+  $("cross-head").replaceChildren(head);
+  $("cross-body").replaceChildren(...bots.map((row, k) => {
+    const tr = el("tr");
+    tr.append(el("td", "num rank", k + 1), el("td", "bot", row.name));
+    bots.forEach((other, j) => {
+      if (k === j) return tr.appendChild(el("td", "num self"));
+      const match = find(row.key, other.key), flip = find(other.key, row.key);
+      if (!match && !flip) return tr.appendChild(el("td", "num close", "-"));
+      const mine = match ? match.a_wins : flip.b_wins, theirs = match ? match.b_wins : flip.a_wins;
+      const kind = !(match || flip).clear ? "close" : mine > theirs ? "won" : "lost";
+      tr.appendChild(el("td", `num ${kind}`, `${mine}-${(match || flip).draws}-${theirs}`));
+    });
+    return tr;
+  }));
+  const names = Object.fromEntries(state.standings.map((r) => [r.key, r.name]));
+  $("runoff").textContent = state.runoff.length ? `Runoff winner: ${names[state.runoff[0]]}. The runoff drops the bot scoring least against those left, until one remains.` : "";
+}
+
 function render() {
   for (const row of state.standings) {
     firstElo[row.key] ??= { elo: row.elo, king_elo: row.king_elo, score_elo: row.score_elo };
@@ -212,6 +241,7 @@ function render() {
   list("playing", state.playing, true, "No matches are playing right now.");
   list("recent", state.recent, false, "Finished matches appear here.");
   renderRows();
+  renderDirect();
 }
 
 function showStatus() {

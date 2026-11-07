@@ -25,7 +25,7 @@ Tune on your own seeds (`arena.sweep` defaults to 1000). The leaderboard's seed 
 | Labels | As soon as it opens, and on every push | Automatic |
 | Smoke | On open and every push | Automatic for a branch in this repo. The owner starts it for a fork |
 | Merge | After smoke passes | The owner. GitHub does not enforce this, so check the result first |
-| Ladder | 03:00 UTC, or started by hand | Automatic |
+| Ladder | 03:00 UTC, or started by hand. The bot plays the benchmarks, then every other bot | Automatic |
 | Leaderboard page | When the ladder run ends | Automatic |
 
 Smoke runs the tests and plays 2 sets against Random and Heuristic for each bot the pull request changes. It shows that the bots run. It does not show how strong they are.
@@ -72,7 +72,7 @@ The nightly ladder plays only what is new or out of date:
   gh workflow run ladder.yml -f bots=<name> -f replay=true
   ```
 
-Each bot's result is saved as soon as it finishes. If a run hits its 350-minute limit, the next night's run carries on with the bots still out of date, so large replays need no splitting. Merging during a run is safe.
+Direct games between bots follow the same rule: changing a bot or the engine voids its direct games, and they're played again. Each bot's result is saved as soon as it finishes. If a run hits its 350-minute limit, the next night's run carries on with the bots still out of date, so large replays need no splitting. Merging during a run is safe.
 
 A hand-started `replay=true` run plays every named bot again even if nothing changed, and the name list defaults to all of them. Name the bots you mean.
 

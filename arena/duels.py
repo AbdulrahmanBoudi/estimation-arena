@@ -1,0 +1,100 @@
+"""Play the direct games between rated bots, for the ladder.
+
+    uv run python -m arena.duels due                       # what still needs playing, best first
+    uv run python -m arena.duels play a b --seed S         # play one batch and save it
+
+Every pair plays. A close pair at the top keeps playing fresh deals, a batch at a time.
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+from datetime import UTC, datetime
+from itertools import combinations
+from pathlib import Path
+from typing import Any
+
+from .bots import ROOT, SUB_PREFIX, load_manifest
+from .direct import current, is_clear, load_matches, match_file, record
+from .leaderboard import build
+from .positions import summarize
+from .run import RESULTS_DIR, bot_hash, engine_version, run_sets
+
+BATCH_SETS = 20
+MAX_SETS = 100
+TOP = 4
+
+
+def pair_seed(seed: int, a: str, b: str, batch: int) -> int:
+    """Different deals for every pair and batch, so one bad run of cards can't decide several
+    results. The Annual Computer Poker Competition had to rerun its 2016 finals over this."""
+    first, second = sorted((a, b))
+    return int.from_bytes(hashlib.sha256(f"{seed}|{first}|{second}|{batch}".encode()).digest()[:4], "big")
+
+
+def due(root: Path = ROOT) -> list[tuple[str, str]]:
+    """Pairs with no current match, then close pairs among the top bots; best bots first."""
+    results = [json.loads(p.read_text()) for p in sorted((root / RESULTS_DIR.relative_to(ROOT)).glob("*.json"))]
+    order = [r["key"][len(SUB_PREFIX) :] for r in build(root)["rows"] if not r["anchor"]]
+    rank = {name: k for k, name in enumerate(order)}
+    done = {tuple(sorted((m["a"], m["b"]))): m for m in current(load_matches(root), results)}
+    unplayed, close = [], []
+    for a, b in combinations(order, 2):
+        match = done.get(tuple(sorted((a, b))))
+        if match is None:
+            unplayed.append((a, b))
+            continue
+        wins, draws, losses = record(match)
+        if rank[a] < TOP and rank[b] < TOP and not is_clear(wins, losses) and wins + draws + losses < MAX_SETS:
+            close.append((a, b))
+    return sorted(unplayed, key=lambda p: (rank[p[0]] + rank[p[1]], rank[p[0]])) + close
+
+
+def play(a: str, b: str, seed: int, workers: int = 4, sets: int = BATCH_SETS, root: Path = ROOT) -> dict[str, Any]:
+    """One more batch for this pair, added to its file. No seed is saved: the ladder's is secret."""
+    first, second = sorted((a, b))
+    path = match_file(root, first, second)
+    hashes = (bot_hash(load_manifest(first)), bot_hash(load_manifest(second)))
+    engine = engine_version()
+    match = json.loads(path.read_text()) if path.is_file() else None
+    if not match or (match["hash_a"], match["hash_b"]) != hashes or match["engine"] != engine:
+        match = {"a": first, "b": second, "hash_a": hashes[0], "hash_b": hashes[1], "engine": engine,
+                 "batches": [], "pairs": [], "position_pairs": [], "king_pairs": []}  # fmt: skip
+    me, other = SUB_PREFIX + first, SUB_PREFIX + second
+    lineup = (me, other, me, other)
+    run = run_sets(lineup, sets, pair_seed(seed, first, second, len(match["batches"])), workers)
+    _, by_position = summarize(run.results, lineup)
+    match["pairs"] += by_position["delta"]
+    match["position_pairs"] += by_position["weighted"]
+    match["king_pairs"] += by_position["king"]
+    match["batches"].append({"sets": sets, "played_at": datetime.now(UTC).isoformat(timespec="seconds"), "wall_s": run.wall_seconds})
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(match, indent=1) + "\n")
+    return match
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(prog="python -m arena.duels", description=__doc__.split("\n")[0])
+    commands = parser.add_subparsers(dest="command", required=True)
+    commands.add_parser("due", help="print the pairs to play, one a:b per line")
+    one = commands.add_parser("play", help="play one batch for a pair and print its file")
+    one.add_argument("a")
+    one.add_argument("b")
+    one.add_argument("--seed", type=int, default=0)
+    one.add_argument("--workers", type=int, default=4)
+    args = parser.parse_args(argv)
+    if args.command == "due":
+        for a, b in due():
+            print(f"{a}:{b}")
+        return 0
+    play(args.a, args.b, args.seed, args.workers)
+    wins, draws, losses = record(json.loads(match_file(ROOT, args.a, args.b).read_text()))
+    print(f"{min(args.a, args.b)} {wins}-{draws}-{losses} {max(args.a, args.b)}")
+    print(match_file(ROOT, args.a, args.b).relative_to(ROOT))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

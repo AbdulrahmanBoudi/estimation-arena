@@ -49,6 +49,7 @@ share. To enter a net, copy `bots/bitter-net` to `bots/<name>/` with your `net.n
 | `arena/bots.py` | Loads `bots/<name>/manifest.json`; `sub:<name>:key=value` passes options |
 | `arena/run.py` | Rates one bot vs every anchor, writes `results/<name>.json` |
 | `arena/check.py` | Checks a bot before a pull request |
+| `arena/duels.py`, `arena/direct.py` | Direct games between bots, head-to-head records, the runoff |
 | `arena/sweep.py` | Tunes a python bot's options vs one opponent |
 | `arena/env.py` | PettingZoo AEC environment for RL training |
 | `arena/leaderboard.py` | Elo fit, renders `site/` |

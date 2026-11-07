@@ -21,7 +21,7 @@ from .bots import ROOT, SUB_PREFIX
 # on the home server, a bot not merged yet can also have results: those show as provisional.
 RESULTS_ROOT = Path(os.environ.get("ESTIMATION_RESULTS_ROOT", Path.home() / "workspace" / "estimation-arena"))
 RECENT = 8
-_cache: dict[str, Any] = {"signature": None, "standings": []}
+_cache: dict[str, Any] = {"signature": None, "standings": [], "direct": [], "runoff": []}
 ROW_FIELDS = ("name", "code_name", "key", "kind", "anchor", "provisional", "elo", "king_elo", "score_elo", "positions", "games", "played_at")
 MATCH_FIELDS = ("id", "kind", "key", "name", "opponent", "sets", "done", "state", "strip", "shares", "reward", "king", "delta", "started_at", "updated_at")
 
@@ -43,11 +43,14 @@ def payload() -> dict[str, Any]:
     if signature != _cache["signature"]:
         board = build(ROOT, matches, RESULTS_ROOT)
         _cache["standings"] = [{k: row.get(k) for k in ROW_FIELDS} for row in board["rows"]]
+        _cache["direct"], _cache["runoff"] = board["direct"], board["runoff"]
         _cache["signature"] = signature
     names = {row["key"]: row["name"] for row in _cache["standings"]}
     view = [{**{k: m.get(k) for k in MATCH_FIELDS}, "name": plain_name(m["key"], m["name"]), "opponent": names.get(m["opponent"], plain_name(m["opponent"], public(m["opponent"])[1]))} for m in matches]
     return {
         "standings": _cache["standings"],
+        "direct": _cache["direct"],
+        "runoff": _cache["runoff"],
         "playing": [m for m in view if m["state"] == "playing"],
         "recent": [m for m in view if m["state"] != "playing"][:RECENT],
     }
