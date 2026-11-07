@@ -17,16 +17,13 @@ from .plain import about_bot, plain_name
 from .training import training_of
 from .bots import ROOT, SUB_PREFIX
 
-# The deploy worktree's results are the last merged ones; the newest are where matches run.
+# This checkout's results are the official ones, the same as the public page. Where matches run
+# on the home server, a bot not merged yet can also have results: those show as provisional.
 RESULTS_ROOT = Path(os.environ.get("ESTIMATION_RESULTS_ROOT", Path.home() / "workspace" / "estimation-arena"))
 RECENT = 8
 _cache: dict[str, Any] = {"signature": None, "standings": []}
 ROW_FIELDS = ("name", "code_name", "key", "kind", "anchor", "provisional", "elo", "king_elo", "score_elo", "positions", "games", "played_at")
 MATCH_FIELDS = ("id", "kind", "key", "name", "opponent", "sets", "done", "state", "strip", "shares", "reward", "king", "delta", "started_at", "updated_at")
-
-
-def _root() -> Path:
-    return RESULTS_ROOT if (RESULTS_ROOT / "anchors.json").is_file() else ROOT
 
 
 def _signature(root: Path) -> tuple:
@@ -41,11 +38,10 @@ def _signature(root: Path) -> tuple:
 
 
 def payload() -> dict[str, Any]:
-    root = _root()
     matches = read_matches()
-    signature = (_signature(root), tuple(m["state"] for m in matches))
+    signature = (_signature(ROOT), _signature(RESULTS_ROOT), tuple(m["state"] for m in matches))
     if signature != _cache["signature"]:
-        board = build(root, matches)
+        board = build(ROOT, matches, RESULTS_ROOT)
         _cache["standings"] = [{k: row.get(k) for k in ROW_FIELDS} for row in board["rows"]]
         _cache["signature"] = signature
     names = {row["key"]: row["name"] for row in _cache["standings"]}
@@ -60,7 +56,7 @@ def payload() -> dict[str, Any]:
 def _manifest(key: str) -> dict[str, Any]:
     """A submission's manifest, from the merged bots or the ones still being tested."""
     name = key[len(SUB_PREFIX) :].split(":")[0]
-    for root in (ROOT, _root()):
+    for root in (ROOT, RESULTS_ROOT):
         path = root / "bots" / name / "manifest.json"
         if path.is_file():
             return json.loads(path.read_text())
@@ -74,7 +70,7 @@ def explain(key: str) -> dict[str, Any] | None:
     if key.startswith(SUB_PREFIX):
         about = _manifest(key)
     else:
-        anchors = json.loads((_root() / "anchors.json").read_text())
+        anchors = json.loads((ROOT / "anchors.json").read_text())
         about = next((a for a in anchors if a["spec"] == key), {})
     plain = about_bot(key)
     trained = training_of(key) or {}
@@ -84,7 +80,7 @@ def explain(key: str) -> dict[str, Any] | None:
         "method": method_svg(plain.get("method", about.get("method", []))),
         "training": {
             "summary": trained.get("summary", ""),
-            "stages": [{"title": s["title"], "svg": method_svg(s["steps"], s["repeat"])} for s in trained.get("stages", [])],
+            "stages": [{"title": s["title"], "svg": method_svg(s["steps"], s.get("repeat"))} for s in trained.get("stages", [])],
             "curves": trained.get("curves", ""),
             "lab": trained.get("lab", False),
         },

@@ -86,13 +86,20 @@ def _overlay_row(key: str, played: list[dict[str, Any]], ratings: tuple[dict, di
     }
 
 
-def build(root: Path = ROOT, live: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+def build(root: Path = ROOT, live: list[dict[str, Any]] | None = None, experiments: Path | None = None) -> dict[str, Any]:
     """Standings from the finished results under ``root``, plus any ``live`` matches
-    (arena.live.read_matches), which count for pairings no finished result covers."""
+    (arena.live.read_matches), which count for pairings no finished result covers, plus results
+    under ``experiments`` for bots ``root`` has not rated. Those two are marked provisional."""
     anchors: list[dict[str, str]] = json.loads((root / ANCHORS_FILE.relative_to(ROOT)).read_text())
     ladder_file, positions_file = root / LADDER_FILE.relative_to(ROOT), root / POSITIONS_FILE.relative_to(ROOT)
     ladder = json.loads(ladder_file.read_text()) if ladder_file.is_file() else {"pairs": []}
     results = [json.loads(p.read_text()) for p in sorted((root / RESULTS_DIR.relative_to(ROOT)).glob("*.json"))]
+    official = {r["bot"] for r in results}
+    if experiments and experiments.resolve() != root.resolve():
+        for path in sorted((experiments / RESULTS_DIR.relative_to(ROOT)).glob("*.json")):
+            result = json.loads(path.read_text())
+            if result["bot"] not in official:
+                results.append({**result, "provisional": True})
     counted = [m for m in live or [] if m.get("pairs") and m["state"] != "stopped"
                and (m["kind"] == "entry" or (m["kind"] == "rating" and m["alive"]))]  # fmt: skip
     pairs = _pairs(ladder["pairs"])
@@ -132,6 +139,7 @@ def build(root: Path = ROOT, live: list[dict[str, Any]] | None = None) -> dict[s
                 "kind": r["manifest"].get("kind", ""),
                 "description": current.get("description", r["manifest"].get("description", "")),
                 "key": key,
+                "provisional": r.get("provisional", False),
                 "method": current.get("method", []),
                 "elo": ratings.get(key),
                 "king_elo": king_ratings.get(key),
@@ -190,13 +198,20 @@ def build(root: Path = ROOT, live: list[dict[str, Any]] | None = None) -> dict[s
         about = about_bot(row["key"])
         row["description"] = about.get("about", row["description"])
         row["method"] = about.get("method", row["method"])
+    if live or experiments:
+        # Experiments must not move official ratings, so these match the public page exactly.
+        official_rows = {row["key"]: row for row in build(root)["rows"]}
+        for row in rows:
+            if row["key"] in official_rows:
+                for field in ("elo", "king_elo", "score_elo"):
+                    row[field] = official_rows[row["key"]][field]
     rows.sort(key=lambda row: (row["elo"] is None, -(row["elo"] or 0)))
     return {
         "built_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "anchor": ANCHOR,
         "anchor_rating": ANCHOR_RATING,
         "ladder": {k: ladder.get(k) for k in ("source", "sets", "imported_at")},
-        "submissions": len(results),
+        "submissions": sum(not r.get("provisional") for r in results),
         "rows": rows,
     }
 
