@@ -1,0 +1,41 @@
+{
+ "a": "cautious-heuristic",
+ "b": "table-pressure",
+ "hash_a": "126e32edb235a338",
+ "hash_b": "79315fa420fa9ec0",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T08:48:42+00:00",
+   "wall_s": 0.46077372900253977
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:cautious-heuristic",
+   "b": "sub:table-pressure",
+   "a_wins": 3,
+   "draws": 0,
+   "b_wins": 17
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:cautious-heuristic",
+   "b": "sub:table-pressure",
+   "a_wins": 3,
+   "draws": 4,
+   "b_wins": 13
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:cautious-heuristic",
+   "b": "sub:table-pressure",
+   "a_wins": 2,
+   "draws": 9,
+   "b_wins": 9
+  }
+ ]
+}
