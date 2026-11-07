@@ -11,6 +11,8 @@
   it changed the seat's expected final position, without waiting for the end of the game.
 - Critic, training only: the same view plus the three hidden hands, so deal luck stays out of
   the advantage. It is thrown away afterwards; the policy never sees hidden cards.
+- Refit, with --start-net and --refit: only bidding decisions train, and the body and card outputs
+  stay frozen, so the bidding learns to fit a copied card play (train/copy_search.py).
 - Auxiliary head on the policy: predicts the round's relative score, which teaches the shared
   layers about tricks and contracts. It affects neither the reward nor the moves' scores.
 - Opponents: half the games are self-play; in the rest two opposite seats play a past version.
@@ -86,6 +88,26 @@ def apply_policy(net, x):
 def apply_critic(net, x, hidden_hands):
     h = _body(net["body"], jnp.concatenate([x, hidden_hands.astype(x.dtype)], -1))
     return _out(net["value"], h)[..., 0]
+
+
+def load_policy(path):
+    """A saved net (``save_npz``) as a policy, with an untrained aux head."""
+    data = np.load(path)
+    layers, k = [], 0
+    while f"w{k}" in data:
+        layers.append({"w": jnp.asarray(data[f"w{k}"]), "b": jnp.asarray(data[f"b{k}"])})
+        k += 1
+    hidden = layers[-1]["w"].shape[1]
+    return {"body": layers, "policy": {"w": jnp.asarray(data["pw"]), "b": jnp.asarray(data["pb"])},
+            "aux": {"w": jnp.zeros((hidden, 1)), "b": jnp.zeros(1)}}  # fmt: skip
+
+
+def bidding_only(grads):
+    """The gradients a refit keeps: the policy head's non-card outputs, nothing else."""
+    first_card = R.NUM_ACTIONS - 52
+    zero = jax.tree.map(jnp.zeros_like, grads)
+    head = {"w": grads["policy"]["w"].at[:, first_card:].set(0.0), "b": grads["policy"]["b"].at[first_card:].set(0.0)}
+    return {**zero, "policy": head}
 
 
 def position_rewards(scores):
@@ -195,7 +217,7 @@ def _advance(g, used, base, pool, action):
     return _where_games(stop, fresh, after), used + stop, r, ended, after
 
 
-def make_rollout(batch: int, steps: int, lam: float, objective: str = "weighted", benchmark=None):
+def make_rollout(batch: int, steps: int, lam: float, objective: str = "weighted", benchmark=None, refit: bool = False):
     base = jnp.arange(batch) * POOL_DEALS
 
     def rollout(nets, opp, g, key):
@@ -218,7 +240,7 @@ def make_rollout(batch: int, steps: int, lam: float, objective: str = "weighted"
             made = jnp.take_along_axis(r.est == r.won, jnp.maximum(r.caller, 0)[:, None], 1)[:, 0]
             return (g, used), dict(
                 x=x.astype(jnp.float16), hidden=hidden, action=action, logp=logp, value=value, seat=seat,
-                train=mine & (n_legal > 1), ended=ended, round_rew=round_rewards(r),
+                train=mine & (n_legal > 1) & ~(refit & (phase == R.PLAY)), ended=ended, round_rew=round_rewards(r),
                 finished=after.over & ~after.overflow, overflow=after.overflow,
                 reward=objective_rewards(after.scores, objective), phase=phase, pre_super=pre_super,
                 skipped=ended & r.skipped, played=played, made=played & made,
@@ -281,7 +303,7 @@ def make_rollout(batch: int, steps: int, lam: float, objective: str = "weighted"
     return jax.jit(rollout)
 
 
-def make_update(tx_policy, tx_critic, clip: float, aux_weight: float):
+def make_update(tx_policy, tx_critic, clip: float, aux_weight: float, refit: bool = False):
     def policy_loss(net, mb, ent):
         x = mb["x"].astype(jnp.float32)
         logits, aux = apply_policy(net, x)
@@ -306,6 +328,8 @@ def make_update(tx_policy, tx_critic, clip: float, aux_weight: float):
     @jax.jit
     def step(nets, opts, mb, ent):
         (_, info), g_p = jax.value_and_grad(policy_loss, has_aux=True)(nets["policy"], mb, ent)
+        if refit:
+            g_p = bidding_only(g_p)
         v_loss, g_c = jax.value_and_grad(critic_loss)(nets["critic"], mb)
         up_p, o_p = tx_policy.update(g_p, opts[0], nets["policy"])
         up_c, o_c = tx_critic.update(g_c, opts[1], nets["critic"])
@@ -376,6 +400,8 @@ def main(argv=None) -> int:
     p.add_argument("--pool", type=int, default=16)
     p.add_argument("--eval-every", type=int, default=25)
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--start-net", type=Path, help="start the policy from this saved net")
+    p.add_argument("--refit", action="store_true", help="train only the bidding outputs of --start-net")
     p.add_argument("--logdir", type=Path)
     p.add_argument("--benchmark", type=Path, help="RL v2 weights: train against it and report the score vs it")
     p.add_argument("--benchmark-share", type=float, default=0.5, help="share of iterations played against it")
@@ -386,17 +412,19 @@ def main(argv=None) -> int:
     key = jax.random.key(a.seed)
     key, k_net = jax.random.split(key)
     nets = init_nets(k_net, a.hidden, a.depth)
+    if a.start_net:
+        nets["policy"] = load_policy(a.start_net.expanduser())
     uniform = jax.tree.map(jnp.zeros_like, nets["policy"])  # all-zero logits: uniform over legal
     tx_policy = optax.chain(optax.clip_by_global_norm(1.0), optax.adam(a.lr))
     tx_critic = optax.chain(optax.clip_by_global_norm(1.0), optax.adam(a.lr))
     opts = (tx_policy.init(nets["policy"]), tx_critic.init(nets["critic"]))
     first_policy = jax.device_get(nets["policy"])
     pool = [first_policy]
-    rollout = make_rollout(a.batch, a.steps, a.lam, a.objective)
-    update = make_update(tx_policy, tx_critic, a.clip, a.aux)
+    rollout = make_rollout(a.batch, a.steps, a.lam, a.objective, refit=a.refit)
+    update = make_update(tx_policy, tx_critic, a.clip, a.aux, a.refit)
     evaluate = make_eval(512, 4000)
     benchmark = V.load(a.benchmark.expanduser()) if a.benchmark else None
-    rollout_benchmark = make_rollout(a.batch, a.steps, a.lam, a.objective, benchmark) if benchmark else None
+    rollout_benchmark = make_rollout(a.batch, a.steps, a.lam, a.objective, benchmark, a.refit) if benchmark else None
     evaluate_benchmark = make_eval(512, 4000, benchmark) if benchmark else None
     key, k = jax.random.split(key)
     g = jax.vmap(G.new_game)(G.deal_pool(k, a.batch))

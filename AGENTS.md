@@ -58,7 +58,7 @@ share. To enter a net, copy `bots/bitter-net` to `bots/<name>/` with your `net.n
 | `docs/submitting.md` | How a bot reaches the leaderboard, labels, fork pull requests, replays |
 | `jaxenv/` | The rules, RL v2 and self-play training on the GPU; `docs/jax-rules.md` |
 | `docs/training-design.md` | How self-play is made GPU-bound |
-| `train/` | Imitation (`record`, `imitate`) and self-play RL (`rl_cards`, `rl_bid`); see its README |
+| `train/` | Imitation (`record`, `imitate`), self-play RL (`rl_cards`, `rl_bid`) and copying a deeper search (`copy_search`); see its README |
 | `experiments/` | Write-ups per rung, the TensorBoard board, diagnostic bots that are never rated |
 
 ## Adding or changing a bot

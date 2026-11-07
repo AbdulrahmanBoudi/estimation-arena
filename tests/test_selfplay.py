@@ -4,9 +4,13 @@ import pytest
 
 pytest.importorskip("optax")
 
+import jax  # noqa: E402
 import jax.numpy as jnp  # noqa: E402
+import numpy as np  # noqa: E402
 
-from jaxenv.selfplay import position_rewards, td_lambda  # noqa: E402
+from jaxenv import rules as R  # noqa: E402
+from jaxenv.selfplay import bidding_only, init_nets, load_policy, make_rollout, position_rewards, save_npz, td_lambda  # noqa: E402
+from train.copy_search import card_targets, regret, split_games  # noqa: E402
 
 
 @pytest.mark.parametrize(
@@ -97,3 +101,59 @@ def test_training_runs_with_each_objective(tmp_path, objective):
             "--minibatch", "64", "--hidden", "16", "--depth", "1"]  # fmt: skip
     assert main(args) in (0, None)
     assert (tmp_path / "log.jsonl").read_text().strip()
+
+
+def test_a_refit_can_only_change_bidding_outputs():
+    policy = init_nets(jax.random.key(0), 16, 2)["policy"]
+    grads = jax.tree.map(jnp.ones_like, policy)
+    kept = bidding_only(grads)
+    first_card = R.NUM_ACTIONS - 52
+    assert all(float(jnp.abs(layer["w"]).sum()) == 0 for layer in kept["body"])
+    assert float(jnp.abs(kept["policy"]["w"][:, first_card:]).sum()) == 0
+    assert float(jnp.abs(kept["policy"]["b"][first_card:]).sum()) == 0
+    assert float(jnp.abs(kept["policy"]["w"][:, :first_card]).sum()) > 0
+
+
+def test_a_saved_net_loads_back(tmp_path):
+    policy = init_nets(jax.random.key(0), 16, 2)["policy"]
+    save_npz(policy, tmp_path / "net.npz", {})
+    loaded = load_policy(tmp_path / "net.npz")
+    assert jnp.allclose(loaded["body"][0]["w"], policy["body"][0]["w"])
+    assert jnp.allclose(loaded["policy"]["w"], policy["policy"]["w"])
+
+
+def test_a_refit_rollout_never_trains_card_play():
+    from jaxenv import game as G
+
+    nets = init_nets(jax.random.key(0), 16, 2)
+    games = jax.vmap(G.new_game)(G.deal_pool(jax.random.key(1), 8))
+    _, flat, _ = make_rollout(8, 64, 0.95, refit=True)(nets, nets["policy"], games, jax.random.key(2))
+    legal = flat["x"][:, -R.NUM_ACTIONS :].astype(jnp.float32) > 0.5
+    only_cards = ~legal[:, : R.NUM_ACTIONS - 52].any(1)
+    assert not flat["valid"][only_cards].any()
+
+
+def test_targets_favour_the_better_card_and_ignore_illegal_ones():
+    values = np.zeros((1, 52), np.float32)
+    values[0, [3, 7, 9]] = [20.0, 10.0, 99.0]
+    legal = np.zeros((1, 52), bool)
+    legal[0, [3, 7]] = True
+    target = card_targets(values, legal)
+    assert target[0, 3] > target[0, 7] > 0
+    assert target[0, 9] == 0
+    assert abs(target.sum() - 1) < 1e-5
+
+
+def test_regret_counts_what_the_top_cards_lose():
+    values = np.zeros((1, 52), np.float32)
+    values[0, [3, 7, 9]] = [20.0, 10.0, 5.0]
+    legal = np.zeros((1, 52), bool)
+    legal[0, [3, 7, 9]] = True
+    logits = np.zeros((1, 52), np.float32)
+    logits[0, [7, 9, 3]] = [3.0, 2.0, 1.0]
+    assert regret(logits, values, legal) == {"top1": 10.0, "top2": 10.0, "top3": 0.0}
+
+
+def test_held_out_games_stay_whole():
+    games = np.array([0, 0, 1, 1, 20, 21])
+    assert split_games(games).tolist() == [True, True, False, False, True, False]
