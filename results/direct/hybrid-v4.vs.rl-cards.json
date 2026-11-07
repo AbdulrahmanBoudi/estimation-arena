@@ -1,0 +1,41 @@
+{
+ "a": "hybrid-v4",
+ "b": "rl-cards",
+ "hash_a": "f2f793ae33514ed4",
+ "hash_b": "143bc51f972907a2",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T05:18:41+00:00",
+   "wall_s": 603.6214220319998
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:hybrid-v4",
+   "b": "sub:rl-cards",
+   "a_wins": 20,
+   "draws": 0,
+   "b_wins": 0
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:hybrid-v4",
+   "b": "sub:rl-cards",
+   "a_wins": 19,
+   "draws": 1,
+   "b_wins": 0
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:hybrid-v4",
+   "b": "sub:rl-cards",
+   "a_wins": 19,
+   "draws": 1,
+   "b_wins": 0
+  }
+ ]
+}
