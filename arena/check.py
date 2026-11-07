@@ -16,6 +16,7 @@ from pathlib import Path
 from .bots import ROOT, Manifest, load_manifest
 from .models import load_lock, sha256
 from .run import main as run_main
+from .training import training_of
 
 MAX_FILE_BYTES = 5_000_000  # anything bigger is a model: Hugging Face, not Git
 TARGET_S = 0.25  # AGENTS.md: card decisions should stay under this; the hard limit is 5 s
@@ -31,6 +32,8 @@ def problems(manifest: Manifest, lock: dict[str, dict[str, str]], root: Path = R
             found.append(f"manifest.json has no {field}")
     if not manifest.method:
         found.append("manifest.json has no method: the leaderboard draws its steps from it")
+    if training_of(f"sub:{manifest.name}") is None:
+        found.append("arena/training.py has no entry for it: add how it was trained, or the tests fail once it is rated")
 
     in_lock = {
         path.relative_to(root).as_posix(): path

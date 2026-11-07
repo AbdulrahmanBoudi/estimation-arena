@@ -6,6 +6,7 @@ import pytest
 from arena import check
 from arena.bots import Manifest
 from arena.run import engine_version
+from arena.training import TRAINING
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location("label_pr", ROOT / "scripts" / "label-pr.py")
@@ -60,6 +61,11 @@ def test_engine_source_pattern_reads_the_lock_line():
     assert label_pr.ENGINE_SOURCE.search(f"x\n{line}\ny").group() == line
 
 
+@pytest.fixture(autouse=True)
+def _known_bot(monkeypatch):
+    monkeypatch.setitem(TRAINING, "b", {"summary": "", "stages": []})
+
+
 def _manifest(tmp_path, **fields):
     folder = tmp_path / "bots" / "b"
     folder.mkdir(parents=True, exist_ok=True)
@@ -74,6 +80,11 @@ def test_check_passes_a_complete_bot(tmp_path):
 def test_check_asks_for_the_missing_fields(tmp_path):
     found = " ".join(check.problems(_manifest(tmp_path, author="", method=()), {}, tmp_path))
     assert "author" in found and "method" in found
+
+
+def test_check_asks_how_the_bot_was_trained(tmp_path, monkeypatch):
+    monkeypatch.delitem(TRAINING, "b")
+    assert "arena/training.py" in check.problems(_manifest(tmp_path), {}, tmp_path)[0]
 
 
 def test_check_refuses_a_big_file_outside_the_lock(tmp_path):

@@ -6,14 +6,15 @@ A bot reaches the leaderboard by being merged. The ladder rates it the night aft
 
 1. Add `bots/<name>/manifest.json` and your code. Examples: `bots/lowcard-wire` (any language, 40 lines) and `bots/table-pressure` (Python).
 2. If it loads a model, upload the file to a public Hugging Face repo, add its repo, commit, file and sha256 to `models.lock.json`, and name the file under `needs` in the manifest.
-3. Check it:
+3. Add how it was trained to `arena/training.py`, for the live board. A bot written by hand uses `_NOT_TRAINED`.
+4. Check it:
 
    ```bash
    uv run python -m arena.check <name>
    ```
 
    Fix anything marked `problem:`. A `warning:` won't stop the bot, but read it.
-4. Open a pull request against `main`.
+5. Open a pull request against `main`.
 
 Tune on your own seeds (`arena.sweep` defaults to 1000). The leaderboard's seed is secret.
 
@@ -82,5 +83,6 @@ A hand-started `replay=true` run plays every named bot again even if nothing cha
 | `Invalid username or token` during `uv sync` | No `ENGINE_TOKEN`: a fork's pull request, or an expired token | On a fork, use `scripts/smoke-fork.py`. Otherwise ask the owner to renew the token |
 | `is missing: run python -m arena.models fetch` | The model isn't downloaded | Run that command |
 | `does not match the sha256` | The file differs from the lock | Fetch again, or update the lock if you meant to change the model |
+| `arena/training.py has no entry` | The live board needs to say how the bot was trained | Add an entry, even if it was not trained |
 | `too big for Git` | A model file sits in the bot's folder | Move it to Hugging Face and add it to the lock |
 | `failed:` at the end of a ladder run | Those bots crashed, and the others were saved | Read that bot's lines in the run log. It stays out of date, so it runs again the next night |
