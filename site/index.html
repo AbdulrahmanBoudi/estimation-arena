@@ -118,9 +118,10 @@ document.querySelectorAll('[data-rank]').forEach(function (button) {
     document.body.dataset.metric = m;
     document.querySelectorAll('[data-rank]').forEach(function (b) { b.setAttribute('aria-pressed', b === button); });
     var rows = Array.from(body.querySelectorAll('tr.bot')).sort(function (a, b) { return b.dataset[m] - a.dataset[m]; });
-    rows.forEach(function (row, k) {
+    var place = 0;
+    rows.forEach(function (row) {
       var how = row.nextElementSibling && row.nextElementSibling.classList.contains('howrow') ? row.nextElementSibling : null;
-      row.querySelector('.rank').textContent = row.dataset[m] > -1e8 ? k + 1 : '';
+      row.querySelector('.rank').textContent = row.dataset[m] > -1e8 && !row.classList.contains('early') ? ++place : '';
       body.appendChild(row);
       if (how) body.appendChild(how);
     });

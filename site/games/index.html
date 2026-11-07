@@ -71,13 +71,15 @@ function home() {
   document.title = "Estimation games";
   const list = el("ul", "bots");
   const rated = data.bots.filter((b) => b.elo !== null);
-  rated.forEach((b, k) => {
+  let place = 0;
+  rated.forEach((b) => {
     const li = el("li"), a = el("a");
     a.href = "#bot=" + encodeURIComponent(b.key);
     const name = el("span", "", b.name);
     if (b.anchor) name.append(el("span", "tag", "benchmark"));
     if (b.provisional) name.append(el("span", "tag", "early result"));
-    a.append(el("span", "rank", k + 1), name, el("span", "elo", Math.round(b.elo)));
+    if (!b.provisional) place += 1;
+    a.append(el("span", "rank", b.provisional ? "" : place), name, el("span", "elo", Math.round(b.elo)));
     li.append(a); list.append(li);
   });
   app.replaceChildren(crumbs(["Standings", BOARD]), el("h1", "", "Games"), el("p", "note", "Pick a bot to see who it played, how each match went, and to watch a game with every card showing."), list);
