@@ -208,7 +208,7 @@ function renderDirect() {
   const bots = state.standings.filter((r) => !r.anchor && !r.provisional).slice(0, 8);
   const find = (a, b) => state.direct.find((m) => m.a === a && m.b === b);
   const head = el("tr");
-  head.append(el("th", "num", "#"), el("th", "", "Bot"), ...bots.map((r, k) => {
+  head.append(el("th", "who", "Bot"), ...bots.map((r, k) => {
     const th = el("th", "num", k + 1);
     th.title = r.name;
     return th;
@@ -216,7 +216,9 @@ function renderDirect() {
   $("cross-head").replaceChildren(head);
   $("cross-body").replaceChildren(...bots.map((row, k) => {
     const tr = el("tr");
-    tr.append(el("td", "num rank", k + 1), el("td", "bot", row.name));
+    const who = el("td", "who");
+    who.append(el("span", "rank", k + 1), ` ${row.name}`);
+    tr.appendChild(who);
     bots.forEach((other, j) => {
       if (k === j) return tr.appendChild(el("td", "num self"));
       const match = find(row.key, other.key), flip = find(other.key, row.key);

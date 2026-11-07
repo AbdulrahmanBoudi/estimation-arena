@@ -89,6 +89,8 @@ tr.flash td{background:var(--raised);transition:background 1.4s}
 .direct-note{color:var(--muted);margin:0 0 12px;max-width:70ch}
 .cross-scroll{overflow-x:auto}
 table.cross td,table.cross th{white-space:nowrap}
+table.cross .who{white-space:normal;min-width:130px;max-width:190px;position:sticky;left:0;background:var(--cloth);z-index:1}
+table.cross .rank{color:var(--muted);width:auto}
 table.cross td.self{background:var(--raised)}
 table.cross td.won{color:var(--king);font-weight:600}
 table.cross td.lost{color:var(--subkooz);font-weight:600}

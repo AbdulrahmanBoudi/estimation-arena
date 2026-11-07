@@ -85,6 +85,11 @@ BOTS: dict[str, dict[str, Any]] = {
         "about": "The practised model picks its 2 best cards, then Look-ahead tries them on imagined hands.",
         "method": [_BASIC_BID, ["card model keeps its top 2 cards", "net"], ["imagine the hidden hands x50", "deal"], ["try each card: Basic rules plays out the round", "rollout"], _BEST],
     },
+    "hybrid-v4": {
+        "name": "Yosif's Hybrid v4",
+        "about": "Yosif's strongest bot. One model bids, one chooses cards, and one guesses who holds the hidden cards. It tries its top 2 cards on 32 imagined deals built from those guesses.",
+        "method": [["the bid model picks the bid", "bid"], ["the card model keeps its top 2 cards", "net"], ["imagine 32 deals from where the guess model thinks the cards are", "deal"], ["play each kept card to the end", "rollout"], ["play the best average score", "pick"]],
+    },
     "rl-hybrid": {
         "name": "Yosif's bidding, our cards + look-ahead",
         "about": "Yosif's look-ahead bot with its card model swapped for Copycat with practice. It keeps Yosif's bidding.",
