@@ -1,0 +1,41 @@
+{
+ "a": "net-pimc",
+ "b": "table-pressure",
+ "hash_a": "6152cc0e6df496d1",
+ "hash_b": "79315fa420fa9ec0",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T08:31:10+00:00",
+   "wall_s": 87.26325459600048
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:net-pimc",
+   "b": "sub:table-pressure",
+   "a_wins": 20,
+   "draws": 0,
+   "b_wins": 0
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:net-pimc",
+   "b": "sub:table-pressure",
+   "a_wins": 20,
+   "draws": 0,
+   "b_wins": 0
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:net-pimc",
+   "b": "sub:table-pressure",
+   "a_wins": 20,
+   "draws": 0,
+   "b_wins": 0
+  }
+ ]
+}
