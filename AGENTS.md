@@ -48,11 +48,13 @@ share. To enter a net, copy `bots/bitter-net` to `bots/<name>/` with your `net.n
 | `arena/protocol.py` | Wire protocol: one JSON line in, one action id out, one process per game |
 | `arena/bots.py` | Loads `bots/<name>/manifest.json`; `sub:<name>:key=value` passes options |
 | `arena/run.py` | Rates one bot vs every anchor, writes `results/<name>.json` |
+| `arena/check.py` | Checks a bot before a pull request |
 | `arena/sweep.py` | Tunes a python bot's options vs one opponent |
 | `arena/env.py` | PettingZoo AEC environment for RL training |
 | `arena/leaderboard.py` | Elo fit, renders `site/` |
 | `arena/models.py` | Downloads the models in `models.lock.json`, refuses a wrong checksum |
 | `anchors.json` | Frozen engine bots everyone is rated against |
+| `docs/submitting.md` | How a bot reaches the leaderboard, labels, fork pull requests, replays |
 | `jaxenv/` | The rules, RL v2 and self-play training on the GPU; `docs/jax-rules.md` |
 | `docs/training-design.md` | How self-play is made GPU-bound |
 | `train/` | Imitation (`record`, `imitate`) and self-play RL (`rl_cards`, `rl_bid`); see its README |
@@ -60,19 +62,16 @@ share. To enter a net, copy `bots/bitter-net` to `bots/<name>/` with your `net.n
 
 ## Adding or changing a bot
 
-1. `bots/<name>/manifest.json` plus code. Python tier: `make(seed, rules, **options)`.
-   Wire tier: any language, see `bots/lowcard-wire`.
-2. Tune with `arena.sweep` on a **tuning seed** (default 1000). Confirm the winner on a fresh
-   seed with at least 1,000 sets before believing it. Trust a difference only when the 95%
-   intervals do not overlap.
-3. Rate with `arena.run`. Never tune against the leaderboard seed (`LADDER_SEED` secret).
-4. Model files don't go in Git. Upload yours to a public Hugging Face repo and add its repo,
-   commit, file and sha256 to `models.lock.json`.
-5. Open a pull request. The `smoke` workflow plays it and comments; after merging, the ladder
-   rates it against every benchmark. A pull request from a fork waits for the owner, who reads
-   the code and starts the run (see `.github/workflows/smoke.yml`).
+Follow [docs/submitting.md](docs/submitting.md). In short:
 
-A bot that loads a model should name it under `needs` in its manifest.
+```bash
+uv run python -m arena.check <name>      # fix anything marked problem:, then open a pull request
+```
+
+Python tier: `make(seed, rules, **options)`. Wire tier: any language, see `bots/lowcard-wire`.
+Tune with `arena.sweep` on a **tuning seed** (default 1000), and confirm the winner on a fresh seed
+with at least 1,000 sets before believing it. Trust a difference only when the 95% intervals do not
+overlap. Never tune against the leaderboard seed (`LADDER_SEED` secret). Model files don't go in Git.
 
 ## Rules of the game you must not break
 

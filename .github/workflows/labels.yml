@@ -1,0 +1,28 @@
+name: labels
+
+# Label every pull request by what it changes (scripts/label-pr.py). This event can write labels
+# on a fork's pull request because it runs main's copy of the script. It must never check out or
+# run the pull request's code: it only reads GitHub's file list and uv.lock as text.
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions: {}
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: python3 scripts/label-pr.py "$PR"

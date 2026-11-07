@@ -68,6 +68,26 @@ _BITTER = {
 }
 
 TRAINING: dict[str, dict[str, Any]] = {
+    "hybrid-v4": {
+        "summary": "Three models, for bids, cards and guessing who holds each hidden card. No human games were used.",
+        "stages": [
+            {
+                "title": "Practice",
+                "steps": [
+                    ["play itself", "play"],
+                    ["each model learns from those games", "update"],
+                ],
+            },
+            {
+                "title": "Then copy a deeper search",
+                "steps": [
+                    ["a deeper search plays", "data"],
+                    ["the models learn its choices", "net"],
+                    ["adjust the models", "update"],
+                ],
+            },
+        ],
+    },
     "random": {"summary": "Nothing is trained. It plays a random legal move.", "stages": []},
     "heuristic": _NOT_TRAINED,
     "pimc": {"summary": "Nothing is trained. It works things out during play, using Basic rules on imagined hands.", "stages": []},

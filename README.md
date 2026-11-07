@@ -64,7 +64,11 @@ uv run python -m arena.leaderboard && open site/index.html
 
 <img src="brand/submit.svg" width="100%" alt="Open a pull request. A smoke test plays 2 sets against Random and Heuristic and comments the result. After merging, the nightly ladder rates the bot on a secret seed and the page updates.">
 
-Examples: `bots/lowcard-wire` (stdlib, 40 lines), `bots/table-pressure` (rung 1, beats Heuristic).
+Examples: `bots/lowcard-wire` (stdlib, 40 lines), `bots/table-pressure` (rung 1, beats Heuristic). Full steps: [docs/submitting.md](docs/submitting.md).
+
+```bash
+uv run python -m arena.check <your-bot>   # run this before opening a pull request
+```
 
 ## Play
 
