@@ -93,3 +93,12 @@ def test_a_real_direct_match_changes_the_board_and_stays_secret(tmp_path, monkey
 
 def test_a_board_without_direct_games_hides_the_section():
     assert leaderboard.head_to_head({"direct": [], "rows": [], "runoff": []}) == ""
+
+
+def test_the_app_notices_a_new_direct_match(tmp_path):
+    from arena import board
+
+    (tmp_path / "results" / "direct").mkdir(parents=True)
+    before = board._signature(tmp_path)
+    (tmp_path / "results" / "direct" / "a.vs.b.json").write_text("{}")
+    assert board._signature(tmp_path) != before

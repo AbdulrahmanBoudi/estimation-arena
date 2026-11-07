@@ -27,7 +27,7 @@ MATCH_FIELDS = ("id", "kind", "key", "name", "opponent", "sets", "done", "state"
 
 
 def _signature(root: Path) -> tuple:
-    paths = [*root.glob("results/*.json"), root / "ladder" / "positions.json", *LIVE.glob("*.json")]
+    paths = [*root.glob("results/*.json"), *root.glob("results/direct/*.json"), root / "ladder" / "positions.json", *LIVE.glob("*.json")]
     stamps = []
     for path in paths:
         try:
