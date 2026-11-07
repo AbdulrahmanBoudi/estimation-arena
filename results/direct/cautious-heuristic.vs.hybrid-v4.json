@@ -1,0 +1,41 @@
+{
+ "a": "cautious-heuristic",
+ "b": "hybrid-v4",
+ "hash_a": "126e32edb235a338",
+ "hash_b": "f2f793ae33514ed4",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T06:39:40+00:00",
+   "wall_s": 602.6289563350001
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:cautious-heuristic",
+   "b": "sub:hybrid-v4",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 20
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:cautious-heuristic",
+   "b": "sub:hybrid-v4",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 20
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:cautious-heuristic",
+   "b": "sub:hybrid-v4",
+   "a_wins": 0,
+   "draws": 0,
+   "b_wins": 20
+  }
+ ]
+}
