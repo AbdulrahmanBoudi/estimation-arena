@@ -40,9 +40,10 @@ def _cards(mask: int) -> list[int]:
     return [card for card in range(52) if mask >> card & 1]
 
 
-def record_game(seats: list[str], seed: int, rounds: int = 0) -> dict[str, Any]:
-    """Play one Bola with ``seats`` and return everything needed to watch it."""
-    bots = [maker(spec, seed + seat, DEFAULT_CONFIG) for seat, spec in enumerate(seats)]
+def record_game(seats: list[str], seed: int, rounds: int = 0, bots: list[Any] | None = None) -> dict[str, Any]:
+    """Play one Bola with ``seats`` and return everything needed to watch it. ``bots`` replaces
+    the ones it would make, for rebuilding a game that was already played."""
+    bots = bots or [maker(spec, seed + seat, DEFAULT_CONFIG) for seat, spec in enumerate(seats)]
     game = Bola(seed, DEFAULT_CONFIG)
     played: list[dict[str, Any]] = []
     current: dict[str, Any] | None = None

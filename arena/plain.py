@@ -85,6 +85,11 @@ BOTS: dict[str, dict[str, Any]] = {
         "about": "The practised model picks its 2 best cards, then Look-ahead tries them on imagined hands.",
         "method": [_BASIC_BID, ["card model keeps its top 2 cards", "net"], ["imagine the hidden hands x50", "deal"], ["try each card: Basic rules plays out the round", "rollout"], _BEST],
     },
+    "llm-claude-api": {
+        "name": "Claude Opus 5.5",
+        "about": "Anthropic's general AI model, not built for this game. For each move it reads the rules and its own view of the table in words, then picks one. It has no tools and remembers nothing between moves.",
+        "method": [["put the rules and this seat's view into words", "data"], ["Claude thinks it over and picks a move", "net"], ["play that move", "pick"]],
+    },
     "hybrid-v4": {
         "name": "Yosif's Hybrid v4",
         "about": "Yosif's strongest bot. One model bids, one chooses cards, and one guesses who holds the hidden cards. It tries its top 2 cards on 32 imagined deals built from those guesses.",
