@@ -1,0 +1,41 @@
+{
+ "a": "bitter-net",
+ "b": "bitter-search",
+ "hash_a": "0ee768fef2f2037b",
+ "hash_b": "5c0604a1e4e0f545",
+ "engine": "0.1.0+2dbf68df",
+ "batches": [
+  {
+   "sets": 20,
+   "played_at": "2026-11-07T05:28:40+00:00",
+   "wall_s": 240.50558308100062
+  }
+ ],
+ "pairs": [
+  {
+   "a": "sub:bitter-net",
+   "b": "sub:bitter-search",
+   "a_wins": 5,
+   "draws": 0,
+   "b_wins": 15
+  }
+ ],
+ "position_pairs": [
+  {
+   "a": "sub:bitter-net",
+   "b": "sub:bitter-search",
+   "a_wins": 4,
+   "draws": 2,
+   "b_wins": 14
+  }
+ ],
+ "king_pairs": [
+  {
+   "a": "sub:bitter-net",
+   "b": "sub:bitter-search",
+   "a_wins": 2,
+   "draws": 6,
+   "b_wins": 12
+  }
+ ]
+}
