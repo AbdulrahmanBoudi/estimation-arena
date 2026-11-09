@@ -142,7 +142,7 @@ TRAINING: dict[str, dict[str, Any]] = {
         "lab": True,
     },
     "kooz-bot": {
-        "summary": "The look-ahead isn't trained. It uses three models of its own, for bids, cards and guessing who holds each hidden card, trained from scratch like RL v2 with no human games.",
+        "summary": "The look-ahead isn't trained. It uses three models of its own, for bids, cards and guessing who holds each hidden card, trained from scratch by playing itself, with no human games.",
         "stages": _RL_V2,
     },
 }
